@@ -1,0 +1,25 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: bancoxyz-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: bancoxyz
+      POSTGRES_USER: bancoxyz
+      POSTGRES_PASSWORD: bancoxyz123
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - bancoxyz_postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bancoxyz -d bancoxyz"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  bancoxyz_postgres_data:

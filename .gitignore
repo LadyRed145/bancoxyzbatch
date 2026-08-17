@@ -1,0 +1,112 @@
+# =========================
+# Maven / Java
+# =========================
+target/
+*.class
+*.jar
+*.war
+*.ear
+
+# Maven Wrapper no se ignora
+# .mvn/
+# mvnw
+# mvnw.cmd
+
+# =========================
+# IDE / Editores
+# =========================
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Eclipse / STS
+.project
+.classpath
+.settings/
+.factorypath
+.springBeans
+.sts4-cache/
+
+# =========================
+# Sistema operativo
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# Logs
+# =========================
+*.log
+logs/
+spring-boot.log
+
+# =========================
+# Variables locales / secretos
+# =========================
+.env
+.env.*
+!.env.example
+
+application-local.properties
+application-local.yml
+application-local.yaml
+application-secret.properties
+application-secret.yml
+application-secret.yaml
+
+# =========================
+# Backups / dumps / exportaciones
+# =========================
+*.bak
+*.backup
+backup_*.sql
+*.dump
+*.sql.gz
+
+# =========================
+# Archivos temporales
+# =========================
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+*.orig
+*.rej
+
+# =========================
+# Cobertura / reportes
+# =========================
+coverage/
+jacoco.exec
+site/
+
+# =========================
+# Archivos generados
+# =========================
+generated/
+out/
+
+# =========================
+# Docker local
+# =========================
+docker-data/
+postgres-data/
+data/postgres/
+
+# =========================
+# Archivos de ejecución local
+# =========================
+*.pid
+*.seed
+
+# =========================
+# Backups manuales del proyecto
+# =========================
+*_backup.*
+*_backup_*.*
+backup/
+backups/
