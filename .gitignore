@@ -1,0 +1,7 @@
+.vscode/
+target/
+backup_*.sql
+*.bak
+*.backup
+*.dump
+*.log
