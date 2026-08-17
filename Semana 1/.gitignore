@@ -1,7 +1,13 @@
 # =========================
 # Maven / Java
 # =========================
+.vscode/
 target/
+backup_*.sql
+*.bak
+*.backup
+*.dump
+*.log
 *.class
 *.jar
 *.war
