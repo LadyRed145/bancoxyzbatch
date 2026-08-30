@@ -5,3 +5,4 @@ backup_*.sql
 *.backup
 *.dump
 *.log
+classpath.txt
