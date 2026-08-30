@@ -1,0 +1,50 @@
+{
+  "properties": [
+    {
+      "name": "app.batch.threads",
+      "type": "java.lang.Integer",
+      "description": "Cantidad de hilos utilizados para procesar los chunks en paralelo.",
+      "defaultValue": 4
+    },
+    {
+      "name": "app.batch.queue-capacity",
+      "type": "java.lang.Integer",
+      "description": "Capacidad máxima de tareas en espera dentro del executor.",
+      "defaultValue": 20
+    },
+    {
+      "name": "app.batch.chunk-size",
+      "type": "java.lang.Integer",
+      "description": "Cantidad de registros procesados por cada transacción del Step.",
+      "defaultValue": 10
+    },
+    {
+      "name": "app.batch.retry-max-retries",
+      "type": "java.lang.Long",
+      "description": "Cantidad máxima de reintentos adicionales ante errores transitorios.",
+      "defaultValue": 3
+    },
+    {
+      "name": "app.batch.retry-delay-ms",
+      "type": "java.lang.Long",
+      "description": "Tiempo de espera en milisegundos entre intentos consecutivos.",
+      "defaultValue": 500
+    },
+    {
+      "name": "app.batch.retry-demo-failures",
+      "type": "java.lang.Integer",
+      "description": "Cantidad de fallos transitorios simulados para validar de forma controlada la política de retry. Debe permanecer en 0 durante la ejecución normal.",
+      "defaultValue": 0
+    },
+    {
+      "name": "app.batch.job",
+      "type": "java.lang.String",
+      "description": "Nombre del Job que se solicita ejecutar."
+    },
+    {
+      "name": "app.batch.run-id",
+      "type": "java.lang.Long",
+      "description": "Identificador utilizado para crear una ejecución controlada del Job."
+    }
+  ]
+}
