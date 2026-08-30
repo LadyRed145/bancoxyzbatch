@@ -116,3 +116,6 @@ data/postgres/
 *_backup_*.*
 backup/
 backups/
+
+# Archivos temporales de editores
+.~lock.*
