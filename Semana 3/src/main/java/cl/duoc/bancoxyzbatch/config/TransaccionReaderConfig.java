@@ -1,6 +1,7 @@
 package cl.duoc.bancoxyzbatch.config;
 
 import cl.duoc.bancoxyzbatch.model.Transaccion;
+import cl.duoc.bancoxyzbatch.util.CsvValueParser;
 import org.springframework.batch.infrastructure.item.file.FlatFileItemReader;
 import org.springframework.batch.infrastructure.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.batch.infrastructure.item.support.SynchronizedItemStreamReader;
@@ -9,11 +10,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
 /**
  * Configuro la lectura del CSV de transacciones.
+ *
+ * La conversión de los valores legacy se realiza de forma tolerante para
+ * evitar que un dato vacío, mal formado o con un formato alternativo detenga
+ * la lectura completa del archivo.
+ *
+ * Las validaciones y reglas de negocio se mantienen en el ItemProcessor.
+ *
  * Sincronizo el reader para utilizarlo de forma segura con varios hilos.
  */
 @Configuration
@@ -48,33 +53,35 @@ public class TransaccionReaderConfig {
                                     new Transaccion();
 
                             transaccion.setId(
-                                    Long.valueOf(
-                                            fieldSet
-                                                    .readString("id")
-                                                    .trim()
+                                    CsvValueParser.parseLong(
+                                            fieldSet.readString(
+                                                    "id"
+                                            )
                                     )
                             );
 
                             transaccion.setFecha(
-                                    LocalDate.parse(
-                                            fieldSet
-                                                    .readString("fecha")
-                                                    .trim()
+                                    CsvValueParser.parseLocalDate(
+                                            fieldSet.readString(
+                                                    "fecha"
+                                            )
                                     )
                             );
 
                             transaccion.setMonto(
-                                    new BigDecimal(
-                                            fieldSet
-                                                    .readString("monto")
-                                                    .trim()
+                                    CsvValueParser.parseBigDecimal(
+                                            fieldSet.readString(
+                                                    "monto"
+                                            )
                                     )
                             );
 
                             transaccion.setTipo(
-                                    fieldSet
-                                            .readString("tipo")
-                                            .trim()
+                                    CsvValueParser.parseString(
+                                            fieldSet.readString(
+                                                    "tipo"
+                                            )
+                                    )
                             );
 
                             return transaccion;

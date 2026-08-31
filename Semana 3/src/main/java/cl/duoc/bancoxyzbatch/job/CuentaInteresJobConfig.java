@@ -1,5 +1,6 @@
 package cl.duoc.bancoxyzbatch.job;
 
+import cl.duoc.bancoxyzbatch.exception.ReglaNegocioException;
 import cl.duoc.bancoxyzbatch.listener.RegistroRechazadoSkipListener;
 import cl.duoc.bancoxyzbatch.model.CuentaInteres;
 import cl.duoc.bancoxyzbatch.model.CuentaInteresProcesada;
@@ -20,12 +21,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.retry.RetryPolicy;
-import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * Defino el Job encargado del cálculo mensual de intereses.
- * Utilizo procesamiento paralelo, retry y tolerancia a errores del CSV.
+ *
+ * Este Job se ejecuta secuencialmente porque el archivo legacy
+ * contiene múltiples registros correspondientes al mismo cuenta_id.
+ * De esta forma se mantiene un resultado determinista.
+ *
+ * Se conservan retry, tolerancia a errores y trazabilidad
+ * de los registros rechazados.
  */
 @Configuration
 public class CuentaInteresJobConfig {
@@ -46,18 +52,22 @@ public class CuentaInteresJobConfig {
                     CuentaInteresProcesada
                     > registroRechazadoSkipListener,
 
-            @Qualifier("batchTaskExecutor")
-            AsyncTaskExecutor batchTaskExecutor,
-
             @Qualifier("batchRetryPolicy")
             RetryPolicy batchRetryPolicy,
 
-            @Value("${app.batch.chunk-size:5}")
-            int chunkSize
+            @Value("${app.batch.chunk-size:10}")
+            int chunkSize,
+
+            @Value("${app.batch.skip-limit:750}")
+            int skipLimit
     ) {
 
         validarChunkSize(
                 chunkSize
+        );
+
+        validarSkipLimit(
+                skipLimit
         );
 
         return new StepBuilder(
@@ -83,26 +93,43 @@ public class CuentaInteresJobConfig {
                         cuentaInteresWriter
                 )
 
+                /*
+                 * Activo retry y tolerancia a fallos.
+                 */
                 .faultTolerant()
 
+                /*
+                 * Los fallos transitorios definidos por
+                 * la política pueden ser reintentados.
+                 */
                 .retryPolicy(
                         batchRetryPolicy
                 )
 
+                /*
+                 * Los errores de lectura y las cuentas
+                 * rechazadas por las reglas de negocio
+                 * se omiten de forma controlada.
+                 */
                 .skip(
-                        FlatFileParseException.class
+                        FlatFileParseException.class,
+                        ReglaNegocioException.class
                 )
 
-                .skipLimit(10)
+                .skipLimit(
+                        skipLimit
+                )
 
                 .skipListener(
                         registroRechazadoSkipListener
                 )
 
-                .taskExecutor(
-                        batchTaskExecutor
-                )
-
+                /*
+                 * Intencionalmente NO utilizo TaskExecutor.
+                 *
+                 * Los cuenta_id repetidos requieren mantener
+                 * un orden determinista de actualización.
+                 */
                 .build();
     }
 
@@ -116,7 +143,9 @@ public class CuentaInteresJobConfig {
                 "cuentaInteresReconciliationStep",
                 jobRepository
         )
-                .tasklet(tasklet)
+                .tasklet(
+                        tasklet
+                )
                 .build();
     }
 
@@ -150,6 +179,18 @@ public class CuentaInteresJobConfig {
 
             throw new IllegalArgumentException(
                     "app.batch.chunk-size debe ser mayor o igual a 1"
+            );
+        }
+    }
+
+    private void validarSkipLimit(
+            int skipLimit
+    ) {
+
+        if (skipLimit < 1) {
+
+            throw new IllegalArgumentException(
+                    "app.batch.skip-limit debe ser mayor o igual a 1"
             );
         }
     }

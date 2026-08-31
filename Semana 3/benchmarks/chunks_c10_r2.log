@@ -1,0 +1,1159 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.1)
+
+2026-08-30T21:10:22.077-04:00  INFO 159808 --- [bancoxyzbatch] [           main] c.d.b.BancoxyzbatchApplication           : Starting BancoxyzbatchApplication v0.0.1-SNAPSHOT using Java 21.0.12 with PID 159808 (/home/natalia/Archivos/Desarrollo Backend III/Semana 3/bancoxyzbatch/Semana 3/target/bancoxyzbatch-0.0.1-SNAPSHOT.jar started by natalia in /home/natalia/Archivos/Desarrollo Backend III/Semana 3/bancoxyzbatch/Semana 3)
+2026-08-30T21:10:22.080-04:00  INFO 159808 --- [bancoxyzbatch] [           main] c.d.b.BancoxyzbatchApplication           : No active profile set, falling back to 1 default profile: "default"
+2026-08-30T21:10:22.641-04:00  INFO 159808 --- [bancoxyzbatch] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-08-30T21:10:22.702-04:00  INFO 159808 --- [bancoxyzbatch] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 53 ms. Found 5 JPA repository interfaces.
+2026-08-30T21:10:23.101-04:00  INFO 159808 --- [bancoxyzbatch] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-08-30T21:10:23.348-04:00  INFO 159808 --- [bancoxyzbatch] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@5434e40c
+2026-08-30T21:10:23.350-04:00  INFO 159808 --- [bancoxyzbatch] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-08-30T21:10:23.503-04:00  INFO 159808 --- [bancoxyzbatch] [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-08-30T21:10:23.564-04:00  INFO 159808 --- [bancoxyzbatch] [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.4.5.Final
+2026-08-30T21:10:24.015-04:00  INFO 159808 --- [bancoxyzbatch] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-08-30T21:10:24.111-04:00  INFO 159808 --- [bancoxyzbatch] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/bancoxyz_bench]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 17.11
+	Default catalog/schema: bancoxyz_bench/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-08-30T21:10:24.855-04:00  INFO 159808 --- [bancoxyzbatch] [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-08-30T21:10:24.936-04:00  WARN 159808 --- [bancoxyzbatch] [           main] org.hibernate.orm.jdbc.warn              : HHH000247: ErrorCode: 0, SQLState: 00000
+2026-08-30T21:10:24.936-04:00  WARN 159808 --- [bancoxyzbatch] [           main] org.hibernate.orm.jdbc.warn              : constraint "uk_estado_cuenta_anio" of relation "estados_cuenta_anuales" does not exist, skipping
+2026-08-30T21:10:24.947-04:00  INFO 159808 --- [bancoxyzbatch] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-08-30T21:10:25.101-04:00  INFO 159808 --- [bancoxyzbatch] [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+[BATCH-CONFIG] retryMaxRetries=3 | retryDelayMs=500
+[BATCH-CONFIG] threads=3 | queueCapacity=20 | daemon=true
+2026-08-30T21:10:26.010-04:00  INFO 159808 --- [bancoxyzbatch] [           main] c.d.b.BancoxyzbatchApplication           : Started BancoxyzbatchApplication in 4.342 seconds (process running for 4.739)
+[BATCH] Ejecutando Job: transaccionJob
+[BATCH] run.id: 4005
+[BATCH-PERF] configuración | mode=PARALELO | threads=3 | chunkSize=10 | skipLimit=750 | retryMaxRetries=3
+2026-08-30T21:10:26.122-04:00  INFO 159808 --- [bancoxyzbatch] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=transaccionJob]] launched with the following parameters: [{JobParameter{name='run.id', value=4005, type=class java.lang.Long, identifying=true}}]
+2026-08-30T21:10:26.165-04:00  INFO 159808 --- [bancoxyzbatch] [           main] o.s.batch.core.step.AbstractStep         : Executing step: [transaccionStep]
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=3
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=1
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=4
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=2
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=5
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=6
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=7
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=8
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=9
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=10
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=1 | invocacion=1
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=11
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=12
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=13
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=14
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=15
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=16
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=17
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=18
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=19
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=20
+[BATCH-WRITER] hilo=main | chunk=7 | jobInstance=1 | invocacion=2
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=21
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=22
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=23
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=24
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=26
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=25
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=27
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=28
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=29
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=30
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=1 | invocacion=3
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=31
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=32
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=33
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=34
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=35
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=36
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=37
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=38
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=39
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=40
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=1 | invocacion=4
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=41
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=42
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=43
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=44
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=45
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=46
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=47
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=48
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=49
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=50
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=1 | invocacion=5
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=51
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=52
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=53
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=54
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=55
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=56
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=57
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=58
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=59
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=60
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=1 | invocacion=6
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=61
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=62
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=63
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=64
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=65
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=66
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=67
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=68
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=69
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=70
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=1 | invocacion=7
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=71
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=72
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=73
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=74
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=75
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=76
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=77
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=79
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=78
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=80
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=1 | invocacion=8
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=81
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=82
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=83
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=84
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=85
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=86
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=87
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=88
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=89
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=90
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=1 | invocacion=9
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=91
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=92
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=93
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=94
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=95
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=96
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=97
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=98
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=99
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=100
+[BATCH-WRITER] hilo=main | chunk=8 | jobInstance=1 | invocacion=10
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=101
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=102
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=103
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=104
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=105
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=106
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=107
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=108
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=109
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=110
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=1 | invocacion=11
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=111
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=112
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=113
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=114
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=115
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=116
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=117
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=118
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=119
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=120
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=1 | invocacion=12
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=121
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=122
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=123
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=124
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=125
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=126
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=127
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=128
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=130
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=129
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=1 | invocacion=13
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=131
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=132
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=133
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=134
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=135
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=136
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=137
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=138
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=139
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=140
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=1 | invocacion=14
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=141
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=142
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=143
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=144
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=145
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=146
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=147
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=148
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=149
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=150
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=1 | invocacion=15
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=151
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=152
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=153
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=154
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=155
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=156
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=157
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=158
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=159
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=160
+[BATCH-WRITER] hilo=main | chunk=7 | jobInstance=1 | invocacion=16
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=161
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=162
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=163
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=164
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=165
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=166
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=167
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=169
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=168
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=170
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=1 | invocacion=17
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=171
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=172
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=173
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=174
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=175
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=176
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=177
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=178
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=179
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=180
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=1 | invocacion=18
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=181
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=182
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=183
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=184
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=185
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=186
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=187
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=188
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=189
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=190
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=1 | invocacion=19
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=191
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=192
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=193
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=194
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=195
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=196
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=197
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=198
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=199
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=200
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=1 | invocacion=20
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=201
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=202
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=203
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=204
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=205
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=206
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=207
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=208
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=209
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=210
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=1 | invocacion=21
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=211
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=212
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=213
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=214
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=215
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=216
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=217
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=218
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=219
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=220
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=1 | invocacion=22
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=221
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=222
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=223
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=224
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=225
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=226
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=227
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=228
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=230
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=229
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=1 | invocacion=23
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=231
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=232
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=233
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=234
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=235
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=237
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=236
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=238
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=239
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=240
+[BATCH-WRITER] hilo=main | chunk=7 | jobInstance=1 | invocacion=24
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=241
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=242
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=243
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=244
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=245
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=246
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=247
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=248
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=250
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=249
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=1 | invocacion=25
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=251
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=252
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=253
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=254
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=255
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=256
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=257
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=258
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=259
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=260
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=1 | invocacion=26
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=261
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=262
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=263
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=264
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=266
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=265
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=267
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=268
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=269
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=270
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=1 | invocacion=27
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=271
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=272
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=273
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=274
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=275
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=276
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=277
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=278
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=279
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=280
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=1 | invocacion=28
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=281
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=282
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=283
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=284
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=285
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=286
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=287
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=288
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=289
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=290
+[BATCH-WRITER] hilo=main | chunk=7 | jobInstance=1 | invocacion=29
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=291
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=292
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=293
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=294
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=295
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=296
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=297
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=298
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=299
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=300
+[BATCH-WRITER] hilo=main | chunk=1 | jobInstance=1 | invocacion=30
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=301
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=302
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=303
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=304
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=305
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=306
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=307
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=308
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=309
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=310
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=1 | invocacion=31
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=311
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=312
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=313
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=315
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=314
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=316
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=317
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=318
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=319
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=320
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=321
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=322
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=323
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=324
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=325
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=326
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=328
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=327
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=329
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=330
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=1 | invocacion=32
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=331
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=332
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=333
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=334
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=335
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=336
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=337
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=338
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=339
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=340
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=1 | invocacion=33
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=341
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=342
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=343
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=344
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=345
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=347
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=346
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=348
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=349
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=350
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=1 | invocacion=34
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=351
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=352
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=353
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=354
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=355
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=356
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=357
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=359
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=358
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=360
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=1 | invocacion=35
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=361
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=362
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=363
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=364
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=365
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=366
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=367
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=368
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=369
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=370
+[BATCH-WRITER] hilo=main | chunk=7 | jobInstance=1 | invocacion=36
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=371
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=372
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=373
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=374
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=375
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=376
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=377
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=378
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=379
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=380
+[BATCH-WRITER] hilo=main | chunk=7 | jobInstance=1 | invocacion=37
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=381
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=382
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=383
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=384
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=385
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=386
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=388
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=387
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=389
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=390
+[BATCH-WRITER] hilo=main | chunk=1 | jobInstance=1 | invocacion=38
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=391
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=392
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=393
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=394
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=395
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=396
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=397
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=398
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=399
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=400
+[BATCH-WRITER] hilo=main | chunk=7 | jobInstance=1 | invocacion=39
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=401
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=402
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=403
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=404
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=405
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=406
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=407
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=409
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=410
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=408
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=1 | invocacion=40
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=411
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=412
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=413
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=414
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=415
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=417
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=416
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=418
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=419
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=420
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=1 | invocacion=41
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=421
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=422
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=423
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=424
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=425
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=426
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=427
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=429
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=430
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=428
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=1 | invocacion=42
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=431
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=432
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=433
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=434
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=435
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=436
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=437
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=438
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=440
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=439
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=1 | invocacion=43
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=441
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=442
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=443
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=444
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=445
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=447
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=448
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=446
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=449
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=450
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=1 | invocacion=44
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=451
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=452
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=453
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=454
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=455
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=456
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=457
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=458
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=459
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=460
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=1 | invocacion=45
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=461
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=462
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=463
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=464
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=465
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=466
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=468
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=467
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=469
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=470
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=1 | invocacion=46
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=471
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=472
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=473
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=474
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=475
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=476
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=477
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=478
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=479
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=480
+[BATCH-WRITER] hilo=main | chunk=2 | jobInstance=1 | invocacion=47
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=481
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=482
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=483
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=484
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=485
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=486
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=487
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=488
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=489
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=490
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=1 | invocacion=48
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=491
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=492
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=493
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=494
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=496
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=495
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=497
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=498
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=499
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=500
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=1 | invocacion=49
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=501
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=502
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=503
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=504
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=505
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=506
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=507
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=508
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=509
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=510
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=1 | invocacion=50
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=511
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=512
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=513
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=514
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=515
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=516
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=518
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=517
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=519
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=520
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=1 | invocacion=51
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=521
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=522
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=523
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=524
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=527
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=528
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=526
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=525
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=529
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=530
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=1 | invocacion=52
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=531
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=532
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=533
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=534
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=535
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=536
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=537
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=539
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=538
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=540
+[BATCH-WRITER] hilo=main | chunk=7 | jobInstance=1 | invocacion=53
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=541
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=542
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=543
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=544
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=545
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=546
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=547
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=548
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=549
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=550
+[BATCH-WRITER] hilo=main | chunk=7 | jobInstance=1 | invocacion=54
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=551
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=552
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=553
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=554
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=555
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=556
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=557
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=558
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=559
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=560
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=1 | invocacion=55
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=561
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=562
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=563
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=564
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=565
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=566
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=567
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=568
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=569
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=570
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=1 | invocacion=56
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=571
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=572
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=573
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=575
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=574
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=576
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=578
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=577
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=579
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=580
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=1 | invocacion=57
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=581
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=582
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=583
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=584
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=585
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=586
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=587
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=588
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=589
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=590
+[BATCH-WRITER] hilo=main | chunk=7 | jobInstance=1 | invocacion=58
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=591
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=592
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=593
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=594
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=595
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=596
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=597
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=598
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=599
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=600
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=1 | invocacion=59
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=601
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=602
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=603
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=604
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=605
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=606
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=608
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=609
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=610
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=607
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=1 | invocacion=60
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=611
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=612
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=613
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=614
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=615
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=616
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=617
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=618
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=619
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=620
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=1 | invocacion=61
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=621
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=622
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=623
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=624
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=625
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=626
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=627
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=628
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=629
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=630
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=1 | invocacion=62
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=631
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=632
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=633
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=634
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=635
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=636
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=637
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=638
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=639
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=640
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=1 | invocacion=63
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=641
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=642
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=643
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=644
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=645
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=646
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=647
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=648
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=649
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=650
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=1 | invocacion=64
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=651
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=652
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=653
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=654
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=655
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=656
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=657
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=658
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=659
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=660
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=1 | invocacion=65
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=661
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=662
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=663
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=664
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=665
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=666
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=667
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=668
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=669
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=670
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=1 | invocacion=66
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=671
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=672
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=673
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=674
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=676
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=675
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=677
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=678
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=679
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=680
+[BATCH-WRITER] hilo=main | chunk=1 | jobInstance=1 | invocacion=67
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=681
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=682
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=683
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=684
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=685
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=686
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=688
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=687
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=689
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=690
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=1 | invocacion=68
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=691
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=692
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=693
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=694
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=695
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=696
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=697
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=698
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=699
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=700
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=1 | invocacion=69
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=701
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=702
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=703
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=704
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=705
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=706
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=707
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=708
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=709
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=710
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=1 | invocacion=70
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=711
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=712
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=713
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=714
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=715
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=716
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=717
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=719
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=718
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=720
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=721
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=722
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=723
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=724
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=725
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=726
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=727
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=728
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=729
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=730
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=1 | invocacion=71
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=731
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=732
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=733
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=734
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=735
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=736
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=737
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=738
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=739
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=740
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=1 | invocacion=72
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=741
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=742
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=743
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=744
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=745
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=746
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=747
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=748
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=749
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=750
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=1 | invocacion=73
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=751
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=752
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=753
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=754
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=755
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=756
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=757
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=758
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=759
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=760
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=1 | invocacion=74
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=761
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=762
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=763
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=764
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=765
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=766
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=767
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=768
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=769
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=770
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=1 | invocacion=75
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=771
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=772
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=773
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=774
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=775
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=776
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=777
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=778
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=779
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=780
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=1 | invocacion=76
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=781
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=782
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=783
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=784
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=785
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=787
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=786
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=788
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=789
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=790
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=1 | invocacion=77
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=791
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=792
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=793
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=794
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=795
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=796
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=797
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=798
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=799
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=800
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=1 | invocacion=78
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=801
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=802
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=803
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=804
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=805
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=806
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=807
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=808
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=809
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=810
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=1 | invocacion=79
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=811
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=812
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=813
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=814
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=815
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=816
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=817
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=818
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=819
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=820
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=1 | invocacion=80
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=821
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=822
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=823
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=824
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=825
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=826
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=827
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=828
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=829
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=830
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=1 | invocacion=81
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=831
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=832
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=833
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=834
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=835
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=836
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=837
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=838
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=839
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=840
+[BATCH-WRITER] hilo=main | chunk=7 | jobInstance=1 | invocacion=82
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=841
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=842
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=843
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=844
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=845
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=846
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=847
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=848
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=849
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=850
+[BATCH-WRITER] hilo=main | chunk=7 | jobInstance=1 | invocacion=83
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=851
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=852
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=853
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=854
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=855
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=856
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=857
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=858
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=859
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=860
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=1 | invocacion=84
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=861
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=862
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=863
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=864
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=865
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=866
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=867
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=868
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=869
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=870
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=1 | invocacion=85
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=871
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=872
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=873
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=874
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=875
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=877
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=876
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=878
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=879
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=880
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=1 | invocacion=86
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=881
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=882
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=883
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=884
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=885
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=886
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=887
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=888
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=889
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=890
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=1 | invocacion=87
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=891
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=892
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=893
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=894
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=895
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=896
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=897
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=898
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=899
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=900
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=1 | invocacion=88
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=901
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=902
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=903
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=904
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=905
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=906
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=907
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=908
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=909
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=910
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=1 | invocacion=89
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=911
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=912
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=913
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=914
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=915
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=916
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=917
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=918
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=919
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=920
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=1 | invocacion=90
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=921
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=922
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=923
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=924
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=925
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=926
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=927
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=928
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=929
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=930
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=1 | invocacion=91
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=931
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=932
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=933
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=934
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=935
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=936
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=937
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=938
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=939
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=940
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=1 | invocacion=92
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=941
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=942
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=943
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=944
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=945
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=946
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=947
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=949
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=948
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=950
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=1 | invocacion=93
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=951
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=952
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=953
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=954
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=955
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=956
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=957
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=958
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=959
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=960
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=1 | invocacion=94
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=961
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=962
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=963
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=964
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=965
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=966
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=967
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=968
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=969
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=970
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=1 | invocacion=95
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=971
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=972
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=973
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=974
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=975
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=976
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=977
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=978
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=979
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=980
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=1 | invocacion=96
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=981
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=982
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=983
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=984
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=985
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=986
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=987
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=988
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=989
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=990
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=1 | invocacion=97
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=991
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=992
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=993
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=994
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=995
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=996
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=997
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=998
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=999
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=1000
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=1 | invocacion=98
+2026-08-30T21:10:31.105-04:00  INFO 159808 --- [bancoxyzbatch] [           main] o.s.batch.core.step.AbstractStep         : Step: [transaccionStep] executed in 4s946ms
+2026-08-30T21:10:31.188-04:00  INFO 159808 --- [bancoxyzbatch] [           main] o.s.batch.core.step.AbstractStep         : Executing step: [transaccionDuplicadosStep]
+[BATCH-DUPLICADOS] jobInstance=1 | duplicados=15
+2026-08-30T21:10:31.550-04:00  INFO 159808 --- [bancoxyzbatch] [           main] o.s.batch.core.step.AbstractStep         : Step: [transaccionDuplicadosStep] executed in 371ms
+2026-08-30T21:10:31.584-04:00  INFO 159808 --- [bancoxyzbatch] [           main] o.s.batch.core.step.AbstractStep         : Executing step: [transaccionReconciliationStep]
+2026-08-30T21:10:31.608-04:00  INFO 159808 --- [bancoxyzbatch] [           main] o.s.batch.core.step.AbstractStep         : Step: [transaccionReconciliationStep] executed in 27ms
+2026-08-30T21:10:31.644-04:00  INFO 159808 --- [bancoxyzbatch] [           main] o.s.batch.core.step.AbstractStep         : Executing step: [resumenTransaccionDiariaStep]
+2026-08-30T21:10:31.942-04:00  INFO 159808 --- [bancoxyzbatch] [           main] o.s.batch.core.step.AbstractStep         : Step: [resumenTransaccionDiariaStep] executed in 303ms
+2026-08-30T21:10:31.977-04:00  INFO 159808 --- [bancoxyzbatch] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=transaccionJob]] completed with the following parameters: [{JobParameter{name='run.id', value=4005, type=class java.lang.Long, identifying=true}}] and the following status: [COMPLETED] in 5s837ms
+[BATCH] JobExecution ID: 1
+[BATCH] Estado final: COMPLETED
+[BATCH] Exit status: exitCode=COMPLETED;exitDescription=;exitException=null
+[BATCH-PERF] job=transaccionJob | mode=PARALELO | threads=3 | chunkSize=10 | duraciónMs=5960.968
+2026-08-30T21:10:31.985-04:00  INFO 159808 --- [bancoxyzbatch] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-08-30T21:10:31.987-04:00  INFO 159808 --- [bancoxyzbatch] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-08-30T21:10:31.989-04:00  INFO 159808 --- [bancoxyzbatch] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.

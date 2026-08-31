@@ -1,0 +1,7 @@
+threads,chunk_size,repeticion,resultado,duracion_ms
+3,25,1,FAILED,489.639
+3,25,2,FAILED,548.123
+3,25,3,FAILED,525.625
+3,50,1,FAILED,322.930
+3,50,2,FAILED,227.890
+3,50,3,FAILED,265.646

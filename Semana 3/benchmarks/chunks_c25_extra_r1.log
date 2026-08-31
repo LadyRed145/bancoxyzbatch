@@ -1,0 +1,337 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.1)
+
+2026-08-30T21:51:22.464-04:00  INFO 180918 --- [bancoxyzbatch] [           main] c.d.b.BancoxyzbatchApplication           : Starting BancoxyzbatchApplication v0.0.1-SNAPSHOT using Java 21.0.12 with PID 180918 (/home/natalia/Archivos/Desarrollo Backend III/Semana 3/bancoxyzbatch/Semana 3/target/bancoxyzbatch-0.0.1-SNAPSHOT.jar started by natalia in /home/natalia/Archivos/Desarrollo Backend III/Semana 3/bancoxyzbatch/Semana 3)
+2026-08-30T21:51:22.467-04:00  INFO 180918 --- [bancoxyzbatch] [           main] c.d.b.BancoxyzbatchApplication           : No active profile set, falling back to 1 default profile: "default"
+2026-08-30T21:51:23.079-04:00  INFO 180918 --- [bancoxyzbatch] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-08-30T21:51:23.133-04:00  INFO 180918 --- [bancoxyzbatch] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 47 ms. Found 5 JPA repository interfaces.
+2026-08-30T21:51:23.635-04:00  INFO 180918 --- [bancoxyzbatch] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-08-30T21:51:23.861-04:00  INFO 180918 --- [bancoxyzbatch] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@3c3820bb
+2026-08-30T21:51:23.863-04:00  INFO 180918 --- [bancoxyzbatch] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-08-30T21:51:24.023-04:00  INFO 180918 --- [bancoxyzbatch] [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-08-30T21:51:24.088-04:00  INFO 180918 --- [bancoxyzbatch] [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.4.5.Final
+2026-08-30T21:51:24.536-04:00  INFO 180918 --- [bancoxyzbatch] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-08-30T21:51:24.628-04:00  INFO 180918 --- [bancoxyzbatch] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/bancoxyz_bench]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 17.11
+	Default catalog/schema: bancoxyz_bench/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-08-30T21:51:25.405-04:00  INFO 180918 --- [bancoxyzbatch] [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-08-30T21:51:25.475-04:00  WARN 180918 --- [bancoxyzbatch] [           main] org.hibernate.orm.jdbc.warn              : HHH000247: ErrorCode: 0, SQLState: 00000
+2026-08-30T21:51:25.475-04:00  WARN 180918 --- [bancoxyzbatch] [           main] org.hibernate.orm.jdbc.warn              : constraint "uk_estado_cuenta_anio" of relation "estados_cuenta_anuales" does not exist, skipping
+2026-08-30T21:51:25.481-04:00  INFO 180918 --- [bancoxyzbatch] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-08-30T21:51:25.609-04:00  INFO 180918 --- [bancoxyzbatch] [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+[BATCH-CONFIG] retryMaxRetries=3 | retryDelayMs=500
+[BATCH-CONFIG] threads=3 | queueCapacity=20 | daemon=true
+2026-08-30T21:51:26.644-04:00  INFO 180918 --- [bancoxyzbatch] [           main] c.d.b.BancoxyzbatchApplication           : Started BancoxyzbatchApplication in 4.549 seconds (process running for 5.039)
+[BATCH] Ejecutando Job: transaccionJob
+[BATCH] run.id: 4101
+[BATCH-PERF] configuración | mode=PARALELO | threads=3 | chunkSize=25 | skipLimit=750 | retryMaxRetries=3
+2026-08-30T21:51:26.761-04:00  INFO 180918 --- [bancoxyzbatch] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=transaccionJob]] launched with the following parameters: [{JobParameter{name='run.id', value=4101, type=class java.lang.Long, identifying=true}}]
+2026-08-30T21:51:26.796-04:00  INFO 180918 --- [bancoxyzbatch] [           main] o.s.batch.core.step.AbstractStep         : Executing step: [transaccionStep]
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=1
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=2
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=3
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=5
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=4
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=6
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=7
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=8
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=9
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=10
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=11
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=12
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=13
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=14
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=15
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=16
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=18
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=17
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=19
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=20
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=21
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=22
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=23
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=24
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=25
+[BATCH-WRITER] hilo=main | chunk=13 | jobInstance=1 | invocacion=1
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=26
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=27
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=28
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=29
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=30
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=31
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=33
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=32
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=34
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=35
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=36
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=37
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=38
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=39
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=40
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=41
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=42
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=43
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=44
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=45
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=46
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=47
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=49
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=48
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=50
+[BATCH-WRITER] hilo=main | chunk=14 | jobInstance=1 | invocacion=2
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=51
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=52
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=53
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=54
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=55
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=56
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=57
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=58
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=59
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=60
+2026-08-30T21:51:27.088-04:00 ERROR 180918 --- [bancoxyzbatch] [           main] o.s.b.core.step.item.ChunkOrientedStep   : Rolling back chunk transaction
+
+org.springframework.core.task.TaskRejectedException: ExecutorService in active state did not accept task: org.springframework.batch.core.step.item.ChunkOrientedStep$$Lambda/0x00007fb7a0a15d48@a9339e5
+	at org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor.submit(ThreadPoolTaskExecutor.java:410) ~[spring-context-7.0.9.jar!/:7.0.9]
+	at org.springframework.batch.core.step.item.ChunkOrientedStep.processChunkConcurrently(ChunkOrientedStep.java:447) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at org.springframework.batch.core.step.item.ChunkOrientedStep.processNextChunk(ChunkOrientedStep.java:403) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at org.springframework.batch.core.step.item.ChunkOrientedStep.lambda$doExecute$0(ChunkOrientedStep.java:377) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at org.springframework.transaction.support.TransactionOperations.lambda$executeWithoutResult$0(TransactionOperations.java:68) ~[spring-tx-7.0.9.jar!/:7.0.9]
+	at org.springframework.transaction.support.TransactionTemplate.execute(TransactionTemplate.java:137) ~[spring-tx-7.0.9.jar!/:7.0.9]
+	at org.springframework.transaction.support.TransactionOperations.executeWithoutResult(TransactionOperations.java:67) ~[spring-tx-7.0.9.jar!/:7.0.9]
+	at org.springframework.batch.core.step.item.ChunkOrientedStep.doExecute(ChunkOrientedStep.java:372) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at org.springframework.batch.core.step.AbstractStep.execute(AbstractStep.java:251) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at org.springframework.batch.core.job.SimpleStepHandler.handleStep(SimpleStepHandler.java:128) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at org.springframework.batch.core.job.AbstractJob.handleStep(AbstractJob.java:397) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at org.springframework.batch.core.job.SimpleJob.doExecute(SimpleJob.java:129) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at org.springframework.batch.core.job.AbstractJob.execute(AbstractJob.java:293) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at org.springframework.batch.core.launch.support.TaskExecutorJobLauncher$1.run(TaskExecutorJobLauncher.java:220) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at org.springframework.core.task.SyncTaskExecutor.execute(SyncTaskExecutor.java:88) ~[spring-core-7.0.9.jar!/:7.0.9]
+	at org.springframework.batch.core.launch.support.TaskExecutorJobLauncher.launchJobExecution(TaskExecutorJobLauncher.java:211) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at org.springframework.batch.core.launch.support.TaskExecutorJobLauncher.run(TaskExecutorJobLauncher.java:109) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at org.springframework.batch.core.launch.support.SimpleJobOperator.start(SimpleJobOperator.java:201) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at org.springframework.batch.core.launch.support.TaskExecutorJobOperator.start(TaskExecutorJobOperator.java:117) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:359) ~[spring-aop-7.0.9.jar!/:7.0.9]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:190) ~[spring-aop-7.0.9.jar!/:7.0.9]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:158) ~[spring-aop-7.0.9.jar!/:7.0.9]
+	at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:133) ~[spring-tx-7.0.9.jar!/:7.0.9]
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:371) ~[spring-tx-7.0.9.jar!/:7.0.9]
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:130) ~[spring-tx-7.0.9.jar!/:7.0.9]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179) ~[spring-aop-7.0.9.jar!/:7.0.9]
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:222) ~[spring-aop-7.0.9.jar!/:7.0.9]
+	at jdk.proxy2/jdk.proxy2.$Proxy123.start(Unknown Source) ~[na:na]
+	at cl.duoc.bancoxyzbatch.config.ControlledJobRunner.run(ControlledJobRunner.java:213) ~[!/:0.0.1-SNAPSHOT]
+	at org.springframework.boot.SpringApplication.lambda$callRunner$0(SpringApplication.java:788) ~[spring-boot-4.1.1.jar!/:4.1.1]
+	at org.springframework.util.function.ThrowingConsumer$1.acceptWithException(ThrowingConsumer.java:82) ~[spring-core-7.0.9.jar!/:7.0.9]
+	at org.springframework.util.function.ThrowingConsumer.accept(ThrowingConsumer.java:60) ~[spring-core-7.0.9.jar!/:7.0.9]
+	at org.springframework.util.function.ThrowingConsumer$1.accept(ThrowingConsumer.java:86) ~[spring-core-7.0.9.jar!/:7.0.9]
+	at org.springframework.boot.SpringApplication.callRunner(SpringApplication.java:800) ~[spring-boot-4.1.1.jar!/:4.1.1]
+	at org.springframework.boot.SpringApplication.callRunner(SpringApplication.java:788) ~[spring-boot-4.1.1.jar!/:4.1.1]
+	at org.springframework.boot.SpringApplication.lambda$callRunners$0(SpringApplication.java:776) ~[spring-boot-4.1.1.jar!/:4.1.1]
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184) ~[na:na]
+	at java.base/java.util.stream.SortedOps$SizedRefSortingSink.end(SortedOps.java:357) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:510) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499) ~[na:na]
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151) ~[na:na]
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234) ~[na:na]
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596) ~[na:na]
+	at org.springframework.boot.SpringApplication.callRunners(SpringApplication.java:776) ~[spring-boot-4.1.1.jar!/:4.1.1]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:328) ~[spring-boot-4.1.1.jar!/:4.1.1]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1365) ~[spring-boot-4.1.1.jar!/:4.1.1]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1354) ~[spring-boot-4.1.1.jar!/:4.1.1]
+	at cl.duoc.bancoxyzbatch.BancoxyzbatchApplication.main(BancoxyzbatchApplication.java:10) ~[!/:0.0.1-SNAPSHOT]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.springframework.boot.loader.launch.Launcher.launch(Launcher.java:106) ~[bancoxyzbatch-0.0.1-SNAPSHOT.jar:0.0.1-SNAPSHOT]
+	at org.springframework.boot.loader.launch.Launcher.launch(Launcher.java:64) ~[bancoxyzbatch-0.0.1-SNAPSHOT.jar:0.0.1-SNAPSHOT]
+	at org.springframework.boot.loader.launch.JarLauncher.main(JarLauncher.java:40) ~[bancoxyzbatch-0.0.1-SNAPSHOT.jar:0.0.1-SNAPSHOT]
+Caused by: java.util.concurrent.RejectedExecutionException: Task java.util.concurrent.FutureTask@687313e1[Not completed, task = org.springframework.batch.core.step.item.ChunkOrientedStep$$Lambda/0x00007fb7a0a15d48@a9339e5] rejected from org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor$1@794eb6e7[Running, pool size = 3, active threads = 3, queued tasks = 20, completed tasks = 51]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$AbortPolicy.rejectedExecution(ThreadPoolExecutor.java:2081) ~[na:na]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.reject(ThreadPoolExecutor.java:841) ~[na:na]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.execute(ThreadPoolExecutor.java:1376) ~[na:na]
+	at org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor$1.execute(ThreadPoolTaskExecutor.java:292) ~[spring-context-7.0.9.jar!/:7.0.9]
+	at java.base/java.util.concurrent.AbstractExecutorService.submit(AbstractExecutorService.java:145) ~[na:na]
+	at org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor.submit(ThreadPoolTaskExecutor.java:407) ~[spring-context-7.0.9.jar!/:7.0.9]
+	... 55 common frames omitted
+
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=61
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=62
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=63
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=64
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=65
+2026-08-30T21:51:27.093-04:00 ERROR 180918 --- [bancoxyzbatch] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step transaccionStep in job transaccionJob
+
+org.springframework.batch.core.step.FatalStepExecutionException: Unable to process chunk
+	at org.springframework.batch.core.step.item.ChunkOrientedStep.processChunkConcurrently(ChunkOrientedStep.java:490) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at org.springframework.batch.core.step.item.ChunkOrientedStep.processNextChunk(ChunkOrientedStep.java:403) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at org.springframework.batch.core.step.item.ChunkOrientedStep.lambda$doExecute$0(ChunkOrientedStep.java:377) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at org.springframework.transaction.support.TransactionOperations.lambda$executeWithoutResult$0(TransactionOperations.java:68) ~[spring-tx-7.0.9.jar!/:7.0.9]
+	at org.springframework.transaction.support.TransactionTemplate.execute(TransactionTemplate.java:137) ~[spring-tx-7.0.9.jar!/:7.0.9]
+	at org.springframework.transaction.support.TransactionOperations.executeWithoutResult(TransactionOperations.java:67) ~[spring-tx-7.0.9.jar!/:7.0.9]
+	at org.springframework.batch.core.step.item.ChunkOrientedStep.doExecute(ChunkOrientedStep.java:372) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at org.springframework.batch.core.step.AbstractStep.execute(AbstractStep.java:251) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at org.springframework.batch.core.job.SimpleStepHandler.handleStep(SimpleStepHandler.java:128) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at org.springframework.batch.core.job.AbstractJob.handleStep(AbstractJob.java:397) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at org.springframework.batch.core.job.SimpleJob.doExecute(SimpleJob.java:129) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at org.springframework.batch.core.job.AbstractJob.execute(AbstractJob.java:293) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at org.springframework.batch.core.launch.support.TaskExecutorJobLauncher$1.run(TaskExecutorJobLauncher.java:220) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at org.springframework.core.task.SyncTaskExecutor.execute(SyncTaskExecutor.java:88) ~[spring-core-7.0.9.jar!/:7.0.9]
+	at org.springframework.batch.core.launch.support.TaskExecutorJobLauncher.launchJobExecution(TaskExecutorJobLauncher.java:211) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at org.springframework.batch.core.launch.support.TaskExecutorJobLauncher.run(TaskExecutorJobLauncher.java:109) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at org.springframework.batch.core.launch.support.SimpleJobOperator.start(SimpleJobOperator.java:201) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at org.springframework.batch.core.launch.support.TaskExecutorJobOperator.start(TaskExecutorJobOperator.java:117) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:359) ~[spring-aop-7.0.9.jar!/:7.0.9]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:190) ~[spring-aop-7.0.9.jar!/:7.0.9]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:158) ~[spring-aop-7.0.9.jar!/:7.0.9]
+	at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:133) ~[spring-tx-7.0.9.jar!/:7.0.9]
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:371) ~[spring-tx-7.0.9.jar!/:7.0.9]
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:130) ~[spring-tx-7.0.9.jar!/:7.0.9]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179) ~[spring-aop-7.0.9.jar!/:7.0.9]
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:222) ~[spring-aop-7.0.9.jar!/:7.0.9]
+	at jdk.proxy2/jdk.proxy2.$Proxy123.start(Unknown Source) ~[na:na]
+	at cl.duoc.bancoxyzbatch.config.ControlledJobRunner.run(ControlledJobRunner.java:213) ~[!/:0.0.1-SNAPSHOT]
+	at org.springframework.boot.SpringApplication.lambda$callRunner$0(SpringApplication.java:788) ~[spring-boot-4.1.1.jar!/:4.1.1]
+	at org.springframework.util.function.ThrowingConsumer$1.acceptWithException(ThrowingConsumer.java:82) ~[spring-core-7.0.9.jar!/:7.0.9]
+	at org.springframework.util.function.ThrowingConsumer.accept(ThrowingConsumer.java:60) ~[spring-core-7.0.9.jar!/:7.0.9]
+	at org.springframework.util.function.ThrowingConsumer$1.accept(ThrowingConsumer.java:86) ~[spring-core-7.0.9.jar!/:7.0.9]
+	at org.springframework.boot.SpringApplication.callRunner(SpringApplication.java:800) ~[spring-boot-4.1.1.jar!/:4.1.1]
+	at org.springframework.boot.SpringApplication.callRunner(SpringApplication.java:788) ~[spring-boot-4.1.1.jar!/:4.1.1]
+	at org.springframework.boot.SpringApplication.lambda$callRunners$0(SpringApplication.java:776) ~[spring-boot-4.1.1.jar!/:4.1.1]
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184) ~[na:na]
+	at java.base/java.util.stream.SortedOps$SizedRefSortingSink.end(SortedOps.java:357) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:510) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499) ~[na:na]
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151) ~[na:na]
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234) ~[na:na]
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596) ~[na:na]
+	at org.springframework.boot.SpringApplication.callRunners(SpringApplication.java:776) ~[spring-boot-4.1.1.jar!/:4.1.1]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:328) ~[spring-boot-4.1.1.jar!/:4.1.1]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1365) ~[spring-boot-4.1.1.jar!/:4.1.1]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1354) ~[spring-boot-4.1.1.jar!/:4.1.1]
+	at cl.duoc.bancoxyzbatch.BancoxyzbatchApplication.main(BancoxyzbatchApplication.java:10) ~[!/:0.0.1-SNAPSHOT]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.springframework.boot.loader.launch.Launcher.launch(Launcher.java:106) ~[bancoxyzbatch-0.0.1-SNAPSHOT.jar:0.0.1-SNAPSHOT]
+	at org.springframework.boot.loader.launch.Launcher.launch(Launcher.java:64) ~[bancoxyzbatch-0.0.1-SNAPSHOT.jar:0.0.1-SNAPSHOT]
+	at org.springframework.boot.loader.launch.JarLauncher.main(JarLauncher.java:40) ~[bancoxyzbatch-0.0.1-SNAPSHOT.jar:0.0.1-SNAPSHOT]
+Caused by: org.springframework.core.task.TaskRejectedException: ExecutorService in active state did not accept task: org.springframework.batch.core.step.item.ChunkOrientedStep$$Lambda/0x00007fb7a0a15d48@a9339e5
+	at org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor.submit(ThreadPoolTaskExecutor.java:410) ~[spring-context-7.0.9.jar!/:7.0.9]
+	at org.springframework.batch.core.step.item.ChunkOrientedStep.processChunkConcurrently(ChunkOrientedStep.java:447) ~[spring-batch-core-6.0.5.jar!/:6.0.5]
+	... 54 common frames omitted
+Caused by: java.util.concurrent.RejectedExecutionException: Task java.util.concurrent.FutureTask@687313e1[Not completed, task = org.springframework.batch.core.step.item.ChunkOrientedStep$$Lambda/0x00007fb7a0a15d48@a9339e5] rejected from org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor$1@794eb6e7[Running, pool size = 3, active threads = 3, queued tasks = 20, completed tasks = 51]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$AbortPolicy.rejectedExecution(ThreadPoolExecutor.java:2081) ~[na:na]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.reject(ThreadPoolExecutor.java:841) ~[na:na]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.execute(ThreadPoolExecutor.java:1376) ~[na:na]
+	at org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor$1.execute(ThreadPoolTaskExecutor.java:292) ~[spring-context-7.0.9.jar!/:7.0.9]
+	at java.base/java.util.concurrent.AbstractExecutorService.submit(AbstractExecutorService.java:145) ~[na:na]
+	at org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor.submit(ThreadPoolTaskExecutor.java:407) ~[spring-context-7.0.9.jar!/:7.0.9]
+	... 55 common frames omitted
+
+2026-08-30T21:51:27.095-04:00  INFO 180918 --- [bancoxyzbatch] [           main] o.s.batch.core.step.AbstractStep         : Step: [transaccionStep] executed in 304ms
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=66
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=67
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=68
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=69
+[BATCH-PROCESSOR] hilo=batch-thread-2 | transaccion=70
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=71
+[BATCH-PROCESSOR] hilo=batch-thread-1 | transaccion=72
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=73
+[BATCH-PROCESSOR] hilo=batch-thread-3 | transaccion=74
+2026-08-30T21:51:27.140-04:00  INFO 180918 --- [bancoxyzbatch] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=transaccionJob]] completed with the following parameters: [{JobParameter{name='run.id', value=4101, type=class java.lang.Long, identifying=true}}] and the following status: [FAILED] in 361ms
+[BATCH] JobExecution ID: 1
+[BATCH] Estado final: FAILED
+[BATCH] Exit status: exitCode=FAILED;exitDescription=org.springframework.batch.core.step.FatalStepExecutionException: Unable to process chunk
+	at org.springframework.batch.core.step.item.ChunkOrientedStep.processChunkConcurrently(ChunkOrientedStep.java:490)
+	at org.springframework.batch.core.step.item.ChunkOrientedStep.processNextChunk(ChunkOrientedStep.java:403)
+	at org.springframework.batch.core.step.item.ChunkOrientedStep.lambda$doExecute$0(ChunkOrientedStep.java:377)
+	at org.springframework.transaction.support.TransactionOperations.lambda$executeWithoutResult$0(TransactionOperations.java:68)
+	at org.springframework.transaction.support.TransactionTemplate.execute(TransactionTemplate.java:137)
+	at org.springframework.transaction.support.TransactionOperations.executeWithoutResult(TransactionOperations.java:67)
+	at org.springframework.batch.core.step.item.ChunkOrientedStep.doExecute(ChunkOrientedStep.java:372)
+	at org.springframework.batch.core.step.AbstractStep.execute(AbstractStep.java:251)
+	at org.springframework.batch.core.job.SimpleStepHandler.handleStep(SimpleStepHandler.java:128)
+	at org.springframework.batch.core.job.AbstractJob.handleStep(AbstractJob.java:397)
+	at org.springframework.batch.core.job.SimpleJob.doExecute(SimpleJob.java:129)
+	at org.springframework.batch.core.job.AbstractJob.execute(AbstractJob.java:293)
+	at org.springframework.batch.core.launch.support.TaskExecutorJobLauncher$1.run(TaskExecutorJobLauncher.java:220)
+	at org.springframework.core.task.SyncTaskExecutor.execute(SyncTaskExecutor.java:88)
+	at org.springframework.batch.core.launch.support.TaskExecutorJobLauncher.launchJobExecution(TaskExecutorJobLauncher.java:211)
+	at org.springframework.batch.core.launch.support.TaskExecutorJobLauncher.run(TaskExecutorJobLauncher.java:109)
+	at org.springframework.batch.core.launch.support.SimpleJobOperator.start(SimpleJobOperator.java:201)
+	at org.springframework.batch.core.launch.support.TaskExecutorJobOperator.start(TaskExecutorJobOperator.java:117)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:359)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:190)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:158)
+	at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:133)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:371)
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:130)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:222)
+	at jdk.proxy2/jdk.proxy2.$Proxy123.start(Unknown Source)
+	at cl.duoc.bancoxyzbatch.config.ControlledJobRunner.run(ControlledJobRunner.java:213)
+	at org.springframework.boot.SpringApplication.lambda$callRunner$0(SpringApplication.java:788)
+	at org.springframework.util.function.ThrowingConsumer$1.acceptWithException(ThrowingConsumer.java:82)
+	at org.springframework.util.function.ThrowingConsumer.accept(ThrowingConsumer.java:60)
+	at org.springframework.util.function.ThrowingConsumer$1.accept(ThrowingConsumer.java:86)
+	at org.springframework.boot.SpringApplication.callRunner(SpringApplication.java:800)
+	at org.springframework.boot.SpringApplication.callRunner(SpringApplication.java:788)
+	at org.springframework.boot.SpringApplication.lambda$callRunners$0(SpringApplication.java:776)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.SortedOps$SizedRefSortingSink.end(SortedOps.java:357)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:510)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at org.springframework.boot.SpringApplication.callRunners(SpringApplication.java:776)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:328)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1365)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1354)
+	at cl.duoc.bancoxyzbatch.BancoxyzbatchApplication.main(BancoxyzbatchApplication.java:10)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.boot.loader.launch.Launcher.launch(Launcher.java:106)
+	at org.springframework.boot.loader.launch.Launcher.launch(Launcher.java:64)
+	at org.springframework.boot.loader.launch.JarLauncher.main(JarLauncher.java:40)
+Caused by: org.springframework.core.task.TaskRejectedException: ExecutorService in active state did not accept task: org.springframework.batch.core.step.item.ChunkOrientedStep$$Lambda/0x00007fb7a0a15d48@a9339e5
+	at org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor.submit(ThreadPoolTaskExecutor.java:410)
+	at org.springframework.batch.core.step.item.ChunkOrientedStep.processChunkConcurrently(ChunkOrientedStep.java:447)
+	... 54 more
+Caused by: java.util.concurrent.RejectedExecutionException: Task java.util.concurrent.FutureTask@687313e1[Not completed, task = org.springframework.batch.core.step.item.ChunkOrientedStep$$Lambda/0x00007fb7a0a15d48@a9339e5] rejected from org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor$1@794eb6e7[Running, pool size = 3, active threads = 3, queued tasks = 20, completed tasks = 51]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$AbortPolicy.rejectedExecution(ThreadPoolExecutor.java:2081)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.reject(ThreadPoolExecutor.java:841)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.execute(ThreadPoolExecutor.java:1376)
+	at org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor$1.execute(ThreadPoolTaskExecutor.java:292)
+	at java.base/java.util.concurrent.AbstractExecutorService.submit(AbstractExecutorService.java:145)
+	at org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor.submit(ThreadPoolTaskExecutor.java:407)
+	... 55 more
+;exitException=null
+[BATCH-PERF] job=transaccionJob | mode=PARALELO | threads=3 | chunkSize=25 | duraciónMs=489.639
+2026-08-30T21:51:27.148-04:00  INFO 180918 --- [bancoxyzbatch] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-08-30T21:51:27.150-04:00  INFO 180918 --- [bancoxyzbatch] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-08-30T21:51:27.152-04:00  INFO 180918 --- [bancoxyzbatch] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.

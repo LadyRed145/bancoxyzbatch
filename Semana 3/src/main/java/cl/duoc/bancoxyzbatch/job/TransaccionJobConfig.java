@@ -1,5 +1,6 @@
 package cl.duoc.bancoxyzbatch.job;
 
+import cl.duoc.bancoxyzbatch.exception.ReglaNegocioException;
 import cl.duoc.bancoxyzbatch.listener.RegistroRechazadoSkipListener;
 import cl.duoc.bancoxyzbatch.model.Transaccion;
 import cl.duoc.bancoxyzbatch.model.TransaccionProcesada;
@@ -27,7 +28,14 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * Defino el flujo completo del procesamiento de transacciones.
- * El Step principal incorpora paralelismo, retry y tolerancia a fallos.
+ *
+ * El Step principal incorpora:
+ *
+ * - procesamiento paralelo;
+ * - retry ante fallos transitorios;
+ * - tolerancia a errores de lectura;
+ * - tolerancia a errores de reglas de negocio;
+ * - registro de elementos rechazados.
  */
 @Configuration
 public class TransaccionJobConfig {
@@ -54,11 +62,20 @@ public class TransaccionJobConfig {
             @Qualifier("batchRetryPolicy")
             RetryPolicy batchRetryPolicy,
 
-            @Value("${app.batch.chunk-size:5}")
-            int chunkSize
+            @Value("${app.batch.chunk-size:10}")
+            int chunkSize,
+
+            @Value("${app.batch.skip-limit:750}")
+            int skipLimit
     ) {
 
-        validarChunkSize(chunkSize);
+        validarChunkSize(
+                chunkSize
+        );
+
+        validarSkipLimit(
+                skipLimit
+        );
 
         return new StepBuilder(
                 "transaccionStep",
@@ -84,25 +101,42 @@ public class TransaccionJobConfig {
                 )
 
                 /*
-                 * Reintento fallos transitorios y omito únicamente
-                 * errores controlados durante la lectura del CSV.
+                 * Activo retry y tolerancia a fallos.
                  */
                 .faultTolerant()
 
+                /*
+                 * Reintento únicamente las excepciones
+                 * clasificadas por la política de retry.
+                 */
                 .retryPolicy(
                         batchRetryPolicy
                 )
 
+                /*
+                 * Los errores físicos de parsing y las
+                 * reglas de negocio inválidas no detienen
+                 * el procesamiento completo del archivo.
+                 *
+                 * Ambos casos son enviados posteriormente
+                 * al SkipListener para mantener trazabilidad.
+                 */
                 .skip(
-                        FlatFileParseException.class
+                        FlatFileParseException.class,
+                        ReglaNegocioException.class
                 )
 
-                .skipLimit(10)
+                .skipLimit(
+                        skipLimit
+                )
 
                 .skipListener(
                         registroRechazadoSkipListener
                 )
 
+                /*
+                 * Este Job conserva procesamiento paralelo.
+                 */
                 .taskExecutor(
                         batchTaskExecutor
                 )
@@ -120,7 +154,9 @@ public class TransaccionJobConfig {
                 "transaccionDuplicadosStep",
                 jobRepository
         )
-                .tasklet(tasklet)
+                .tasklet(
+                        tasklet
+                )
                 .build();
     }
 
@@ -134,7 +170,9 @@ public class TransaccionJobConfig {
                 "transaccionReconciliationStep",
                 jobRepository
         )
-                .tasklet(tasklet)
+                .tasklet(
+                        tasklet
+                )
                 .build();
     }
 
@@ -148,7 +186,9 @@ public class TransaccionJobConfig {
                 "resumenTransaccionDiariaStep",
                 jobRepository
         )
-                .tasklet(tasklet)
+                .tasklet(
+                        tasklet
+                )
                 .build();
     }
 
@@ -168,15 +208,19 @@ public class TransaccionJobConfig {
                 .start(
                         transaccionStep
                 )
+
                 .next(
                         transaccionDuplicadosStep
                 )
+
                 .next(
                         transaccionReconciliationStep
                 )
+
                 .next(
                         resumenTransaccionDiariaStep
                 )
+
                 .build();
     }
 
@@ -191,6 +235,22 @@ public class TransaccionJobConfig {
 
             throw new IllegalArgumentException(
                     "app.batch.chunk-size debe ser mayor o igual a 1"
+            );
+        }
+    }
+
+    /**
+     * El límite de skips debe permitir como mínimo
+     * un registro rechazado.
+     */
+    private void validarSkipLimit(
+            int skipLimit
+    ) {
+
+        if (skipLimit < 1) {
+
+            throw new IllegalArgumentException(
+                    "app.batch.skip-limit debe ser mayor o igual a 1"
             );
         }
     }

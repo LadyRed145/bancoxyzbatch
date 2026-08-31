@@ -14,7 +14,13 @@ import java.util.Locale;
 
 /**
  * Controlo qué Job se ejecuta y registro sus métricas principales.
- * Esto permite repetir las pruebas de rendimiento de forma controlada.
+ *
+ * También distingo entre Jobs paralelos y secuenciales para que
+ * las métricas impresas representen los hilos realmente utilizados.
+ *
+ * La configuración paralela por defecto utiliza 3 hilos y un
+ * chunk-size de 10, valores seleccionados mediante benchmarks
+ * controlados sobre el dataset actual.
  */
 @Component
 public class ControlledJobRunner
@@ -35,15 +41,19 @@ public class ControlledJobRunner
     }
 
     @Override
-    public void run(ApplicationArguments args)
-            throws Exception {
+    public void run(
+            ApplicationArguments args
+    ) throws Exception {
 
         String requestedJob =
                 environment.getProperty(
                         "app.batch.job"
                 );
 
-        // Si no se solicita un Job, la aplicación inicia sin ejecutar procesos.
+        /*
+         * Si no se solicita un Job,
+         * la aplicación inicia sin ejecutar procesos.
+         */
         if (requestedJob == null
                 || requestedJob.isBlank()) {
 
@@ -86,20 +96,23 @@ public class ControlledJobRunner
             );
         }
 
-        Job job = jobs.stream()
-                .filter(candidate ->
-                        candidate.getName()
-                                .equals(requestedJob)
-                )
-                .findFirst()
-                .orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "Job no encontrado: "
-                                        + requestedJob
-                                        + ". Disponibles: "
-                                        + obtenerJobsDisponibles()
+        Job job =
+                jobs.stream()
+                        .filter(candidate ->
+                                candidate.getName()
+                                        .equals(
+                                                requestedJob
+                                        )
                         )
-                );
+                        .findFirst()
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Job no encontrado: "
+                                                + requestedJob
+                                                + ". Disponibles: "
+                                                + obtenerJobsDisponibles()
+                                )
+                        );
 
         /*
          * El run.id genera una JobInstance distinta
@@ -113,18 +126,51 @@ public class ControlledJobRunner
                         )
                         .toJobParameters();
 
-        int threads =
+        /*
+         * Cantidad global de hilos configurados.
+         *
+         * El valor por defecto de 3 corresponde al
+         * resultado óptimo de los benchmarks realizados.
+         */
+        int configuredThreads =
                 environment.getProperty(
                         "app.batch.threads",
                         Integer.class,
                         3
                 );
 
+        /*
+         * cuentaInteresJob se ejecuta intencionalmente
+         * de forma secuencial debido a la existencia de
+         * múltiples registros con el mismo cuenta_id.
+         *
+         * Los demás Jobs mantienen procesamiento paralelo.
+         */
+        boolean parallelExecution =
+                !"cuentaInteresJob".equals(
+                        job.getName()
+                );
+
+        int effectiveThreads =
+                parallelExecution
+                        ? configuredThreads
+                        : 1;
+
+        String executionMode =
+                parallelExecution
+                        ? "PARALELO"
+                        : "SECUENCIAL";
+
+        /*
+         * El chunk-size por defecto de 10 fue seleccionado
+         * mediante pruebas comparativas de rendimiento
+         * y estabilidad.
+         */
         int chunkSize =
                 environment.getProperty(
                         "app.batch.chunk-size",
                         Integer.class,
-                        5
+                        10
                 );
 
         long retryMaxRetries =
@@ -132,6 +178,13 @@ public class ControlledJobRunner
                         "app.batch.retry-max-retries",
                         Long.class,
                         3L
+                );
+
+        int skipLimit =
+                environment.getProperty(
+                        "app.batch.skip-limit",
+                        Integer.class,
+                        750
                 );
 
         System.out.println(
@@ -146,15 +199,22 @@ public class ControlledJobRunner
 
         System.out.println(
                 "[BATCH-PERF] configuración"
+                        + " | mode="
+                        + executionMode
                         + " | threads="
-                        + threads
+                        + effectiveThreads
                         + " | chunkSize="
                         + chunkSize
+                        + " | skipLimit="
+                        + skipLimit
                         + " | retryMaxRetries="
                         + retryMaxRetries
         );
 
-        // Mido la duración total para comparar configuraciones.
+        /*
+         * Mido la duración total del Job para
+         * comparar posteriormente distintas configuraciones.
+         */
         long inicioNs =
                 System.nanoTime();
 
@@ -189,8 +249,10 @@ public class ControlledJobRunner
         System.out.println(
                 "[BATCH-PERF] job="
                         + job.getName()
+                        + " | mode="
+                        + executionMode
                         + " | threads="
-                        + threads
+                        + effectiveThreads
                         + " | chunkSize="
                         + chunkSize
                         + " | duraciónMs="
@@ -202,13 +264,18 @@ public class ControlledJobRunner
         );
     }
 
+    /**
+     * Obtengo los nombres de los Jobs registrados
+     * para generar mensajes de error más claros.
+     */
     private String obtenerJobsDisponibles() {
 
         return jobs.stream()
-                .map(Job::getName)
+                .map(candidate ->
+                        candidate.getName()
+                )
                 .sorted()
                 .toList()
                 .toString();
     }
 }
-

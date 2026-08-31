@@ -1,14 +1,28 @@
 # Banco XYZ Batch
 
-Proyecto académico de modernización de procesos batch bancarios desarrollado con **Spring Boot**, **Spring Batch** y **PostgreSQL** para la asignatura **Desarrollo Backend III**.
+Proyecto de migración y modernización de procesos batch bancarios desarrollado con **Spring Boot**, **Spring Batch** y **PostgreSQL**.
 
-La solución procesa archivos CSV provenientes de procesos legacy del Banco XYZ mediante tres Jobs principales:
+El sistema procesa archivos CSV provenientes de procesos legacy del Banco XYZ y ejecuta tres procesos principales:
 
 - Procesamiento diario de transacciones.
 - Cálculo mensual de intereses.
 - Generación de estados de cuenta anuales.
 
-Durante la Semana 3 se incorporaron mecanismos de **procesamiento paralelo, configuración dinámica de chunks, tolerancia a fallos, retry, trazabilidad, persistencia de metadatos y pruebas comparativas de rendimiento**.
+La solución incorpora:
+
+- Lectura de archivos CSV.
+- Transformación y normalización de datos.
+- Validaciones mediante `ItemProcessor`.
+- Persistencia relacional en PostgreSQL.
+- Manejo controlado de registros inválidos.
+- Fault tolerance mediante `skip`.
+- Política de reintentos mediante `retry`.
+- Registro persistente de errores.
+- Reconciliación e idempotencia.
+- Procesamiento paralelo mediante `TaskExecutor`.
+- Medición de rendimiento.
+- Benchmarks comparativos de hilos y tamaños de chunk.
+- Persistencia JDBC de metadata de Spring Batch.
 
 ---
 
@@ -20,115 +34,117 @@ Durante la Semana 3 se incorporaron mecanismos de **procesamiento paralelo, conf
 - Spring Data JPA
 - Hibernate
 - PostgreSQL 17
-- Maven
-- Docker / Docker Compose
+- Maven Wrapper
+- Docker
+- Docker Compose
 - Lombok
 - Jakarta Validation
-- Git / GitHub
+- Git
+- GitHub
 
 ---
 
-# Arquitectura general
+## Arquitectura general
 
-Cada proceso principal utiliza el modelo de procesamiento por chunks de Spring Batch:
+Los procesos principales siguen el modelo estándar de Spring Batch:
 
 ```text
 CSV
- ↓
+ │
+ ▼
 ItemReader
- ↓
+ │
+ ▼
 ItemProcessor
- ↓
+ │
+ ▼
 ItemWriter
- ↓
+ │
+ ▼
 PostgreSQL
 ```
 
-La solución incorpora además:
+Los Jobs incorporan además Steps complementarios para:
 
-```text
-JobRepository JDBC
-        │
-        ├── Persistencia de ejecuciones
-        ├── Metadata de Jobs
-        └── Metadata de Steps
+- Reconciliación de datos.
+- Detección de duplicados.
+- Generación de resúmenes.
+- Persistencia de registros rechazados.
+- Mantenimiento del estado activo/inactivo.
+- Trazabilidad mediante `JobInstance`.
 
-ThreadPoolTaskExecutor
-        │
-        └── Procesamiento paralelo configurable
-
-Fault Tolerance
-        │
-        ├── Retry
-        ├── Skip
-        └── Registro de errores
-
-Tasklets complementarios
-        │
-        ├── Reconciliación
-        ├── Detección de duplicados
-        └── Generación de resúmenes
-```
-
-Los Readers utilizados en procesamiento concurrente se encuentran sincronizados mediante `SynchronizedItemStreamReader`, evitando accesos simultáneos inseguros al archivo de entrada.
+La metadata de ejecución de Spring Batch se persiste mediante un `JobRepository` JDBC en PostgreSQL.
 
 ---
 
 # Estructura principal del proyecto
 
 ```text
-src/main/java/cl/duoc/bancoxyzbatch
+src/main/java/cl/duoc/bancoxyzbatch/
 │
-├── config
-│   ├── BatchInfrastructureConfig
-│   ├── BatchRetryConfig
-│   ├── BatchRunContext
-│   ├── BatchTaskExecutorConfig
-│   ├── ControlledJobRunner
-│   ├── CuentaInteresReaderConfig
-│   ├── MovimientoAnualReaderConfig
-│   └── TransaccionReaderConfig
+├── BancoxyzbatchApplication.java
 │
-├── exception
-│   └── ReglaNegocioException
+├── config/
+│   ├── BatchInfrastructureConfig.java
+│   ├── BatchRetryConfig.java
+│   ├── BatchRunContext.java
+│   ├── BatchTaskExecutorConfig.java
+│   ├── ControlledJobRunner.java
+│   ├── CuentaInteresReaderConfig.java
+│   ├── MovimientoAnualReaderConfig.java
+│   └── TransaccionReaderConfig.java
 │
-├── job
-│   ├── CuentaInteresJobConfig
-│   ├── EstadoCuentaAnualJobConfig
-│   └── TransaccionJobConfig
+├── exception/
+│   └── ReglaNegocioException.java
 │
-├── listener
-│   └── RegistroRechazadoSkipListener
+├── job/
+│   ├── CuentaInteresJobConfig.java
+│   ├── EstadoCuentaAnualJobConfig.java
+│   └── TransaccionJobConfig.java
 │
-├── model
+├── listener/
+│   └── RegistroRechazadoSkipListener.java
 │
-├── processor
-│   ├── CuentaInteresProcessor
-│   ├── MovimientoAnualProcessor
-│   └── TransaccionProcessor
+├── model/
+│   ├── CuentaInteres.java
+│   ├── CuentaInteresProcesada.java
+│   ├── EstadoCuentaAnual.java
+│   ├── MovimientoAnual.java
+│   ├── RegistroRechazado.java
+│   ├── ResumenTransaccionDiaria.java
+│   ├── Transaccion.java
+│   └── TransaccionProcesada.java
 │
-├── repository
+├── processor/
+│   ├── CuentaInteresProcessor.java
+│   ├── MovimientoAnualProcessor.java
+│   └── TransaccionProcessor.java
 │
-├── tasklet
-│   ├── CuentaInteresReconciliationTasklet
-│   ├── EstadoCuentaAnualReconciliationTasklet
-│   ├── ResumenTransaccionDiariaTasklet
-│   ├── TransaccionDuplicadosTasklet
-│   └── TransaccionReconciliationTasklet
+├── repository/
 │
-└── writer
-    ├── CuentaInteresWriter
-    ├── EstadoCuentaAnualWriter
-    └── TransaccionWriter
+├── tasklet/
+│   ├── CuentaInteresReconciliationTasklet.java
+│   ├── EstadoCuentaAnualReconciliationTasklet.java
+│   ├── ResumenTransaccionDiariaTasklet.java
+│   ├── TransaccionDuplicadosTasklet.java
+│   └── TransaccionReconciliationTasklet.java
+│
+├── util/
+│   └── CsvValueParser.java
+│
+└── writer/
+    ├── CuentaInteresWriter.java
+    ├── EstadoCuentaAnualWriter.java
+    └── TransaccionWriter.java
 ```
 
-Los archivos CSV utilizados como entrada se encuentran en:
+Los archivos de entrada se encuentran en:
 
 ```text
 src/main/resources/data/
 ```
 
-Archivos principales:
+y corresponden a:
 
 ```text
 transacciones.csv
@@ -136,13 +152,54 @@ intereses.csv
 cuentas_anuales.csv
 ```
 
+Cada dataset utilizado en la evaluación de Semana 3 contiene **1000 registros de datos**, además de su encabezado.
+
+---
+
+# Lectura robusta de CSV
+
+Los tres Readers utilizan `FlatFileItemReader`.
+
+Para permitir procesamiento concurrente de forma segura, los Readers correspondientes a Jobs paralelos se protegen mediante:
+
+```text
+SynchronizedItemStreamReader
+```
+
+La conversión de datos se centraliza mediante:
+
+```text
+CsvValueParser
+```
+
+Esta utilidad permite convertir de forma controlada:
+
+- `String`
+- `Long`
+- `Integer`
+- `BigDecimal`
+- `LocalDate`
+
+Las fechas válidas soportadas incluyen:
+
+```text
+yyyy-MM-dd
+dd-MM-yyyy
+dd/MM/yyyy
+yyyy/MM/dd
+```
+
+Los valores vacíos o inválidos son transformados a `null`, permitiendo que las reglas de negocio sean evaluadas posteriormente por los `ItemProcessor`.
+
 ---
 
 # Jobs implementados
 
-## 1. `transaccionJob`
+## 1. transaccionJob
 
-Procesa las transacciones diarias provenientes de:
+Procesa las transacciones diarias del banco.
+
+Archivo de entrada:
 
 ```text
 src/main/resources/data/transacciones.csv
@@ -154,40 +211,52 @@ Formato:
 id,fecha,monto,tipo
 ```
 
-### Flujo del Job
-
-```text
-transaccionStep
-        ↓
-transaccionDuplicadosStep
-        ↓
-transaccionReconciliationStep
-        ↓
-resumenTransaccionDiariaStep
-```
-
 ### Validaciones
 
-Se validan:
+El `TransaccionProcessor` valida:
 
 - Identificador.
 - Fecha.
 - Monto.
 - Tipo de transacción.
-- Montos iguales a cero.
-- Tipos distintos de `debito` y `credito`.
+- Monto distinto de cero.
+- Tipo válido `debito` o `credito`.
+
+Cuando un registro incumple una regla de negocio se genera:
+
+```text
+ReglaNegocioException
+```
+
+El registro es omitido de manera controlada por Spring Batch y almacenado para trazabilidad mediante el mecanismo de registros rechazados.
 
 ### Normalización
 
-Un débito negativo se normaliza utilizando su valor absoluto y queda identificado como:
+Los tipos son normalizados a minúsculas.
+
+Los montos de créditos y débitos son convertidos a su valor absoluto para mantener una representación consistente.
+
+Cuando un monto requiere corrección, el registro queda identificado como:
 
 ```text
 CORREGIDO
 ```
 
+Los registros válidos sin modificación quedan como:
+
+```text
+PROCESADO
+```
+
 ### Detección de duplicados
 
-Se consideran posibles duplicados los registros que poseen simultáneamente:
+El Job incorpora:
+
+```text
+transaccionDuplicadosStep
+```
+
+Se consideran duplicados funcionales los registros que presentan simultáneamente:
 
 ```text
 misma fecha
@@ -197,57 +266,72 @@ mismo monto
 mismo tipo
 ```
 
-La primera ocurrencia se conserva y las posteriores quedan marcadas como:
+aunque posean identificadores diferentes.
+
+La primera transacción se conserva y las posteriores quedan marcadas como:
 
 ```text
 DUPLICADO
 ```
 
-sin eliminarlas físicamente, manteniendo trazabilidad del registro original.
-
-### Estados posibles
+La ejecución final sobre el dataset actual detectó:
 
 ```text
-PROCESADO
-CORREGIDO
-RECHAZADO
-DUPLICADO
+15 duplicados
 ```
 
 ### Resumen diario
 
-El Step:
+El Job incorpora:
 
 ```text
 resumenTransaccionDiariaStep
 ```
 
-genera información consolidada en:
+que genera información consolidada en:
 
 ```text
 resumen_transacciones_diarias
 ```
 
-incluyendo:
+Por cada fecha se calcula:
 
 - Cantidad de transacciones válidas.
 - Total de créditos.
 - Total de débitos.
-- Saldo neto diario.
+- Saldo neto.
 
-Cálculo:
+La fórmula utilizada es:
 
 ```text
 saldo_neto = total_creditos - total_debitos
 ```
 
-Los registros `RECHAZADO` y `DUPLICADO` no participan en los totales financieros.
+Los registros rechazados o duplicados no son considerados dentro de los totales financieros.
+
+### Escalamiento
+
+Este Job utiliza ejecución paralela mediante:
+
+```text
+ThreadPoolTaskExecutor
+```
+
+Configuración final:
+
+```text
+threads = 3
+chunk-size = 10
+queue-capacity = 20
+```
 
 ---
 
-## 2. `cuentaInteresJob`
+## 2. cuentaInteresJob
 
-Procesa:
+Procesa el cálculo mensual de intereses.
+
+Archivo:
 
 ```text
 src/main/resources/data/intereses.csv
@@ -259,13 +343,20 @@ Formato:
 cuenta_id,nombre,saldo,edad,tipo
 ```
 
-### Tasas utilizadas
-
-Para el escenario académico:
+### Tipos válidos
 
 ```text
-ahorro    = 1 %
-prestamo  = 2 %
+ahorro
+prestamo
+```
+
+### Tasas utilizadas
+
+Para el caso académico:
+
+```text
+ahorro    = 1%
+prestamo  = 2%
 ```
 
 ### Cálculo
@@ -275,35 +366,62 @@ interes = saldo × tasa
 saldo_final = saldo + interes
 ```
 
-Los resultados monetarios son redondeados a dos decimales.
+Los resultados monetarios se manejan mediante `BigDecimal`.
 
-### Estados posibles
+### Validaciones
+
+Se valida:
+
+- `cuenta_id`.
+- Saldo.
+- Saldo no negativo.
+- Tipo de cuenta soportado.
+
+Un saldo igual a cero genera:
+
+```text
+SIN_INTERES
+```
+
+Los registros válidos con cálculo quedan:
 
 ```text
 PROCESADO
-SIN_INTERES
-RECHAZADO
 ```
 
-Una cuenta con saldo cero queda como:
+Los tipos no admitidos generan una `ReglaNegocioException` y son registrados como descartes controlados.
+
+### Ejecución secuencial intencional
+
+Este Job se ejecuta de manera **secuencial**.
+
+La decisión es intencional debido a que el archivo contiene múltiples registros asociados al mismo:
 
 ```text
-SIN_INTERES
+cuenta_id
 ```
 
-Un tipo de cuenta no soportado queda como:
+y la entidad persistida utiliza dicho identificador como clave funcional.
+
+Ejecutar concurrentemente actualizaciones sobre la misma cuenta introduciría condiciones de carrera y resultados no deterministas.
+
+Por esta razón:
 
 ```text
-RECHAZADO
+cuentaInteresJob
+mode = SECUENCIAL
+threads = 1
 ```
 
-con la causa registrada en la observación correspondiente.
+mientras que los otros Jobs mantienen procesamiento paralelo.
 
 ---
 
-## 3. `estadoCuentaAnualJob`
+## 3. estadoCuentaAnualJob
 
-Procesa:
+Procesa movimientos bancarios y genera un estado consolidado por cuenta y año.
+
+Archivo:
 
 ```text
 src/main/resources/data/cuentas_anuales.csv
@@ -315,7 +433,7 @@ Formato:
 cuenta_id,fecha,transaccion,monto,descripcion
 ```
 
-Tipos aceptados:
+### Movimientos válidos
 
 ```text
 deposito
@@ -323,9 +441,13 @@ retiro
 compra
 ```
 
-Los depósitos se normalizan como valores positivos.
+El procesador elimina diferencias de mayúsculas/minúsculas y acentos para normalizar los tipos.
 
-Los retiros y compras se consideran salidas de dinero.
+### Normalización monetaria
+
+Los depósitos quedan representados como valores positivos.
+
+Los retiros y compras se representan como valores negativos.
 
 El resultado consolidado se persiste en:
 
@@ -333,7 +455,7 @@ El resultado consolidado se persiste en:
 estados_cuenta_anuales
 ```
 
-con:
+con información de:
 
 - Cuenta.
 - Año.
@@ -342,288 +464,343 @@ con:
 - Total de compras.
 - Saldo anual.
 
-Existe una restricción lógica por:
+Existe una restricción funcional única por:
 
 ```text
 cuenta_id + anio
 ```
 
-que evita generar estados anuales duplicados.
+para impedir estados anuales duplicados.
 
----
+### Escalamiento
 
-# Reconciliación e idempotencia
-
-Los tres Jobs incorporan mecanismos de reconciliación.
-
-Cada registro procesado mantiene información de:
+El procesamiento principal utiliza ejecución paralela:
 
 ```text
-activo
-ultima_instancia_id
+mode = PARALELO
+threads = 3
+chunk-size = 10
 ```
-
-En cada nueva ejecución:
-
-- Los registros presentes se actualizan con la nueva `JobInstance`.
-- Los registros que desaparecen del archivo se conservan históricamente con `activo=false`.
-- Si vuelven a aparecer, recuperan `activo=true`.
-
-Esto permite reejecutar los Jobs sin generar duplicación funcional de información y sin eliminar historial.
-
----
-
-# Procesamiento paralelo
-
-La Semana 3 incorpora procesamiento concurrente mediante:
-
-```text
-ThreadPoolTaskExecutor
-```
-
-La cantidad de hilos y el tamaño de chunk son configurables:
-
-```properties
-app.batch.threads=4
-app.batch.queue-capacity=20
-app.batch.chunk-size=10
-```
-
-Estos valores pueden sobrescribirse desde la línea de comandos para ejecutar pruebas comparativas.
-
-Ejemplo:
-
-```bash
-./mvnw spring-boot:run \
-  -Dspring-boot.run.arguments="--app.batch.job=transaccionJob --app.batch.run-id=5001 --app.batch.threads=2 --app.batch.chunk-size=5"
-```
-
-Los logs muestran el hilo utilizado por cada procesamiento:
-
-```text
-[BATCH-PROCESSOR] hilo=batch-thread-1
-[BATCH-PROCESSOR] hilo=batch-thread-2
-...
-```
-
-El orden de procesamiento de los items no se considera determinista cuando se utiliza ejecución paralela.
-
----
-
-# Pruebas de rendimiento
-
-Para evitar modificar simultáneamente varias variables, las pruebas se realizaron en dos etapas.
-
-## Comparación de hilos
-
-Se mantuvo:
-
-```text
-chunkSize = 5
-```
-
-y se modificó únicamente la cantidad de hilos.
-
-Resultados observados:
-
-| Hilos | Chunk | Duración |
-|---:|---:|---:|
-| 1 | 5 | 567.333 ms |
-| 2 | 5 | 635.414 ms |
-| 3 | 5 | 584.033 ms |
-| 4 | 5 | **566.483 ms** |
-
-Dentro del escenario evaluado, `4` hilos presentó el menor tiempo observado.
-
-La diferencia frente a un único hilo fue pequeña debido al reducido volumen del archivo de prueba, por lo que los resultados no implican escalamiento lineal.
-
----
-
-## Comparación de chunks
-
-Posteriormente se mantuvo:
-
-```text
-threads = 4
-```
-
-y se modificó únicamente el tamaño del chunk.
-
-| Hilos | Chunk | Duración |
-|---:|---:|---:|
-| 4 | 1 | 598.638 ms |
-| 4 | 2 | 644.882 ms |
-| 4 | 5 | 1073.013 ms |
-| 4 | 10 | **565.356 ms** |
-
-La configuración con mejor tiempo observado dentro del escenario evaluado fue:
-
-```properties
-app.batch.threads=4
-app.batch.chunk-size=10
-```
-
-Estos valores se dejaron como configuración predeterminada final del proyecto.
-
-Los resultados corresponden al dataset académico utilizado y no representan una garantía de rendimiento para volúmenes o infraestructuras diferentes.
 
 ---
 
 # Tolerancia a fallos
 
-Los Steps principales utilizan las capacidades fault-tolerant de Spring Batch para evitar que determinados errores provoquen innecesariamente el fallo completo del proceso.
+Los tres Jobs utilizan las capacidades de fault tolerance de Spring Batch.
 
-La solución contempla:
+Los Steps principales implementan:
 
 ```text
-errores recuperables
-        ↓
-retry
+faultTolerant()
+```
 
-registros inválidos
-        ↓
+junto con políticas de:
+
+```text
 skip
-        ↓
-auditoría
+retry
 ```
 
 ---
 
-## Skip y registros rechazados
+## Skip
 
-Los registros descartados por errores controlados se almacenan en:
+El límite configurado es:
+
+```properties
+app.batch.skip-limit=750
+```
+
+Se permite omitir de forma controlada:
+
+```text
+FlatFileParseException
+ReglaNegocioException
+```
+
+Esto permite continuar una ejecución cuando existen registros puntualmente inválidos, manteniendo trazabilidad de los errores sin detener inmediatamente el Job completo.
+
+El límite impide aceptar silenciosamente un archivo completamente corrupto.
+
+---
+
+# Registro de errores
+
+Los registros descartados se almacenan en:
 
 ```text
 registros_rechazados
 ```
 
-Se registra información como:
+Mediante:
+
+```text
+RegistroRechazadoSkipListener
+```
+
+se registra información asociada al error, incluyendo:
 
 - Job.
 - Step.
 - Fase.
-- Contenido original.
-- Tipo de error.
+- Registro involucrado.
+- Tipo de excepción.
 - Mensaje.
-- JobInstance.
+- `JobInstance`.
 - Fecha del error.
 
-Un caso probado corresponde a un movimiento anual con monto igual a cero:
+Las fases posibles incluyen:
 
 ```text
-cuentaId = 107
-monto = 0
+READ
+PROCESS
+WRITE
 ```
 
-El registro genera:
-
-```text
-ReglaNegocioException
-```
-
-queda auditado como rechazo y el resto del Job continúa hasta finalizar correctamente.
+Esto permite mantener trazabilidad de los registros que no pudieron incorporarse al resultado final.
 
 ---
 
-# Política de retry
+# Política de Retry
 
-La política de reintento se encuentra centralizada en:
+El proyecto implementa una política de reintentos para errores transitorios mediante:
 
 ```text
 BatchRetryConfig
 ```
 
-Configuración predeterminada:
+Configuración:
 
 ```properties
 app.batch.retry-max-retries=3
 app.batch.retry-delay-ms=500
 ```
 
-Está orientada a errores transitorios o recuperables de acceso a datos.
-
-El objetivo es permitir que una operación susceptible de recuperación sea ejecutada nuevamente sin finalizar inmediatamente todo el Job.
+La política permite volver a intentar operaciones consideradas temporalmente recuperables antes de declarar el Step como fallido.
 
 ---
 
-## Prueba controlada de retry
+## Prueba controlada de Retry
 
-Para demostrar la política de retry de manera reproducible se incorporó una inyección de fallo controlada en `TransaccionWriter`.
-
-La propiedad:
+Para demostrar experimentalmente la recuperación se incorporó:
 
 ```properties
 app.batch.retry-demo-failures=0
 ```
 
-permanece desactivada durante la ejecución normal.
-
-Para la prueba de resiliencia se utilizó temporalmente:
+El valor debe mantenerse en:
 
 ```text
---app.batch.retry-demo-failures=1
+0
 ```
 
-provocando un fallo transitorio antes de persistir el chunk.
+durante una ejecución normal.
 
-El comportamiento observado fue:
+Para validar la política puede ejecutarse:
+
+```bash
+java -jar target/bancoxyzbatch-0.0.1-SNAPSHOT.jar \
+    --app.batch.job=transaccionJob \
+    --app.batch.run-id=5001 \
+    --app.batch.retry-demo-failures=1
+```
+
+Durante la prueba realizada se obtuvo la secuencia:
 
 ```text
 FALLO_TRANSITORIO
-        ↓
-RETRY
-        ↓
 RECUPERADO
-        ↓
 procesamiento continúa
-        ↓
-Job COMPLETED
+Estado final: COMPLETED
 ```
 
-La ejecución de evidencia se realizó con:
-
-```bash
-./mvnw spring-boot:run \
-  -Dspring-boot.run.arguments="--app.batch.job=transaccionJob --app.batch.run-id=7001 --app.batch.threads=4 --app.batch.chunk-size=10 --app.batch.retry-max-retries=3 --app.batch.retry-delay-ms=500 --app.batch.retry-demo-failures=1"
-```
-
-Los logs mostraron:
-
-```text
-[BATCH-RETRY-DEMO] ACTIVADO
-[BATCH-RETRY-DEMO] FALLO_TRANSITORIO
-[BATCH-RETRY-DEMO] RECUPERADO
-[BATCH] Estado final: COMPLETED
-```
-
-Después de la recuperación se verificaron nuevamente los 10 registros de entrada:
-
-```text
-CORREGIDO  = 1
-DUPLICADO  = 1
-PROCESADO  = 7
-RECHAZADO  = 1
-TOTAL      = 10
-```
-
-Por tanto, la prueba comprobó recuperación automática y consistencia del resultado posterior al reintento.
+La prueba confirmó que el Job pudo recuperarse del fallo transitorio simulado y finalizar correctamente.
 
 ---
 
-# Persistencia de Spring Batch
+# Escalamiento y procesamiento paralelo
 
-La infraestructura utiliza un `JobRepository` JDBC persistente en PostgreSQL.
+Los Jobs que pueden ejecutarse concurrentemente utilizan:
 
-Esto permite mantener metadata relacionada con:
+```text
+ThreadPoolTaskExecutor
+```
 
-- Instancias de Jobs.
-- Ejecuciones.
-- Parámetros.
-- Steps.
-- Estados de ejecución.
-- Contextos.
+El executor permite configurar:
 
-Las principales tablas son:
+```properties
+app.batch.threads
+app.batch.queue-capacity
+```
+
+Los hilos utilizan el prefijo:
+
+```text
+batch-thread-
+```
+
+permitiendo visualizar en logs qué hilo procesa cada elemento.
+
+Además, los threads son configurados como daemon para permitir el cierre correcto de la JVM después de finalizar una ejecución batch.
+
+---
+
+# Benchmark de rendimiento
+
+Para seleccionar una configuración adecuada se realizaron pruebas controladas sobre el dataset actual.
+
+Cada combinación válida fue ejecutada **3 veces** utilizando una base PostgreSQL recreada entre ejecuciones para evitar contaminación entre mediciones.
+
+La duración se midió directamente alrededor de la ejecución del Job mediante:
+
+```text
+System.nanoTime()
+```
+
+---
+
+## Comparación de cantidad de hilos
+
+Se utilizó:
+
+```text
+chunk-size = 10
+```
+
+y se compararon:
+
+| Hilos | Promedio |
+|---:|---:|
+| 1 | 7931.971 ms |
+| 2 | 5465.317 ms |
+| **3** | **4883.985 ms** |
+| 4 | 5373.557 ms |
+
+La configuración de **3 hilos** presentó el mejor tiempo promedio.
+
+Respecto a un solo hilo, el tiempo medio disminuyó aproximadamente un:
+
+```text
+38.4 %
+```
+
+Aumentar de 3 a 4 hilos no produjo una mejora adicional y aumentó el tiempo promedio debido al overhead de concurrencia.
+
+Por esta razón se seleccionó:
+
+```text
+threads = 3
+```
+
+---
+
+## Comparación de tamaños de chunk
+
+Con:
+
+```text
+threads = 3
+```
+
+se evaluaron:
+
+| Chunk | Resultado | Promedio |
+|---:|---|---:|
+| 5 | COMPLETED | 6519.185 ms |
+| **10** | **COMPLETED** | **5865.691 ms** |
+| 25 | FAILED 3/3 | N/A |
+| 50 | FAILED 3/3 | N/A |
+
+`chunk-size=10` fue aproximadamente un **10 % más rápido** que `chunk-size=5`.
+
+Los tamaños:
+
+```text
+25
+50
+```
+
+provocaron saturación del `TaskExecutor`.
+
+El error observado fue:
+
+```text
+TaskRejectedException
+RejectedExecutionException
+```
+
+con:
+
+```text
+pool size = 3
+active threads = 3
+queued tasks = 20
+```
+
+Los tiempos de las ejecuciones fallidas no se consideran resultados válidos de rendimiento debido a que el dataset no terminó de procesarse.
+
+---
+
+# Configuración óptima seleccionada
+
+La configuración final del proyecto es:
+
+```properties
+app.batch.threads=3
+app.batch.queue-capacity=20
+app.batch.chunk-size=10
+```
+
+Esta configuración fue seleccionada mediante comparación experimental considerando tanto:
+
+```text
+rendimiento
++
+estabilidad
+```
+
+---
+
+# Reconciliación e idempotencia
+
+Los tres procesos principales incorporan mecanismos de reconciliación.
+
+Cada registro persistido mantiene información como:
+
+```text
+activo
+ultima_instancia_id
+```
+
+Cuando se procesa una nueva ejecución, los registros presentes son asociados a la nueva `JobInstance`.
+
+Los registros existentes que ya no aparecen en el archivo actual son conservados históricamente y pueden quedar:
+
+```text
+activo = false
+```
+
+Si posteriormente reaparecen, pueden volver a:
+
+```text
+activo = true
+```
+
+Este mecanismo permite reejecutar Jobs sin eliminar información histórica ni generar duplicación funcional innecesaria.
+
+---
+
+# Spring Batch JDBC
+
+La infraestructura de Spring Batch utiliza persistencia JDBC.
+
+El esquema PostgreSQL se encuentra en:
+
+```text
+src/main/resources/db/schema-spring-batch-postgresql.sql
+```
+
+Las tablas principales de metadata incluyen:
 
 ```text
 BATCH_JOB_INSTANCE
@@ -634,44 +811,30 @@ BATCH_STEP_EXECUTION
 BATCH_STEP_EXECUTION_CONTEXT
 ```
 
-El esquema se encuentra en:
+Estas tablas permiten consultar:
 
-```text
-src/main/resources/db/schema-spring-batch-postgresql.sql
-```
-
----
-
-# Inicialización del esquema
-
-La inicialización de las tablas internas de Spring Batch se realiza automáticamente mediante:
-
-```properties
-spring.sql.init.mode=always
-spring.sql.init.schema-locations=classpath:db/schema-spring-batch-postgresql.sql
-```
-
-El script utiliza creación idempotente, permitiendo iniciar nuevamente la aplicación sin intentar recrear de forma destructiva los objetos ya existentes.
-
-Por esta razón **no es necesario ejecutar manualmente el script SQL** antes de cada ejecución.
-
-Las tablas del dominio son gestionadas durante el desarrollo mediante:
-
-```properties
-spring.jpa.hibernate.ddl-auto=update
-```
+- JobInstances.
+- JobExecutions.
+- Estados.
+- Parámetros.
+- Métricas de Steps.
+- Conteos de lectura.
+- Conteos de escritura.
+- Skips.
+- Commits.
+- Rollbacks.
 
 ---
 
-# PostgreSQL con Docker
+# Base de datos PostgreSQL
 
-Levantar la base de datos:
+PostgreSQL puede iniciarse mediante Docker Compose:
 
 ```bash
 docker compose up -d
 ```
 
-Comprobar estado:
+Verificar el contenedor:
 
 ```bash
 docker compose ps
@@ -681,9 +844,9 @@ Configuración predeterminada:
 
 ```text
 Base de datos: bancoxyz
-Usuario:        bancoxyz
-Password:       bancoxyz123
-Puerto:         5432
+Usuario:       bancoxyz
+Password:      bancoxyz123
+Puerto:        5432
 ```
 
 También pueden utilizarse variables de entorno:
@@ -694,190 +857,433 @@ DB_USER
 DB_PASSWORD
 ```
 
+Ejemplo:
+
+```bash
+env DB_URL="jdbc:postgresql://localhost:5432/bancoxyz" \
+    java -jar target/bancoxyzbatch-0.0.1-SNAPSHOT.jar \
+    --app.batch.job=transaccionJob \
+    --app.batch.run-id=1
+```
+
+---
+
+# Inicialización de Spring Batch
+
+El proyecto configura:
+
+```properties
+spring.sql.init.mode=always
+spring.sql.init.schema-locations=classpath:db/schema-spring-batch-postgresql.sql
+```
+
+El script utilizado es idempotente, por lo que la infraestructura requerida por Spring Batch puede inicializarse sobre una base nueva sin recrear manualmente las tablas en cada ejecución.
+
+Las tablas correspondientes al dominio son gestionadas durante el desarrollo mediante:
+
+```properties
+spring.jpa.hibernate.ddl-auto=update
+```
+
+---
+
+# Configuración principal
+
+La configuración definitiva incluye:
+
+```properties
+spring.batch.job.enabled=false
+
+app.batch.threads=3
+app.batch.queue-capacity=20
+app.batch.chunk-size=10
+
+app.batch.skip-limit=750
+
+app.batch.retry-max-retries=3
+app.batch.retry-delay-ms=500
+
+app.batch.retry-demo-failures=0
+```
+
+`ControlledJobRunner` determina explícitamente qué Job debe ejecutarse.
+
 ---
 
 # Compilación
 
-En Linux/macOS:
+Compilar:
 
 ```bash
-chmod +x mvnw
 ./mvnw clean compile
 ```
 
-La compilación esperada debe terminar con:
+Generar el JAR:
+
+```bash
+./mvnw clean package -DskipTests
+```
+
+La compilación final de Semana 3 fue validada correctamente:
 
 ```text
 BUILD SUCCESS
 ```
 
-Para ejecutar las pruebas disponibles:
+El proyecto contiene actualmente:
 
-```bash
-./mvnw clean test
+```text
+39 archivos fuente Java compilados
 ```
 
 ---
 
-# Ejecución controlada de Jobs
+# Ejecución de Jobs
 
-Spring Boot no lanza automáticamente todos los Jobs:
-
-```properties
-spring.batch.job.enabled=false
-```
-
-`ControlledJobRunner` permite seleccionar explícitamente qué Job ejecutar.
-
-Cada ejecución utiliza:
+Cada ejecución requiere:
 
 ```text
 app.batch.job
 app.batch.run-id
 ```
 
-El `run-id` debe cambiarse cuando se desea crear una nueva ejecución identificable.
+El `run-id` debe cambiar para crear una nueva ejecución controlada.
+
+Primero generar el JAR:
+
+```bash
+./mvnw clean package -DskipTests
+```
 
 ---
 
-## Transacciones
+## Ejecutar transaccionJob
 
 ```bash
-./mvnw spring-boot:run \
-  -Dspring-boot.run.arguments="--app.batch.job=transaccionJob --app.batch.run-id=1001"
+java -jar target/bancoxyzbatch-0.0.1-SNAPSHOT.jar \
+    --app.batch.job=transaccionJob \
+    --app.batch.run-id=1
 ```
 
-## Intereses
+---
+
+## Ejecutar cuentaInteresJob
 
 ```bash
-./mvnw spring-boot:run \
-  -Dspring-boot.run.arguments="--app.batch.job=cuentaInteresJob --app.batch.run-id=1101"
+java -jar target/bancoxyzbatch-0.0.1-SNAPSHOT.jar \
+    --app.batch.job=cuentaInteresJob \
+    --app.batch.run-id=2
 ```
 
-## Estados anuales
+---
+
+## Ejecutar estadoCuentaAnualJob
 
 ```bash
-./mvnw spring-boot:run \
-  -Dspring-boot.run.arguments="--app.batch.job=estadoCuentaAnualJob --app.batch.run-id=1201"
+java -jar target/bancoxyzbatch-0.0.1-SNAPSHOT.jar \
+    --app.batch.job=estadoCuentaAnualJob \
+    --app.batch.run-id=3
 ```
 
-Si no se indican valores específicos para hilos, chunk o retry, se utilizan:
+---
+
+# Validación final de Semana 3
+
+La versión definitiva se ejecutó contra una base PostgreSQL limpia utilizando los tres Jobs.
+
+Resultados:
+
+| Job | Modo | Hilos | Chunk | Estado |
+|---|---|---:|---:|---|
+| `transaccionJob` | PARALELO | 3 | 10 | COMPLETED |
+| `cuentaInteresJob` | SECUENCIAL | 1 | 10 | COMPLETED |
+| `estadoCuentaAnualJob` | PARALELO | 3 | 10 | COMPLETED |
+
+---
+
+## Métricas de Steps principales
+
+### transaccionStep
 
 ```text
-threads          = 4
-queue-capacity   = 20
-chunk-size       = 10
-retry-max-retries = 3
-retry-delay-ms   = 500
-retry-demo       = 0
+read_count         = 1000
+write_count        = 482
+process_skip_count = 518
+read_skip_count    = 0
+write_skip_count   = 0
+commit_count       = 100
+rollback_count     = 0
+```
+
+Verificación:
+
+```text
+482 + 518 = 1000
 ```
 
 ---
 
-# Consulta de resultados
+### cuentaInteresStep
 
-## Tablas disponibles
+```text
+read_count         = 1000
+write_count        = 353
+process_skip_count = 647
+read_skip_count    = 0
+write_skip_count   = 0
+commit_count       = 100
+rollback_count     = 0
+```
+
+Verificación:
+
+```text
+353 + 647 = 1000
+```
+
+---
+
+### estadoCuentaAnualStep
+
+```text
+read_count         = 1000
+write_count        = 898
+process_skip_count = 102
+read_skip_count    = 0
+write_skip_count   = 0
+commit_count       = 100
+rollback_count     = 0
+```
+
+Verificación:
+
+```text
+898 + 102 = 1000
+```
+
+Los tres Steps principales procesaron la totalidad de los registros disponibles, ya sea mediante escritura válida o descarte controlado.
+
+---
+
+# Persistencia final
+
+Luego de ejecutar los tres Jobs sobre la base final se obtuvieron:
+
+| Tabla | Registros |
+|---|---:|
+| `transacciones_procesadas` | 482 |
+| `cuentas_intereses` | 50 |
+| `estados_cuenta_anuales` | 20 |
+
+La diferencia entre el número de elementos escritos por los Steps y el número final de filas en algunas tablas se debe a la consolidación/actualización de entidades que comparten claves funcionales.
+
+Por ejemplo, múltiples registros del archivo de intereses corresponden a las mismas cuentas.
+
+---
+
+# Consultas de verificación
+
+Ingresar a PostgreSQL:
 
 ```bash
 docker compose exec postgres \
-  psql -P pager=off -U bancoxyz -d bancoxyz \
-  -c '\dt'
+    psql -U bancoxyz -d bancoxyz
 ```
+
+---
 
 ## Transacciones
 
-```bash
-docker compose exec postgres \
-  psql -P pager=off -U bancoxyz -d bancoxyz \
-  -c 'SELECT * FROM transacciones_procesadas ORDER BY id;'
+```sql
+SELECT *
+FROM transacciones_procesadas
+ORDER BY id;
 ```
+
+---
 
 ## Resumen diario
 
-```bash
-docker compose exec postgres \
-  psql -P pager=off -U bancoxyz -d bancoxyz \
-  -c 'SELECT * FROM resumen_transacciones_diarias ORDER BY fecha;'
+```sql
+SELECT *
+FROM resumen_transacciones_diarias
+ORDER BY fecha;
 ```
+
+---
 
 ## Intereses
 
-```bash
-docker compose exec postgres \
-  psql -P pager=off -U bancoxyz -d bancoxyz \
-  -c 'SELECT * FROM cuentas_intereses ORDER BY cuenta_id;'
+```sql
+SELECT *
+FROM cuentas_intereses
+ORDER BY cuenta_id;
 ```
+
+---
 
 ## Estados anuales
 
-```bash
-docker compose exec postgres \
-  psql -P pager=off -U bancoxyz -d bancoxyz \
-  -c 'SELECT * FROM estados_cuenta_anuales ORDER BY cuenta_id, anio;'
+```sql
+SELECT *
+FROM estados_cuenta_anuales
+ORDER BY cuenta_id, anio;
 ```
+
+---
 
 ## Registros rechazados
 
-```bash
-docker compose exec postgres \
-  psql -P pager=off -x -U bancoxyz -d bancoxyz \
-  -c 'SELECT * FROM registros_rechazados ORDER BY id;'
+```sql
+SELECT *
+FROM registros_rechazados
+ORDER BY id;
 ```
+
+---
 
 ## Historial de Jobs
 
-```bash
-docker compose exec postgres \
-  psql -P pager=off -U bancoxyz -d bancoxyz \
-  -c "
+```sql
 SELECT
-    ji.job_name,
-    je.job_execution_id,
-    je.status,
-    je.start_time,
-    je.end_time,
-    je.exit_code
+    je.job_execution_id AS ejecucion,
+    ji.job_name AS job,
+    je.status AS estado,
+    je.exit_code AS salida,
+    je.start_time AS inicio,
+    je.end_time AS fin
 FROM batch_job_execution je
 JOIN batch_job_instance ji
     ON ji.job_instance_id = je.job_instance_id
 ORDER BY je.job_execution_id;
-"
 ```
 
 ---
 
-# Evidencias de Semana 3
+## Métricas de Steps
 
-Durante la evaluación se generaron evidencias correspondientes a:
-
-- Compilación limpia con `BUILD SUCCESS`.
-- PostgreSQL ejecutándose en estado `healthy`.
-- Creación de tablas del dominio y tablas internas de Spring Batch.
-- Ejecución completa de `transaccionJob`.
-- Detección y persistencia de transacciones duplicadas.
-- Generación del resumen diario.
-- Ejecución completa de `cuentaInteresJob`.
-- Cálculo y persistencia de intereses.
-- Ejecución completa de `estadoCuentaAnualJob`.
-- Consolidación de movimientos anuales.
-- Registro de errores de negocio mediante skip.
-- Persistencia del historial de Jobs.
-- Procesamiento mediante múltiples hilos.
-- Benchmark de 1, 2, 3 y 4 hilos.
-- Benchmark de chunks 1, 2, 5 y 10.
-- Selección de la configuración con mejor tiempo observado.
-- Fallo transitorio controlado.
-- Recuperación mediante retry.
-- Finalización `COMPLETED` después del retry.
-- Verificación de consistencia en PostgreSQL después de la recuperación.
-
-Los logs utilizados como respaldo técnico se encuentran en:
-
-```text
-Evidencias_S3/logs/
+```sql
+SELECT
+    se.job_execution_id AS ejecucion,
+    se.step_name AS step,
+    se.status AS estado,
+    se.read_count AS leidos,
+    se.write_count AS escritos,
+    se.read_skip_count AS skip_lectura,
+    se.process_skip_count AS skip_proceso,
+    se.write_skip_count AS skip_escritura,
+    se.commit_count AS commits,
+    se.rollback_count AS rollbacks
+FROM batch_step_execution se
+ORDER BY
+    se.job_execution_id,
+    se.step_execution_id;
 ```
 
-La evidencia visual correspondiente se entrega en el documento PDF de evidencias de Semana 3.
+---
+
+# Scripts de benchmark
+
+Para documentar las pruebas de optimización se utilizaron scripts separados.
+
+## Benchmark de hilos
+
+```text
+benchmark_threads.fish
+```
+
+Compara:
+
+```text
+1
+2
+3
+4
+```
+
+hilos con:
+
+```text
+chunk-size = 10
+```
+
+Los resultados se almacenan en:
+
+```text
+benchmarks/threads.csv
+```
+
+---
+
+## Benchmark de chunks
+
+```text
+benchmark_chunks.fish
+```
+
+y:
+
+```text
+benchmark_chunks_restantes.fish
+```
+
+permiten comparar:
+
+```text
+5
+10
+25
+50
+```
+
+con:
+
+```text
+threads = 3
+```
+
+Los resultados se almacenan en:
+
+```text
+benchmarks/chunks.csv
+benchmarks/chunks_restantes.csv
+```
+
+---
+
+## Visualización resumida del benchmark
+
+El script:
+
+```text
+mostrar_benchmark.fish
+```
+
+presenta en terminal la comparación de rendimiento y la configuración óptima seleccionada.
+
+---
+
+# Evidencias
+
+Las evidencias de Semana 3 incluyen comprobaciones de:
+
+- Compilación exitosa.
+- Ejecución de los tres Jobs.
+- Estados `COMPLETED`.
+- Procesamiento paralelo.
+- Ejecución secuencial controlada del Job de intereses.
+- Comparación de 1, 2, 3 y 4 hilos.
+- Comparación de chunks 5, 10, 25 y 50.
+- Selección de configuración óptima.
+- Saturación controlada de configuraciones inestables.
+- Fault tolerance.
+- Conteos de `skip`.
+- Política de retry.
+- Fallo transitorio simulado.
+- Recuperación automática.
+- Persistencia final.
+- Metadata de Spring Batch.
+- Conteos de lectura, escritura, commits y rollbacks.
 
 ---
 
@@ -886,54 +1292,62 @@ La evidencia visual correspondiente se entrega en el documento PDF de evidencias
 Durante el desarrollo se verificaron:
 
 - Ejecución correcta de los tres Jobs.
-- Persistencia de metadata de Spring Batch.
-- Persistencia de resultados en PostgreSQL.
-- Reejecución controlada.
-- Idempotencia funcional.
-- Reconciliación de registros.
+- Lectura de datasets de 1000 registros.
+- Transformación mediante `ItemProcessor`.
+- Persistencia en PostgreSQL.
+- Reejecución sin duplicación funcional.
 - Desactivación de registros ausentes.
 - Reactivación de registros que reaparecen.
-- Normalización de débitos negativos.
 - Detección de transacciones duplicadas.
-- Exclusión de duplicados de los cálculos financieros.
+- Normalización de montos.
+- Exclusión de duplicados del resumen financiero.
 - Cálculo mensual de intereses.
 - Consolidación anual.
+- Manejo de errores de formato.
 - Manejo de reglas de negocio.
-- Skip de registros inválidos.
-- Registro de errores.
-- Ejecución multihilo.
-- Comparación de parámetros de concurrencia.
-- Comparación de tamaños de chunk.
+- Persistencia de registros rechazados.
+- Fault tolerance con `skip`.
 - Retry ante fallos transitorios.
-- Recuperación automática.
-- Conservación de resultados después de un retry.
+- Recuperación posterior al fallo.
+- Ejecución paralela.
+- Comparación experimental de configuraciones.
+- Selección de parámetros según rendimiento y estabilidad.
+- Compilación Maven sin errores.
 
 ---
 
-# Consideraciones para producción
+# Consideraciones de producción
 
-Esta implementación corresponde a un entorno académico y de desarrollo.
+La implementación corresponde a un entorno académico y de desarrollo.
 
 Para un entorno productivo se recomienda:
 
 - Utilizar variables de entorno o un gestor de secretos para credenciales.
 - Utilizar migraciones versionadas mediante Flyway o Liquibase.
-- Reemplazar `spring.jpa.hibernate.ddl-auto=update` por una estrategia de migraciones controlada.
-- Implementar métricas y observabilidad centralizada.
-- Ajustar cantidad de hilos y tamaño de chunk utilizando carga representativa del entorno real.
-- Ajustar límites, excepciones y tiempos de retry según métricas operacionales.
-- Incorporar alertas para ejecuciones fallidas o excesivamente lentas.
+- Reemplazar `ddl-auto=update` por una estrategia formal de migraciones.
+- Implementar monitoreo y métricas centralizadas.
+- Integrar logs estructurados.
+- Definir políticas de retry específicas según tipo de error.
+- Implementar límites de recursos según infraestructura disponible.
 - Aumentar la cobertura de pruebas automatizadas.
-- Utilizar infraestructura administrada para PostgreSQL cuando corresponda.
-- Aplicar principio de mínimo privilegio a credenciales y accesos.
-- Mantener deshabilitado el mecanismo de fallo controlado (`app.batch.retry-demo-failures=0`) fuera de pruebas específicas.
+- Utilizar PostgreSQL administrado o infraestructura de alta disponibilidad.
+- Aplicar el principio de mínimo privilegio.
+- Proteger los archivos de entrada y datos bancarios.
+- Incorporar observabilidad y alertamiento operacional.
 
 ---
 
 # Autoría
 
+
 **Autora:** `[Natalia Alvarado]`
 
-Proyecto individual desarrollado para la asignatura **Desarrollo Backend III**.
+Proyecto desarrollado para la asignatura:
 
-Implementación de modernización y optimización de procesos legacy bancarios mediante Spring Batch.
+**Desarrollo Backend III**
+
+Caso académico:
+
+**Banco XYZ**
+
+Implementación orientada a modernizar procesos legacy bancarios mediante **Spring Batch**, incorporando procesamiento robusto, tolerancia a fallos, escalamiento, optimización experimental y persistencia relacional.

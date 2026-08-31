@@ -3,8 +3,8 @@
     {
       "name": "app.batch.threads",
       "type": "java.lang.Integer",
-      "description": "Cantidad de hilos utilizados para procesar los chunks en paralelo.",
-      "defaultValue": 4
+      "description": "Cantidad de hilos utilizados para procesar los chunks en paralelo. El valor 3 fue seleccionado mediante benchmarks controlados.",
+      "defaultValue": 3
     },
     {
       "name": "app.batch.queue-capacity",
@@ -15,8 +15,14 @@
     {
       "name": "app.batch.chunk-size",
       "type": "java.lang.Integer",
-      "description": "Cantidad de registros procesados por cada transacción del Step.",
+      "description": "Cantidad de registros procesados por cada transacción del Step. El valor 10 fue seleccionado mediante benchmarks controlados.",
       "defaultValue": 10
+    },
+    {
+      "name": "app.batch.skip-limit",
+      "type": "java.lang.Integer",
+      "description": "Cantidad máxima de registros que un Step puede omitir de forma controlada debido a errores de formato o reglas de negocio.",
+      "defaultValue": 750
     },
     {
       "name": "app.batch.retry-max-retries",

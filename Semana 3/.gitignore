@@ -117,5 +117,19 @@ data/postgres/
 backup/
 backups/
 
-# Archivos temporales de editores
-.~lock.*
+# =========================
+# Logs
+# =========================
+
+# Los logs generales de ejecución se ignoran.
+*.log
+logs/
+spring-boot.log
+
+# Evidencias reproducibles de Semana 3.
+!evidencias/
+!evidencias/*.log
+
+# Logs utilizados en los benchmarks de optimización.
+!benchmarks/
+!benchmarks/*.log

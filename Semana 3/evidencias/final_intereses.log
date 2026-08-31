@@ -1,0 +1,1154 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.1)
+
+2026-08-30T22:58:47.385-04:00  INFO 217236 --- [bancoxyzbatch] [           main] c.d.b.BancoxyzbatchApplication           : Starting BancoxyzbatchApplication v0.0.1-SNAPSHOT using Java 21.0.12 with PID 217236 (/home/natalia/Archivos/Desarrollo Backend III/Semana 3/bancoxyzbatch/Semana 3/target/bancoxyzbatch-0.0.1-SNAPSHOT.jar started by natalia in /home/natalia/Archivos/Desarrollo Backend III/Semana 3/bancoxyzbatch/Semana 3)
+2026-08-30T22:58:47.389-04:00  INFO 217236 --- [bancoxyzbatch] [           main] c.d.b.BancoxyzbatchApplication           : No active profile set, falling back to 1 default profile: "default"
+2026-08-30T22:58:47.863-04:00  INFO 217236 --- [bancoxyzbatch] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-08-30T22:58:47.918-04:00  INFO 217236 --- [bancoxyzbatch] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 48 ms. Found 5 JPA repository interfaces.
+2026-08-30T22:58:48.395-04:00  INFO 217236 --- [bancoxyzbatch] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-08-30T22:58:48.660-04:00  INFO 217236 --- [bancoxyzbatch] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@3c3820bb
+2026-08-30T22:58:48.661-04:00  INFO 217236 --- [bancoxyzbatch] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-08-30T22:58:48.765-04:00  INFO 217236 --- [bancoxyzbatch] [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-08-30T22:58:48.826-04:00  INFO 217236 --- [bancoxyzbatch] [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.4.5.Final
+2026-08-30T22:58:49.293-04:00  INFO 217236 --- [bancoxyzbatch] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-08-30T22:58:49.393-04:00  INFO 217236 --- [bancoxyzbatch] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/bancoxyz_final]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 17.11
+	Default catalog/schema: bancoxyz_final/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-08-30T22:58:50.156-04:00  INFO 217236 --- [bancoxyzbatch] [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-08-30T22:58:50.210-04:00  INFO 217236 --- [bancoxyzbatch] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-08-30T22:58:50.340-04:00  INFO 217236 --- [bancoxyzbatch] [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+[BATCH-CONFIG] retryMaxRetries=3 | retryDelayMs=500
+[BATCH-CONFIG] threads=3 | queueCapacity=20 | daemon=true
+2026-08-30T22:58:51.330-04:00  INFO 217236 --- [bancoxyzbatch] [           main] c.d.b.BancoxyzbatchApplication           : Started BancoxyzbatchApplication in 4.35 seconds (process running for 4.761)
+[BATCH] Ejecutando Job: cuentaInteresJob
+[BATCH] run.id: 6002
+[BATCH-PERF] configuración | mode=SECUENCIAL | threads=1 | chunkSize=10 | skipLimit=750 | retryMaxRetries=3
+2026-08-30T22:58:51.435-04:00  INFO 217236 --- [bancoxyzbatch] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=cuentaInteresJob]] launched with the following parameters: [{JobParameter{name='run.id', value=6002, type=class java.lang.Long, identifying=true}}]
+2026-08-30T22:58:51.466-04:00  INFO 217236 --- [bancoxyzbatch] [           main] o.s.batch.core.step.AbstractStep         : Executing step: [cuentaInteresStep]
+[BATCH-PROCESSOR] hilo=main | cuenta=137
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=133
+[BATCH-PROCESSOR] hilo=main | cuenta=106
+[BATCH-PROCESSOR] hilo=main | cuenta=122
+[BATCH-PROCESSOR] hilo=main | cuenta=108
+[BATCH-PROCESSOR] hilo=main | cuenta=124
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=113
+[BATCH-PROCESSOR] hilo=main | cuenta=133
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=102
+[BATCH-PROCESSOR] hilo=main | cuenta=130
+[BATCH-PROCESSOR] hilo=main | cuenta=137
+[BATCH-PROCESSOR] hilo=main | cuenta=145
+[BATCH-PROCESSOR] hilo=main | cuenta=127
+[BATCH-PROCESSOR] hilo=main | cuenta=117
+[BATCH-PROCESSOR] hilo=main | cuenta=128
+[BATCH-PROCESSOR] hilo=main | cuenta=147
+[BATCH-PROCESSOR] hilo=main | cuenta=148
+[BATCH-PROCESSOR] hilo=main | cuenta=142
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=109
+[BATCH-PROCESSOR] hilo=main | cuenta=103
+[BATCH-PROCESSOR] hilo=main | cuenta=110
+[BATCH-PROCESSOR] hilo=main | cuenta=111
+[BATCH-PROCESSOR] hilo=main | cuenta=136
+[BATCH-PROCESSOR] hilo=main | cuenta=146
+[BATCH-PROCESSOR] hilo=main | cuenta=134
+[BATCH-PROCESSOR] hilo=main | cuenta=113
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=111
+[BATCH-WRITER] hilo=main | chunk=2 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=103
+[BATCH-PROCESSOR] hilo=main | cuenta=110
+[BATCH-PROCESSOR] hilo=main | cuenta=116
+[BATCH-PROCESSOR] hilo=main | cuenta=105
+[BATCH-PROCESSOR] hilo=main | cuenta=141
+[BATCH-PROCESSOR] hilo=main | cuenta=120
+[BATCH-PROCESSOR] hilo=main | cuenta=143
+[BATCH-PROCESSOR] hilo=main | cuenta=140
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=133
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=136
+[BATCH-PROCESSOR] hilo=main | cuenta=150
+[BATCH-PROCESSOR] hilo=main | cuenta=137
+[BATCH-PROCESSOR] hilo=main | cuenta=126
+[BATCH-PROCESSOR] hilo=main | cuenta=133
+[BATCH-PROCESSOR] hilo=main | cuenta=126
+[BATCH-PROCESSOR] hilo=main | cuenta=104
+[BATCH-PROCESSOR] hilo=main | cuenta=143
+[BATCH-PROCESSOR] hilo=main | cuenta=133
+[BATCH-PROCESSOR] hilo=main | cuenta=121
+[BATCH-WRITER] hilo=main | chunk=2 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=118
+[BATCH-PROCESSOR] hilo=main | cuenta=104
+[BATCH-PROCESSOR] hilo=main | cuenta=127
+[BATCH-PROCESSOR] hilo=main | cuenta=108
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=121
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=119
+[BATCH-PROCESSOR] hilo=main | cuenta=122
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=132
+[BATCH-PROCESSOR] hilo=main | cuenta=137
+[BATCH-PROCESSOR] hilo=main | cuenta=139
+[BATCH-PROCESSOR] hilo=main | cuenta=102
+[BATCH-PROCESSOR] hilo=main | cuenta=133
+[BATCH-PROCESSOR] hilo=main | cuenta=141
+[BATCH-PROCESSOR] hilo=main | cuenta=140
+[BATCH-PROCESSOR] hilo=main | cuenta=126
+[BATCH-PROCESSOR] hilo=main | cuenta=110
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=140
+[BATCH-PROCESSOR] hilo=main | cuenta=128
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=120
+[BATCH-PROCESSOR] hilo=main | cuenta=111
+[BATCH-PROCESSOR] hilo=main | cuenta=106
+[BATCH-PROCESSOR] hilo=main | cuenta=120
+[BATCH-PROCESSOR] hilo=main | cuenta=132
+[BATCH-PROCESSOR] hilo=main | cuenta=137
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=119
+[BATCH-PROCESSOR] hilo=main | cuenta=136
+[BATCH-PROCESSOR] hilo=main | cuenta=130
+[BATCH-PROCESSOR] hilo=main | cuenta=137
+[BATCH-PROCESSOR] hilo=main | cuenta=102
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=112
+[BATCH-PROCESSOR] hilo=main | cuenta=140
+[BATCH-PROCESSOR] hilo=main | cuenta=110
+[BATCH-PROCESSOR] hilo=main | cuenta=105
+[BATCH-WRITER] hilo=main | chunk=2 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=111
+[BATCH-PROCESSOR] hilo=main | cuenta=134
+[BATCH-PROCESSOR] hilo=main | cuenta=149
+[BATCH-PROCESSOR] hilo=main | cuenta=124
+[BATCH-PROCESSOR] hilo=main | cuenta=147
+[BATCH-PROCESSOR] hilo=main | cuenta=122
+[BATCH-PROCESSOR] hilo=main | cuenta=102
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=121
+[BATCH-PROCESSOR] hilo=main | cuenta=139
+[BATCH-WRITER] hilo=main | chunk=7 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=136
+[BATCH-PROCESSOR] hilo=main | cuenta=103
+[BATCH-PROCESSOR] hilo=main | cuenta=147
+[BATCH-PROCESSOR] hilo=main | cuenta=127
+[BATCH-PROCESSOR] hilo=main | cuenta=149
+[BATCH-PROCESSOR] hilo=main | cuenta=115
+[BATCH-PROCESSOR] hilo=main | cuenta=131
+[BATCH-PROCESSOR] hilo=main | cuenta=148
+[BATCH-PROCESSOR] hilo=main | cuenta=106
+[BATCH-PROCESSOR] hilo=main | cuenta=120
+[BATCH-WRITER] hilo=main | chunk=2 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=108
+[BATCH-PROCESSOR] hilo=main | cuenta=130
+[BATCH-PROCESSOR] hilo=main | cuenta=113
+[BATCH-PROCESSOR] hilo=main | cuenta=135
+[BATCH-PROCESSOR] hilo=main | cuenta=150
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-PROCESSOR] hilo=main | cuenta=146
+[BATCH-PROCESSOR] hilo=main | cuenta=105
+[BATCH-PROCESSOR] hilo=main | cuenta=127
+[BATCH-PROCESSOR] hilo=main | cuenta=113
+[BATCH-WRITER] hilo=main | chunk=2 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=145
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-PROCESSOR] hilo=main | cuenta=142
+[BATCH-PROCESSOR] hilo=main | cuenta=141
+[BATCH-PROCESSOR] hilo=main | cuenta=146
+[BATCH-PROCESSOR] hilo=main | cuenta=133
+[BATCH-PROCESSOR] hilo=main | cuenta=128
+[BATCH-PROCESSOR] hilo=main | cuenta=124
+[BATCH-PROCESSOR] hilo=main | cuenta=112
+[BATCH-PROCESSOR] hilo=main | cuenta=126
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=149
+[BATCH-PROCESSOR] hilo=main | cuenta=116
+[BATCH-PROCESSOR] hilo=main | cuenta=111
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=121
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-PROCESSOR] hilo=main | cuenta=108
+[BATCH-PROCESSOR] hilo=main | cuenta=121
+[BATCH-PROCESSOR] hilo=main | cuenta=134
+[BATCH-PROCESSOR] hilo=main | cuenta=108
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=143
+[BATCH-PROCESSOR] hilo=main | cuenta=115
+[BATCH-PROCESSOR] hilo=main | cuenta=135
+[BATCH-PROCESSOR] hilo=main | cuenta=115
+[BATCH-PROCESSOR] hilo=main | cuenta=137
+[BATCH-PROCESSOR] hilo=main | cuenta=141
+[BATCH-PROCESSOR] hilo=main | cuenta=112
+[BATCH-PROCESSOR] hilo=main | cuenta=111
+[BATCH-PROCESSOR] hilo=main | cuenta=121
+[BATCH-PROCESSOR] hilo=main | cuenta=117
+[BATCH-WRITER] hilo=main | chunk=2 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=120
+[BATCH-PROCESSOR] hilo=main | cuenta=120
+[BATCH-PROCESSOR] hilo=main | cuenta=140
+[BATCH-PROCESSOR] hilo=main | cuenta=129
+[BATCH-PROCESSOR] hilo=main | cuenta=130
+[BATCH-PROCESSOR] hilo=main | cuenta=122
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=130
+[BATCH-PROCESSOR] hilo=main | cuenta=126
+[BATCH-PROCESSOR] hilo=main | cuenta=145
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=119
+[BATCH-PROCESSOR] hilo=main | cuenta=147
+[BATCH-PROCESSOR] hilo=main | cuenta=146
+[BATCH-PROCESSOR] hilo=main | cuenta=116
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-PROCESSOR] hilo=main | cuenta=103
+[BATCH-PROCESSOR] hilo=main | cuenta=140
+[BATCH-PROCESSOR] hilo=main | cuenta=120
+[BATCH-PROCESSOR] hilo=main | cuenta=105
+[BATCH-WRITER] hilo=main | chunk=2 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=150
+[BATCH-PROCESSOR] hilo=main | cuenta=132
+[BATCH-PROCESSOR] hilo=main | cuenta=122
+[BATCH-PROCESSOR] hilo=main | cuenta=120
+[BATCH-PROCESSOR] hilo=main | cuenta=140
+[BATCH-PROCESSOR] hilo=main | cuenta=143
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-PROCESSOR] hilo=main | cuenta=144
+[BATCH-PROCESSOR] hilo=main | cuenta=101
+[BATCH-PROCESSOR] hilo=main | cuenta=132
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-PROCESSOR] hilo=main | cuenta=135
+[BATCH-PROCESSOR] hilo=main | cuenta=119
+[BATCH-PROCESSOR] hilo=main | cuenta=127
+[BATCH-PROCESSOR] hilo=main | cuenta=150
+[BATCH-PROCESSOR] hilo=main | cuenta=104
+[BATCH-PROCESSOR] hilo=main | cuenta=110
+[BATCH-PROCESSOR] hilo=main | cuenta=148
+[BATCH-PROCESSOR] hilo=main | cuenta=109
+[BATCH-PROCESSOR] hilo=main | cuenta=145
+[BATCH-WRITER] hilo=main | chunk=7 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=109
+[BATCH-PROCESSOR] hilo=main | cuenta=132
+[BATCH-PROCESSOR] hilo=main | cuenta=131
+[BATCH-PROCESSOR] hilo=main | cuenta=150
+[BATCH-PROCESSOR] hilo=main | cuenta=121
+[BATCH-PROCESSOR] hilo=main | cuenta=145
+[BATCH-PROCESSOR] hilo=main | cuenta=148
+[BATCH-PROCESSOR] hilo=main | cuenta=120
+[BATCH-PROCESSOR] hilo=main | cuenta=134
+[BATCH-PROCESSOR] hilo=main | cuenta=103
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=137
+[BATCH-PROCESSOR] hilo=main | cuenta=140
+[BATCH-PROCESSOR] hilo=main | cuenta=133
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=105
+[BATCH-PROCESSOR] hilo=main | cuenta=116
+[BATCH-PROCESSOR] hilo=main | cuenta=140
+[BATCH-PROCESSOR] hilo=main | cuenta=142
+[BATCH-PROCESSOR] hilo=main | cuenta=125
+[BATCH-WRITER] hilo=main | chunk=2 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=119
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=112
+[BATCH-PROCESSOR] hilo=main | cuenta=128
+[BATCH-PROCESSOR] hilo=main | cuenta=118
+[BATCH-PROCESSOR] hilo=main | cuenta=150
+[BATCH-PROCESSOR] hilo=main | cuenta=129
+[BATCH-PROCESSOR] hilo=main | cuenta=143
+[BATCH-PROCESSOR] hilo=main | cuenta=124
+[BATCH-PROCESSOR] hilo=main | cuenta=127
+[BATCH-WRITER] hilo=main | chunk=1 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=125
+[BATCH-PROCESSOR] hilo=main | cuenta=126
+[BATCH-PROCESSOR] hilo=main | cuenta=118
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=141
+[BATCH-PROCESSOR] hilo=main | cuenta=140
+[BATCH-PROCESSOR] hilo=main | cuenta=110
+[BATCH-PROCESSOR] hilo=main | cuenta=140
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=124
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-PROCESSOR] hilo=main | cuenta=144
+[BATCH-PROCESSOR] hilo=main | cuenta=132
+[BATCH-PROCESSOR] hilo=main | cuenta=122
+[BATCH-PROCESSOR] hilo=main | cuenta=116
+[BATCH-PROCESSOR] hilo=main | cuenta=111
+[BATCH-PROCESSOR] hilo=main | cuenta=129
+[BATCH-PROCESSOR] hilo=main | cuenta=117
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=126
+[BATCH-PROCESSOR] hilo=main | cuenta=101
+[BATCH-PROCESSOR] hilo=main | cuenta=147
+[BATCH-PROCESSOR] hilo=main | cuenta=119
+[BATCH-PROCESSOR] hilo=main | cuenta=144
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-PROCESSOR] hilo=main | cuenta=122
+[BATCH-PROCESSOR] hilo=main | cuenta=102
+[BATCH-PROCESSOR] hilo=main | cuenta=106
+[BATCH-PROCESSOR] hilo=main | cuenta=134
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=125
+[BATCH-PROCESSOR] hilo=main | cuenta=110
+[BATCH-PROCESSOR] hilo=main | cuenta=139
+[BATCH-PROCESSOR] hilo=main | cuenta=115
+[BATCH-PROCESSOR] hilo=main | cuenta=106
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=117
+[BATCH-PROCESSOR] hilo=main | cuenta=103
+[BATCH-PROCESSOR] hilo=main | cuenta=109
+[BATCH-PROCESSOR] hilo=main | cuenta=111
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=102
+[BATCH-PROCESSOR] hilo=main | cuenta=103
+[BATCH-PROCESSOR] hilo=main | cuenta=109
+[BATCH-PROCESSOR] hilo=main | cuenta=122
+[BATCH-PROCESSOR] hilo=main | cuenta=137
+[BATCH-PROCESSOR] hilo=main | cuenta=136
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-PROCESSOR] hilo=main | cuenta=106
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=129
+[BATCH-PROCESSOR] hilo=main | cuenta=142
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=122
+[BATCH-PROCESSOR] hilo=main | cuenta=126
+[BATCH-PROCESSOR] hilo=main | cuenta=129
+[BATCH-PROCESSOR] hilo=main | cuenta=106
+[BATCH-PROCESSOR] hilo=main | cuenta=121
+[BATCH-PROCESSOR] hilo=main | cuenta=149
+[BATCH-PROCESSOR] hilo=main | cuenta=143
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=121
+[BATCH-PROCESSOR] hilo=main | cuenta=116
+[BATCH-PROCESSOR] hilo=main | cuenta=133
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=135
+[BATCH-PROCESSOR] hilo=main | cuenta=102
+[BATCH-PROCESSOR] hilo=main | cuenta=104
+[BATCH-PROCESSOR] hilo=main | cuenta=145
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=141
+[BATCH-PROCESSOR] hilo=main | cuenta=115
+[BATCH-PROCESSOR] hilo=main | cuenta=101
+[BATCH-PROCESSOR] hilo=main | cuenta=128
+[BATCH-PROCESSOR] hilo=main | cuenta=120
+[BATCH-PROCESSOR] hilo=main | cuenta=150
+[BATCH-PROCESSOR] hilo=main | cuenta=121
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=117
+[BATCH-PROCESSOR] hilo=main | cuenta=147
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=109
+[BATCH-PROCESSOR] hilo=main | cuenta=112
+[BATCH-PROCESSOR] hilo=main | cuenta=149
+[BATCH-PROCESSOR] hilo=main | cuenta=120
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=112
+[BATCH-PROCESSOR] hilo=main | cuenta=149
+[BATCH-PROCESSOR] hilo=main | cuenta=141
+[BATCH-PROCESSOR] hilo=main | cuenta=149
+[BATCH-PROCESSOR] hilo=main | cuenta=118
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=132
+[BATCH-PROCESSOR] hilo=main | cuenta=141
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-PROCESSOR] hilo=main | cuenta=118
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-PROCESSOR] hilo=main | cuenta=129
+[BATCH-PROCESSOR] hilo=main | cuenta=144
+[BATCH-PROCESSOR] hilo=main | cuenta=126
+[BATCH-PROCESSOR] hilo=main | cuenta=136
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=105
+[BATCH-PROCESSOR] hilo=main | cuenta=115
+[BATCH-PROCESSOR] hilo=main | cuenta=147
+[BATCH-PROCESSOR] hilo=main | cuenta=145
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=134
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-PROCESSOR] hilo=main | cuenta=115
+[BATCH-PROCESSOR] hilo=main | cuenta=146
+[BATCH-PROCESSOR] hilo=main | cuenta=113
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=132
+[BATCH-PROCESSOR] hilo=main | cuenta=101
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-PROCESSOR] hilo=main | cuenta=140
+[BATCH-PROCESSOR] hilo=main | cuenta=105
+[BATCH-PROCESSOR] hilo=main | cuenta=128
+[BATCH-PROCESSOR] hilo=main | cuenta=113
+[BATCH-PROCESSOR] hilo=main | cuenta=106
+[BATCH-PROCESSOR] hilo=main | cuenta=116
+[BATCH-PROCESSOR] hilo=main | cuenta=140
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=127
+[BATCH-PROCESSOR] hilo=main | cuenta=110
+[BATCH-PROCESSOR] hilo=main | cuenta=115
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=150
+[BATCH-PROCESSOR] hilo=main | cuenta=101
+[BATCH-PROCESSOR] hilo=main | cuenta=105
+[BATCH-PROCESSOR] hilo=main | cuenta=150
+[BATCH-PROCESSOR] hilo=main | cuenta=137
+[BATCH-PROCESSOR] hilo=main | cuenta=124
+[BATCH-WRITER] hilo=main | chunk=1 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=132
+[BATCH-PROCESSOR] hilo=main | cuenta=113
+[BATCH-PROCESSOR] hilo=main | cuenta=119
+[BATCH-PROCESSOR] hilo=main | cuenta=113
+[BATCH-PROCESSOR] hilo=main | cuenta=146
+[BATCH-PROCESSOR] hilo=main | cuenta=121
+[BATCH-PROCESSOR] hilo=main | cuenta=143
+[BATCH-PROCESSOR] hilo=main | cuenta=118
+[BATCH-PROCESSOR] hilo=main | cuenta=144
+[BATCH-PROCESSOR] hilo=main | cuenta=127
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=120
+[BATCH-PROCESSOR] hilo=main | cuenta=133
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=139
+[BATCH-PROCESSOR] hilo=main | cuenta=132
+[BATCH-PROCESSOR] hilo=main | cuenta=108
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=118
+[BATCH-PROCESSOR] hilo=main | cuenta=149
+[BATCH-WRITER] hilo=main | chunk=1 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=128
+[BATCH-PROCESSOR] hilo=main | cuenta=102
+[BATCH-PROCESSOR] hilo=main | cuenta=127
+[BATCH-PROCESSOR] hilo=main | cuenta=112
+[BATCH-PROCESSOR] hilo=main | cuenta=120
+[BATCH-PROCESSOR] hilo=main | cuenta=146
+[BATCH-PROCESSOR] hilo=main | cuenta=132
+[BATCH-PROCESSOR] hilo=main | cuenta=112
+[BATCH-PROCESSOR] hilo=main | cuenta=129
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=136
+[BATCH-PROCESSOR] hilo=main | cuenta=134
+[BATCH-PROCESSOR] hilo=main | cuenta=105
+[BATCH-PROCESSOR] hilo=main | cuenta=112
+[BATCH-PROCESSOR] hilo=main | cuenta=150
+[BATCH-PROCESSOR] hilo=main | cuenta=111
+[BATCH-PROCESSOR] hilo=main | cuenta=149
+[BATCH-PROCESSOR] hilo=main | cuenta=109
+[BATCH-PROCESSOR] hilo=main | cuenta=147
+[BATCH-PROCESSOR] hilo=main | cuenta=144
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=120
+[BATCH-PROCESSOR] hilo=main | cuenta=133
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=132
+[BATCH-PROCESSOR] hilo=main | cuenta=147
+[BATCH-PROCESSOR] hilo=main | cuenta=104
+[BATCH-PROCESSOR] hilo=main | cuenta=108
+[BATCH-PROCESSOR] hilo=main | cuenta=126
+[BATCH-PROCESSOR] hilo=main | cuenta=118
+[BATCH-WRITER] hilo=main | chunk=2 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=110
+[BATCH-PROCESSOR] hilo=main | cuenta=116
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=133
+[BATCH-PROCESSOR] hilo=main | cuenta=115
+[BATCH-PROCESSOR] hilo=main | cuenta=134
+[BATCH-PROCESSOR] hilo=main | cuenta=145
+[BATCH-PROCESSOR] hilo=main | cuenta=141
+[BATCH-PROCESSOR] hilo=main | cuenta=103
+[BATCH-PROCESSOR] hilo=main | cuenta=117
+[BATCH-WRITER] hilo=main | chunk=2 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=106
+[BATCH-PROCESSOR] hilo=main | cuenta=128
+[BATCH-PROCESSOR] hilo=main | cuenta=103
+[BATCH-PROCESSOR] hilo=main | cuenta=120
+[BATCH-PROCESSOR] hilo=main | cuenta=109
+[BATCH-PROCESSOR] hilo=main | cuenta=135
+[BATCH-PROCESSOR] hilo=main | cuenta=129
+[BATCH-PROCESSOR] hilo=main | cuenta=130
+[BATCH-PROCESSOR] hilo=main | cuenta=130
+[BATCH-PROCESSOR] hilo=main | cuenta=104
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=144
+[BATCH-PROCESSOR] hilo=main | cuenta=120
+[BATCH-PROCESSOR] hilo=main | cuenta=101
+[BATCH-PROCESSOR] hilo=main | cuenta=102
+[BATCH-PROCESSOR] hilo=main | cuenta=145
+[BATCH-PROCESSOR] hilo=main | cuenta=136
+[BATCH-PROCESSOR] hilo=main | cuenta=122
+[BATCH-PROCESSOR] hilo=main | cuenta=121
+[BATCH-PROCESSOR] hilo=main | cuenta=134
+[BATCH-PROCESSOR] hilo=main | cuenta=137
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=130
+[BATCH-PROCESSOR] hilo=main | cuenta=116
+[BATCH-PROCESSOR] hilo=main | cuenta=133
+[BATCH-PROCESSOR] hilo=main | cuenta=126
+[BATCH-PROCESSOR] hilo=main | cuenta=129
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=148
+[BATCH-PROCESSOR] hilo=main | cuenta=124
+[BATCH-PROCESSOR] hilo=main | cuenta=110
+[BATCH-PROCESSOR] hilo=main | cuenta=139
+[BATCH-WRITER] hilo=main | chunk=1 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=142
+[BATCH-PROCESSOR] hilo=main | cuenta=113
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=140
+[BATCH-PROCESSOR] hilo=main | cuenta=113
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=102
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=143
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=103
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=112
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=142
+[BATCH-PROCESSOR] hilo=main | cuenta=148
+[BATCH-PROCESSOR] hilo=main | cuenta=144
+[BATCH-PROCESSOR] hilo=main | cuenta=118
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=103
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=150
+[BATCH-PROCESSOR] hilo=main | cuenta=125
+[BATCH-PROCESSOR] hilo=main | cuenta=150
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-PROCESSOR] hilo=main | cuenta=120
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=141
+[BATCH-PROCESSOR] hilo=main | cuenta=113
+[BATCH-PROCESSOR] hilo=main | cuenta=102
+[BATCH-PROCESSOR] hilo=main | cuenta=137
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=103
+[BATCH-PROCESSOR] hilo=main | cuenta=136
+[BATCH-PROCESSOR] hilo=main | cuenta=145
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=117
+[BATCH-PROCESSOR] hilo=main | cuenta=131
+[BATCH-PROCESSOR] hilo=main | cuenta=132
+[BATCH-PROCESSOR] hilo=main | cuenta=146
+[BATCH-PROCESSOR] hilo=main | cuenta=108
+[BATCH-PROCESSOR] hilo=main | cuenta=112
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=119
+[BATCH-PROCESSOR] hilo=main | cuenta=137
+[BATCH-PROCESSOR] hilo=main | cuenta=127
+[BATCH-PROCESSOR] hilo=main | cuenta=109
+[BATCH-PROCESSOR] hilo=main | cuenta=118
+[BATCH-PROCESSOR] hilo=main | cuenta=121
+[BATCH-PROCESSOR] hilo=main | cuenta=105
+[BATCH-PROCESSOR] hilo=main | cuenta=119
+[BATCH-PROCESSOR] hilo=main | cuenta=122
+[BATCH-PROCESSOR] hilo=main | cuenta=122
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=113
+[BATCH-PROCESSOR] hilo=main | cuenta=131
+[BATCH-PROCESSOR] hilo=main | cuenta=111
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=139
+[BATCH-PROCESSOR] hilo=main | cuenta=134
+[BATCH-PROCESSOR] hilo=main | cuenta=150
+[BATCH-PROCESSOR] hilo=main | cuenta=103
+[BATCH-PROCESSOR] hilo=main | cuenta=108
+[BATCH-PROCESSOR] hilo=main | cuenta=140
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=147
+[BATCH-PROCESSOR] hilo=main | cuenta=110
+[BATCH-PROCESSOR] hilo=main | cuenta=143
+[BATCH-PROCESSOR] hilo=main | cuenta=137
+[BATCH-PROCESSOR] hilo=main | cuenta=124
+[BATCH-PROCESSOR] hilo=main | cuenta=140
+[BATCH-PROCESSOR] hilo=main | cuenta=112
+[BATCH-PROCESSOR] hilo=main | cuenta=102
+[BATCH-PROCESSOR] hilo=main | cuenta=131
+[BATCH-PROCESSOR] hilo=main | cuenta=104
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=128
+[BATCH-PROCESSOR] hilo=main | cuenta=133
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=121
+[BATCH-PROCESSOR] hilo=main | cuenta=130
+[BATCH-PROCESSOR] hilo=main | cuenta=143
+[BATCH-PROCESSOR] hilo=main | cuenta=116
+[BATCH-PROCESSOR] hilo=main | cuenta=136
+[BATCH-PROCESSOR] hilo=main | cuenta=105
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=135
+[BATCH-PROCESSOR] hilo=main | cuenta=126
+[BATCH-PROCESSOR] hilo=main | cuenta=101
+[BATCH-PROCESSOR] hilo=main | cuenta=111
+[BATCH-PROCESSOR] hilo=main | cuenta=121
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=116
+[BATCH-PROCESSOR] hilo=main | cuenta=101
+[BATCH-PROCESSOR] hilo=main | cuenta=133
+[BATCH-PROCESSOR] hilo=main | cuenta=129
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=127
+[BATCH-PROCESSOR] hilo=main | cuenta=137
+[BATCH-PROCESSOR] hilo=main | cuenta=115
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-PROCESSOR] hilo=main | cuenta=109
+[BATCH-PROCESSOR] hilo=main | cuenta=122
+[BATCH-PROCESSOR] hilo=main | cuenta=135
+[BATCH-PROCESSOR] hilo=main | cuenta=102
+[BATCH-PROCESSOR] hilo=main | cuenta=110
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=112
+[BATCH-PROCESSOR] hilo=main | cuenta=132
+[BATCH-PROCESSOR] hilo=main | cuenta=104
+[BATCH-PROCESSOR] hilo=main | cuenta=120
+[BATCH-PROCESSOR] hilo=main | cuenta=126
+[BATCH-PROCESSOR] hilo=main | cuenta=124
+[BATCH-PROCESSOR] hilo=main | cuenta=127
+[BATCH-PROCESSOR] hilo=main | cuenta=132
+[BATCH-PROCESSOR] hilo=main | cuenta=131
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=134
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=111
+[BATCH-PROCESSOR] hilo=main | cuenta=139
+[BATCH-PROCESSOR] hilo=main | cuenta=133
+[BATCH-PROCESSOR] hilo=main | cuenta=147
+[BATCH-PROCESSOR] hilo=main | cuenta=145
+[BATCH-PROCESSOR] hilo=main | cuenta=104
+[BATCH-PROCESSOR] hilo=main | cuenta=115
+[BATCH-PROCESSOR] hilo=main | cuenta=144
+[BATCH-WRITER] hilo=main | chunk=1 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=101
+[BATCH-PROCESSOR] hilo=main | cuenta=134
+[BATCH-PROCESSOR] hilo=main | cuenta=121
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=145
+[BATCH-PROCESSOR] hilo=main | cuenta=147
+[BATCH-PROCESSOR] hilo=main | cuenta=117
+[BATCH-PROCESSOR] hilo=main | cuenta=131
+[BATCH-PROCESSOR] hilo=main | cuenta=115
+[BATCH-PROCESSOR] hilo=main | cuenta=109
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=126
+[BATCH-PROCESSOR] hilo=main | cuenta=143
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=139
+[BATCH-PROCESSOR] hilo=main | cuenta=149
+[BATCH-PROCESSOR] hilo=main | cuenta=119
+[BATCH-PROCESSOR] hilo=main | cuenta=104
+[BATCH-PROCESSOR] hilo=main | cuenta=128
+[BATCH-PROCESSOR] hilo=main | cuenta=120
+[BATCH-PROCESSOR] hilo=main | cuenta=110
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=116
+[BATCH-PROCESSOR] hilo=main | cuenta=133
+[BATCH-PROCESSOR] hilo=main | cuenta=135
+[BATCH-PROCESSOR] hilo=main | cuenta=142
+[BATCH-PROCESSOR] hilo=main | cuenta=134
+[BATCH-PROCESSOR] hilo=main | cuenta=118
+[BATCH-PROCESSOR] hilo=main | cuenta=134
+[BATCH-PROCESSOR] hilo=main | cuenta=120
+[BATCH-PROCESSOR] hilo=main | cuenta=132
+[BATCH-PROCESSOR] hilo=main | cuenta=126
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=143
+[BATCH-PROCESSOR] hilo=main | cuenta=104
+[BATCH-PROCESSOR] hilo=main | cuenta=141
+[BATCH-PROCESSOR] hilo=main | cuenta=106
+[BATCH-PROCESSOR] hilo=main | cuenta=105
+[BATCH-PROCESSOR] hilo=main | cuenta=150
+[BATCH-PROCESSOR] hilo=main | cuenta=133
+[BATCH-PROCESSOR] hilo=main | cuenta=149
+[BATCH-PROCESSOR] hilo=main | cuenta=112
+[BATCH-PROCESSOR] hilo=main | cuenta=142
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=106
+[BATCH-PROCESSOR] hilo=main | cuenta=131
+[BATCH-PROCESSOR] hilo=main | cuenta=102
+[BATCH-PROCESSOR] hilo=main | cuenta=105
+[BATCH-PROCESSOR] hilo=main | cuenta=137
+[BATCH-PROCESSOR] hilo=main | cuenta=143
+[BATCH-PROCESSOR] hilo=main | cuenta=141
+[BATCH-PROCESSOR] hilo=main | cuenta=140
+[BATCH-PROCESSOR] hilo=main | cuenta=124
+[BATCH-PROCESSOR] hilo=main | cuenta=143
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=110
+[BATCH-PROCESSOR] hilo=main | cuenta=129
+[BATCH-PROCESSOR] hilo=main | cuenta=118
+[BATCH-PROCESSOR] hilo=main | cuenta=142
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=104
+[BATCH-PROCESSOR] hilo=main | cuenta=130
+[BATCH-PROCESSOR] hilo=main | cuenta=139
+[BATCH-PROCESSOR] hilo=main | cuenta=150
+[BATCH-PROCESSOR] hilo=main | cuenta=120
+[BATCH-WRITER] hilo=main | chunk=1 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=119
+[BATCH-PROCESSOR] hilo=main | cuenta=128
+[BATCH-PROCESSOR] hilo=main | cuenta=146
+[BATCH-PROCESSOR] hilo=main | cuenta=125
+[BATCH-PROCESSOR] hilo=main | cuenta=108
+[BATCH-PROCESSOR] hilo=main | cuenta=140
+[BATCH-PROCESSOR] hilo=main | cuenta=150
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=113
+[BATCH-PROCESSOR] hilo=main | cuenta=115
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=139
+[BATCH-PROCESSOR] hilo=main | cuenta=147
+[BATCH-PROCESSOR] hilo=main | cuenta=109
+[BATCH-PROCESSOR] hilo=main | cuenta=106
+[BATCH-PROCESSOR] hilo=main | cuenta=140
+[BATCH-PROCESSOR] hilo=main | cuenta=137
+[BATCH-PROCESSOR] hilo=main | cuenta=133
+[BATCH-PROCESSOR] hilo=main | cuenta=127
+[BATCH-PROCESSOR] hilo=main | cuenta=116
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=117
+[BATCH-PROCESSOR] hilo=main | cuenta=118
+[BATCH-PROCESSOR] hilo=main | cuenta=129
+[BATCH-PROCESSOR] hilo=main | cuenta=135
+[BATCH-PROCESSOR] hilo=main | cuenta=116
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=105
+[BATCH-PROCESSOR] hilo=main | cuenta=120
+[BATCH-PROCESSOR] hilo=main | cuenta=149
+[BATCH-PROCESSOR] hilo=main | cuenta=137
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=142
+[BATCH-PROCESSOR] hilo=main | cuenta=136
+[BATCH-PROCESSOR] hilo=main | cuenta=104
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-PROCESSOR] hilo=main | cuenta=144
+[BATCH-PROCESSOR] hilo=main | cuenta=149
+[BATCH-PROCESSOR] hilo=main | cuenta=148
+[BATCH-PROCESSOR] hilo=main | cuenta=109
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=116
+[BATCH-PROCESSOR] hilo=main | cuenta=119
+[BATCH-PROCESSOR] hilo=main | cuenta=139
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=113
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=127
+[BATCH-PROCESSOR] hilo=main | cuenta=116
+[BATCH-PROCESSOR] hilo=main | cuenta=142
+[BATCH-PROCESSOR] hilo=main | cuenta=135
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=125
+[BATCH-PROCESSOR] hilo=main | cuenta=106
+[BATCH-PROCESSOR] hilo=main | cuenta=121
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=150
+[BATCH-PROCESSOR] hilo=main | cuenta=140
+[BATCH-PROCESSOR] hilo=main | cuenta=148
+[BATCH-PROCESSOR] hilo=main | cuenta=148
+[BATCH-PROCESSOR] hilo=main | cuenta=141
+[BATCH-PROCESSOR] hilo=main | cuenta=105
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=105
+[BATCH-PROCESSOR] hilo=main | cuenta=103
+[BATCH-PROCESSOR] hilo=main | cuenta=148
+[BATCH-PROCESSOR] hilo=main | cuenta=109
+[BATCH-PROCESSOR] hilo=main | cuenta=111
+[BATCH-PROCESSOR] hilo=main | cuenta=113
+[BATCH-PROCESSOR] hilo=main | cuenta=142
+[BATCH-PROCESSOR] hilo=main | cuenta=148
+[BATCH-PROCESSOR] hilo=main | cuenta=144
+[BATCH-PROCESSOR] hilo=main | cuenta=103
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=129
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=134
+[BATCH-PROCESSOR] hilo=main | cuenta=113
+[BATCH-PROCESSOR] hilo=main | cuenta=116
+[BATCH-PROCESSOR] hilo=main | cuenta=127
+[BATCH-PROCESSOR] hilo=main | cuenta=125
+[BATCH-PROCESSOR] hilo=main | cuenta=129
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=105
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=145
+[BATCH-PROCESSOR] hilo=main | cuenta=106
+[BATCH-PROCESSOR] hilo=main | cuenta=121
+[BATCH-PROCESSOR] hilo=main | cuenta=134
+[BATCH-PROCESSOR] hilo=main | cuenta=131
+[BATCH-PROCESSOR] hilo=main | cuenta=131
+[BATCH-PROCESSOR] hilo=main | cuenta=129
+[BATCH-PROCESSOR] hilo=main | cuenta=111
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=139
+[BATCH-PROCESSOR] hilo=main | cuenta=125
+[BATCH-PROCESSOR] hilo=main | cuenta=124
+[BATCH-PROCESSOR] hilo=main | cuenta=119
+[BATCH-PROCESSOR] hilo=main | cuenta=144
+[BATCH-PROCESSOR] hilo=main | cuenta=146
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=113
+[BATCH-PROCESSOR] hilo=main | cuenta=127
+[BATCH-PROCESSOR] hilo=main | cuenta=124
+[BATCH-WRITER] hilo=main | chunk=2 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=139
+[BATCH-PROCESSOR] hilo=main | cuenta=108
+[BATCH-PROCESSOR] hilo=main | cuenta=136
+[BATCH-PROCESSOR] hilo=main | cuenta=129
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-PROCESSOR] hilo=main | cuenta=103
+[BATCH-PROCESSOR] hilo=main | cuenta=140
+[BATCH-PROCESSOR] hilo=main | cuenta=129
+[BATCH-PROCESSOR] hilo=main | cuenta=102
+[BATCH-PROCESSOR] hilo=main | cuenta=142
+[BATCH-WRITER] hilo=main | chunk=2 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=110
+[BATCH-PROCESSOR] hilo=main | cuenta=149
+[BATCH-PROCESSOR] hilo=main | cuenta=142
+[BATCH-PROCESSOR] hilo=main | cuenta=130
+[BATCH-PROCESSOR] hilo=main | cuenta=111
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=144
+[BATCH-PROCESSOR] hilo=main | cuenta=142
+[BATCH-PROCESSOR] hilo=main | cuenta=111
+[BATCH-PROCESSOR] hilo=main | cuenta=105
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=125
+[BATCH-PROCESSOR] hilo=main | cuenta=125
+[BATCH-PROCESSOR] hilo=main | cuenta=122
+[BATCH-PROCESSOR] hilo=main | cuenta=137
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=137
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-PROCESSOR] hilo=main | cuenta=122
+[BATCH-PROCESSOR] hilo=main | cuenta=139
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=110
+[BATCH-PROCESSOR] hilo=main | cuenta=137
+[BATCH-PROCESSOR] hilo=main | cuenta=139
+[BATCH-PROCESSOR] hilo=main | cuenta=132
+[BATCH-PROCESSOR] hilo=main | cuenta=143
+[BATCH-PROCESSOR] hilo=main | cuenta=144
+[BATCH-PROCESSOR] hilo=main | cuenta=148
+[BATCH-PROCESSOR] hilo=main | cuenta=106
+[BATCH-PROCESSOR] hilo=main | cuenta=137
+[BATCH-PROCESSOR] hilo=main | cuenta=106
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=118
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=143
+[BATCH-PROCESSOR] hilo=main | cuenta=140
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=109
+[BATCH-PROCESSOR] hilo=main | cuenta=132
+[BATCH-PROCESSOR] hilo=main | cuenta=110
+[BATCH-PROCESSOR] hilo=main | cuenta=139
+[BATCH-PROCESSOR] hilo=main | cuenta=150
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=102
+[BATCH-PROCESSOR] hilo=main | cuenta=145
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=144
+[BATCH-PROCESSOR] hilo=main | cuenta=116
+[BATCH-PROCESSOR] hilo=main | cuenta=135
+[BATCH-PROCESSOR] hilo=main | cuenta=139
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=142
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-WRITER] hilo=main | chunk=1 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=127
+[BATCH-PROCESSOR] hilo=main | cuenta=145
+[BATCH-PROCESSOR] hilo=main | cuenta=128
+[BATCH-PROCESSOR] hilo=main | cuenta=133
+[BATCH-PROCESSOR] hilo=main | cuenta=145
+[BATCH-PROCESSOR] hilo=main | cuenta=145
+[BATCH-PROCESSOR] hilo=main | cuenta=124
+[BATCH-PROCESSOR] hilo=main | cuenta=140
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=101
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=128
+[BATCH-PROCESSOR] hilo=main | cuenta=128
+[BATCH-PROCESSOR] hilo=main | cuenta=111
+[BATCH-PROCESSOR] hilo=main | cuenta=145
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=119
+[BATCH-PROCESSOR] hilo=main | cuenta=101
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=105
+[BATCH-PROCESSOR] hilo=main | cuenta=104
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=122
+[BATCH-PROCESSOR] hilo=main | cuenta=128
+[BATCH-PROCESSOR] hilo=main | cuenta=117
+[BATCH-PROCESSOR] hilo=main | cuenta=135
+[BATCH-PROCESSOR] hilo=main | cuenta=149
+[BATCH-PROCESSOR] hilo=main | cuenta=121
+[BATCH-PROCESSOR] hilo=main | cuenta=125
+[BATCH-PROCESSOR] hilo=main | cuenta=126
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=149
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=134
+[BATCH-PROCESSOR] hilo=main | cuenta=102
+[BATCH-PROCESSOR] hilo=main | cuenta=120
+[BATCH-PROCESSOR] hilo=main | cuenta=101
+[BATCH-PROCESSOR] hilo=main | cuenta=121
+[BATCH-PROCESSOR] hilo=main | cuenta=127
+[BATCH-PROCESSOR] hilo=main | cuenta=140
+[BATCH-PROCESSOR] hilo=main | cuenta=122
+[BATCH-PROCESSOR] hilo=main | cuenta=136
+[BATCH-PROCESSOR] hilo=main | cuenta=102
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=117
+[BATCH-PROCESSOR] hilo=main | cuenta=128
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-PROCESSOR] hilo=main | cuenta=108
+[BATCH-PROCESSOR] hilo=main | cuenta=134
+[BATCH-PROCESSOR] hilo=main | cuenta=105
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=113
+[BATCH-PROCESSOR] hilo=main | cuenta=134
+[BATCH-PROCESSOR] hilo=main | cuenta=147
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=149
+[BATCH-PROCESSOR] hilo=main | cuenta=124
+[BATCH-PROCESSOR] hilo=main | cuenta=149
+[BATCH-PROCESSOR] hilo=main | cuenta=106
+[BATCH-PROCESSOR] hilo=main | cuenta=131
+[BATCH-PROCESSOR] hilo=main | cuenta=111
+[BATCH-PROCESSOR] hilo=main | cuenta=129
+[BATCH-PROCESSOR] hilo=main | cuenta=121
+[BATCH-PROCESSOR] hilo=main | cuenta=113
+[BATCH-PROCESSOR] hilo=main | cuenta=135
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=129
+[BATCH-PROCESSOR] hilo=main | cuenta=116
+[BATCH-PROCESSOR] hilo=main | cuenta=147
+[BATCH-PROCESSOR] hilo=main | cuenta=106
+[BATCH-PROCESSOR] hilo=main | cuenta=122
+[BATCH-PROCESSOR] hilo=main | cuenta=106
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=133
+[BATCH-PROCESSOR] hilo=main | cuenta=102
+[BATCH-PROCESSOR] hilo=main | cuenta=108
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=120
+[BATCH-PROCESSOR] hilo=main | cuenta=104
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=117
+[BATCH-PROCESSOR] hilo=main | cuenta=141
+[BATCH-PROCESSOR] hilo=main | cuenta=115
+[BATCH-PROCESSOR] hilo=main | cuenta=103
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=113
+[BATCH-PROCESSOR] hilo=main | cuenta=101
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=128
+[BATCH-PROCESSOR] hilo=main | cuenta=146
+[BATCH-PROCESSOR] hilo=main | cuenta=109
+[BATCH-PROCESSOR] hilo=main | cuenta=108
+[BATCH-PROCESSOR] hilo=main | cuenta=135
+[BATCH-PROCESSOR] hilo=main | cuenta=108
+[BATCH-PROCESSOR] hilo=main | cuenta=142
+[BATCH-PROCESSOR] hilo=main | cuenta=102
+[BATCH-PROCESSOR] hilo=main | cuenta=110
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=110
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=132
+[BATCH-PROCESSOR] hilo=main | cuenta=145
+[BATCH-PROCESSOR] hilo=main | cuenta=108
+[BATCH-PROCESSOR] hilo=main | cuenta=104
+[BATCH-PROCESSOR] hilo=main | cuenta=111
+[BATCH-PROCESSOR] hilo=main | cuenta=125
+[BATCH-PROCESSOR] hilo=main | cuenta=136
+[BATCH-PROCESSOR] hilo=main | cuenta=147
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=116
+[BATCH-PROCESSOR] hilo=main | cuenta=106
+[BATCH-PROCESSOR] hilo=main | cuenta=111
+[BATCH-PROCESSOR] hilo=main | cuenta=143
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-PROCESSOR] hilo=main | cuenta=127
+[BATCH-PROCESSOR] hilo=main | cuenta=137
+[BATCH-PROCESSOR] hilo=main | cuenta=121
+[BATCH-PROCESSOR] hilo=main | cuenta=106
+[BATCH-PROCESSOR] hilo=main | cuenta=146
+[BATCH-WRITER] hilo=main | chunk=1 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=105
+[BATCH-PROCESSOR] hilo=main | cuenta=109
+[BATCH-PROCESSOR] hilo=main | cuenta=142
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=126
+[BATCH-PROCESSOR] hilo=main | cuenta=113
+[BATCH-PROCESSOR] hilo=main | cuenta=118
+[BATCH-PROCESSOR] hilo=main | cuenta=119
+[BATCH-PROCESSOR] hilo=main | cuenta=138
+[BATCH-PROCESSOR] hilo=main | cuenta=135
+[BATCH-WRITER] hilo=main | chunk=1 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=112
+[BATCH-PROCESSOR] hilo=main | cuenta=115
+[BATCH-PROCESSOR] hilo=main | cuenta=125
+[BATCH-PROCESSOR] hilo=main | cuenta=131
+[BATCH-PROCESSOR] hilo=main | cuenta=122
+[BATCH-PROCESSOR] hilo=main | cuenta=130
+[BATCH-PROCESSOR] hilo=main | cuenta=126
+[BATCH-PROCESSOR] hilo=main | cuenta=106
+[BATCH-PROCESSOR] hilo=main | cuenta=139
+[BATCH-PROCESSOR] hilo=main | cuenta=136
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=136
+[BATCH-PROCESSOR] hilo=main | cuenta=122
+[BATCH-PROCESSOR] hilo=main | cuenta=101
+[BATCH-PROCESSOR] hilo=main | cuenta=147
+[BATCH-PROCESSOR] hilo=main | cuenta=128
+[BATCH-PROCESSOR] hilo=main | cuenta=142
+[BATCH-PROCESSOR] hilo=main | cuenta=143
+[BATCH-PROCESSOR] hilo=main | cuenta=119
+[BATCH-PROCESSOR] hilo=main | cuenta=111
+[BATCH-PROCESSOR] hilo=main | cuenta=108
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=121
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=125
+[BATCH-PROCESSOR] hilo=main | cuenta=124
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-PROCESSOR] hilo=main | cuenta=116
+[BATCH-PROCESSOR] hilo=main | cuenta=146
+[BATCH-PROCESSOR] hilo=main | cuenta=122
+[BATCH-PROCESSOR] hilo=main | cuenta=101
+[BATCH-PROCESSOR] hilo=main | cuenta=103
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=111
+[BATCH-PROCESSOR] hilo=main | cuenta=121
+[BATCH-PROCESSOR] hilo=main | cuenta=115
+[BATCH-PROCESSOR] hilo=main | cuenta=135
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=149
+[BATCH-PROCESSOR] hilo=main | cuenta=108
+[BATCH-PROCESSOR] hilo=main | cuenta=141
+[BATCH-PROCESSOR] hilo=main | cuenta=129
+[BATCH-PROCESSOR] hilo=main | cuenta=108
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=115
+[BATCH-PROCESSOR] hilo=main | cuenta=142
+[BATCH-PROCESSOR] hilo=main | cuenta=150
+[BATCH-PROCESSOR] hilo=main | cuenta=113
+[BATCH-PROCESSOR] hilo=main | cuenta=101
+[BATCH-PROCESSOR] hilo=main | cuenta=105
+[BATCH-PROCESSOR] hilo=main | cuenta=127
+[BATCH-PROCESSOR] hilo=main | cuenta=149
+[BATCH-PROCESSOR] hilo=main | cuenta=134
+[BATCH-PROCESSOR] hilo=main | cuenta=110
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=148
+[BATCH-PROCESSOR] hilo=main | cuenta=115
+[BATCH-PROCESSOR] hilo=main | cuenta=135
+[BATCH-PROCESSOR] hilo=main | cuenta=140
+[BATCH-PROCESSOR] hilo=main | cuenta=113
+[BATCH-PROCESSOR] hilo=main | cuenta=108
+[BATCH-PROCESSOR] hilo=main | cuenta=130
+[BATCH-PROCESSOR] hilo=main | cuenta=122
+[BATCH-PROCESSOR] hilo=main | cuenta=144
+[BATCH-PROCESSOR] hilo=main | cuenta=132
+[BATCH-WRITER] hilo=main | chunk=4 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=108
+[BATCH-PROCESSOR] hilo=main | cuenta=132
+[BATCH-PROCESSOR] hilo=main | cuenta=130
+[BATCH-PROCESSOR] hilo=main | cuenta=104
+[BATCH-PROCESSOR] hilo=main | cuenta=102
+[BATCH-PROCESSOR] hilo=main | cuenta=129
+[BATCH-PROCESSOR] hilo=main | cuenta=141
+[BATCH-PROCESSOR] hilo=main | cuenta=128
+[BATCH-PROCESSOR] hilo=main | cuenta=122
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-WRITER] hilo=main | chunk=6 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=104
+[BATCH-PROCESSOR] hilo=main | cuenta=107
+[BATCH-PROCESSOR] hilo=main | cuenta=128
+[BATCH-PROCESSOR] hilo=main | cuenta=113
+[BATCH-PROCESSOR] hilo=main | cuenta=117
+[BATCH-PROCESSOR] hilo=main | cuenta=129
+[BATCH-PROCESSOR] hilo=main | cuenta=133
+[BATCH-PROCESSOR] hilo=main | cuenta=113
+[BATCH-PROCESSOR] hilo=main | cuenta=104
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-WRITER] hilo=main | chunk=1 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=109
+[BATCH-PROCESSOR] hilo=main | cuenta=129
+[BATCH-PROCESSOR] hilo=main | cuenta=146
+[BATCH-PROCESSOR] hilo=main | cuenta=141
+[BATCH-PROCESSOR] hilo=main | cuenta=127
+[BATCH-PROCESSOR] hilo=main | cuenta=116
+[BATCH-PROCESSOR] hilo=main | cuenta=126
+[BATCH-PROCESSOR] hilo=main | cuenta=135
+[BATCH-PROCESSOR] hilo=main | cuenta=111
+[BATCH-PROCESSOR] hilo=main | cuenta=119
+[BATCH-WRITER] hilo=main | chunk=3 | jobInstance=2
+[BATCH-PROCESSOR] hilo=main | cuenta=123
+[BATCH-PROCESSOR] hilo=main | cuenta=129
+[BATCH-PROCESSOR] hilo=main | cuenta=105
+[BATCH-PROCESSOR] hilo=main | cuenta=116
+[BATCH-PROCESSOR] hilo=main | cuenta=101
+[BATCH-PROCESSOR] hilo=main | cuenta=117
+[BATCH-PROCESSOR] hilo=main | cuenta=106
+[BATCH-PROCESSOR] hilo=main | cuenta=139
+[BATCH-PROCESSOR] hilo=main | cuenta=114
+[BATCH-PROCESSOR] hilo=main | cuenta=134
+[BATCH-WRITER] hilo=main | chunk=5 | jobInstance=2
+2026-08-30T22:58:53.519-04:00  INFO 217236 --- [bancoxyzbatch] [           main] o.s.batch.core.step.AbstractStep         : Step: [cuentaInteresStep] executed in 2s57ms
+2026-08-30T22:58:53.556-04:00  INFO 217236 --- [bancoxyzbatch] [           main] o.s.batch.core.step.AbstractStep         : Executing step: [cuentaInteresReconciliationStep]
+2026-08-30T22:58:53.603-04:00  INFO 217236 --- [bancoxyzbatch] [           main] o.s.batch.core.step.AbstractStep         : Step: [cuentaInteresReconciliationStep] executed in 51ms
+2026-08-30T22:58:53.638-04:00  INFO 217236 --- [bancoxyzbatch] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=cuentaInteresJob]] completed with the following parameters: [{JobParameter{name='run.id', value=6002, type=class java.lang.Long, identifying=true}}] and the following status: [COMPLETED] in 2s187ms
+[BATCH] JobExecution ID: 2
+[BATCH] Estado final: COMPLETED
+[BATCH] Exit status: exitCode=COMPLETED;exitDescription=;exitException=null
+[BATCH-PERF] job=cuentaInteresJob | mode=SECUENCIAL | threads=1 | chunkSize=10 | duraciónMs=2301.203
+2026-08-30T22:58:53.644-04:00  INFO 217236 --- [bancoxyzbatch] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-08-30T22:58:53.646-04:00  INFO 217236 --- [bancoxyzbatch] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-08-30T22:58:53.647-04:00  INFO 217236 --- [bancoxyzbatch] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.

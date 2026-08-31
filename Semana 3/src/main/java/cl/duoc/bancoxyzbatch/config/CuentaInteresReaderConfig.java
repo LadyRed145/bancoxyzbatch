@@ -1,6 +1,7 @@
 package cl.duoc.bancoxyzbatch.config;
 
 import cl.duoc.bancoxyzbatch.model.CuentaInteres;
+import cl.duoc.bancoxyzbatch.util.CsvValueParser;
 import org.springframework.batch.infrastructure.item.file.FlatFileItemReader;
 import org.springframework.batch.infrastructure.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.batch.infrastructure.item.support.SynchronizedItemStreamReader;
@@ -9,11 +10,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
-import java.math.BigDecimal;
-
 /**
  * Configuro la lectura del CSV utilizado para calcular intereses.
- * Sincronizo el reader porque el Step puede ejecutarse en paralelo.
+ *
+ * Los valores legacy se convierten de forma tolerante.
+ * Los campos vacíos o con formatos inválidos se representan como null
+ * para permitir que las reglas del ItemProcessor determinen su tratamiento.
+ *
+ * Mantengo el reader sincronizado para preservar la seguridad de lectura
+ * cuando el Step utiliza procesamiento concurrente.
  */
 @Configuration
 public class CuentaInteresReaderConfig {
@@ -48,45 +53,54 @@ public class CuentaInteresReaderConfig {
                                     new CuentaInteres();
 
                             cuenta.setCuentaId(
-                                    Long.valueOf(
-                                            fieldSet
-                                                    .readString("cuenta_id")
-                                                    .trim()
+                                    CsvValueParser.parseLong(
+                                            fieldSet.readString(
+                                                    "cuenta_id"
+                                            )
                                     )
                             );
 
                             cuenta.setNombre(
-                                    fieldSet
-                                            .readString("nombre")
-                                            .trim()
+                                    CsvValueParser.parseString(
+                                            fieldSet.readString(
+                                                    "nombre"
+                                            )
+                                    )
                             );
 
                             cuenta.setSaldo(
-                                    new BigDecimal(
-                                            fieldSet
-                                                    .readString("saldo")
-                                                    .trim()
+                                    CsvValueParser.parseBigDecimal(
+                                            fieldSet.readString(
+                                                    "saldo"
+                                            )
                                     )
                             );
 
                             cuenta.setEdad(
-                                    Integer.valueOf(
-                                            fieldSet
-                                                    .readString("edad")
-                                                    .trim()
+                                    CsvValueParser.parseInteger(
+                                            fieldSet.readString(
+                                                    "edad"
+                                            )
                                     )
                             );
 
                             cuenta.setTipo(
-                                    fieldSet
-                                            .readString("tipo")
-                                            .trim()
+                                    CsvValueParser.parseString(
+                                            fieldSet.readString(
+                                                    "tipo"
+                                            )
+                                    )
                             );
 
                             return cuenta;
                         })
                         .build();
 
+        /*
+         * Mantengo el acceso sincronizado al reader.
+         * La estrategia de ejecución del Job se ajustará posteriormente
+         * sin modificar la responsabilidad de esta configuración.
+         */
         return new SynchronizedItemStreamReaderBuilder<CuentaInteres>()
                 .delegate(delegate)
                 .build();

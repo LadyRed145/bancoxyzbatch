@@ -24,8 +24,15 @@ import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
- * Defino el Job que consolida los movimientos anuales.
- * Incluyo retry, skip controlado y procesamiento paralelo.
+ * Defino el Job encargado de consolidar los movimientos
+ * correspondientes a los estados de cuenta anuales.
+ *
+ * El Step incorpora:
+ *
+ * - procesamiento paralelo;
+ * - retry;
+ * - tolerancia a errores;
+ * - registro de movimientos rechazados.
  */
 @Configuration
 public class EstadoCuentaAnualJobConfig {
@@ -52,12 +59,19 @@ public class EstadoCuentaAnualJobConfig {
             @Qualifier("batchRetryPolicy")
             RetryPolicy batchRetryPolicy,
 
-            @Value("${app.batch.chunk-size:5}")
-            int chunkSize
+            @Value("${app.batch.chunk-size:10}")
+            int chunkSize,
+
+            @Value("${app.batch.skip-limit:750}")
+            int skipLimit
     ) {
 
         validarChunkSize(
                 chunkSize
+        );
+
+        validarSkipLimit(
+                skipLimit
         );
 
         return new StepBuilder(
@@ -84,8 +98,9 @@ public class EstadoCuentaAnualJobConfig {
                 )
 
                 /*
-                 * Los fallos transitorios se reintentan.
-                 * Los errores de formato o negocio se registran y omiten.
+                 * Los fallos transitorios son reintentados.
+                 * Los errores de formato o reglas de negocio
+                 * son omitidos y registrados.
                  */
                 .faultTolerant()
 
@@ -98,12 +113,17 @@ public class EstadoCuentaAnualJobConfig {
                         ReglaNegocioException.class
                 )
 
-                .skipLimit(10)
+                .skipLimit(
+                        skipLimit
+                )
 
                 .skipListener(
                         registroRechazadoSkipListener
                 )
 
+                /*
+                 * Este Job conserva procesamiento paralelo.
+                 */
                 .taskExecutor(
                         batchTaskExecutor
                 )
@@ -121,7 +141,9 @@ public class EstadoCuentaAnualJobConfig {
                 "estadoCuentaAnualReconciliationStep",
                 jobRepository
         )
-                .tasklet(tasklet)
+                .tasklet(
+                        tasklet
+                )
                 .build();
     }
 
@@ -155,6 +177,18 @@ public class EstadoCuentaAnualJobConfig {
 
             throw new IllegalArgumentException(
                     "app.batch.chunk-size debe ser mayor o igual a 1"
+            );
+        }
+    }
+
+    private void validarSkipLimit(
+            int skipLimit
+    ) {
+
+        if (skipLimit < 1) {
+
+            throw new IllegalArgumentException(
+                    "app.batch.skip-limit debe ser mayor o igual a 1"
             );
         }
     }
