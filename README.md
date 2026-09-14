@@ -1,778 +1,283 @@
-# BancoXYZ
+# BancoXYZ — Backend for Frontend (BFF) — Semana 5
 
-Backend engineering project developed around the progressive modernization of legacy banking processes using **Java, Spring Boot, Spring Batch, PostgreSQL and the Backend for Frontend pattern**.
+Actividad sumativa de **Desarrollo Backend III (PBY2203)**.
 
-The repository evolves from batch-oriented data processing toward a multi-channel backend architecture for **Web, Mobile and ATM clients**.
+La solución implementa tres **Backend for Frontend independientes** para Web, Mobile y ATM sobre un Bank Backend común. Cada canal adapta sus endpoints y payloads, restringe sus permisos, utiliza HTTPS y mantiene desacoplada la comunicación con los servicios internos.
 
-> Batch Processing • Data Engineering • Backend Architecture • BFF • Security
-
----
-
-## 📌 Overview
-
-**BancoXYZ** is an academic backend project developed through several implementation stages.
-
-The first stages focus on modernizing legacy banking processes using **Spring Batch**, including:
-
-- Daily transaction processing
-- Monthly interest calculation
-- Annual account statement generation
-- CSV ingestion
-- Data validation and normalization
-- Error handling
-- Retry and skip policies
-- Reconciliation and idempotency
-- PostgreSQL persistence
-- Batch execution metadata
-- Parallel processing and performance benchmarking
-
-The project later evolves into a **Backend for Frontend (BFF)** architecture consisting of:
-
-- A central banking backend
-- BFF Web
-- BFF Mobile
-- BFF ATM
-
-Each BFF adapts the information and operations exposed by the central backend according to the needs of its client channel.
-
----
-
-## 🧭 Project Evolution
-
-| Stage | Focus | Main Concepts |
-|---|---|---|
-| **Semana 1** | Initial batch modernization | Spring Batch, CSV processing, PostgreSQL |
-| **Semana 2** | Batch consolidation | Persistence, execution validation, reconciliation |
-| **Semana 3** | Reliability and performance | Retry, skip, parallelism, benchmarks, idempotency |
-| **Semana 4** | Backend for Frontend | Web, Mobile and ATM BFFs, WebClient, Spring Security |
-
-Each stage is preserved independently inside the repository to show the technical evolution of the solution.
-
----
-
-## 🏗️ Overall Architecture
-
-```mermaid
-flowchart LR
-
-    CSV["Legacy CSV Files"]
-
-    Batch["Spring Batch
-    Processing"]
-
-    PostgreSQL[("PostgreSQL 17")]
-
-    Backend["Bank Backend
-    Spring Boot
-    :8080"]
-
-    WebBFF["BFF Web
-    :8081"]
-
-    MobileBFF["BFF Mobile
-    :8082"]
-
-    AtmBFF["BFF ATM
-    :8083"]
-
-    Web["Web Client"]
-    Mobile["Mobile Client"]
-    ATM["ATM Client"]
-
-    CSV --> Batch
-    Batch --> PostgreSQL
-
-    Web --> WebBFF
-    Mobile --> MobileBFF
-    ATM --> AtmBFF
-
-    WebBFF -->|WebClient / HTTP| Backend
-    MobileBFF -->|WebClient / HTTP| Backend
-    AtmBFF -->|WebClient / HTTP| Backend
-
-    Backend --> PostgreSQL
-```
-
-The batch layer processes and persists banking data.
-
-The later BFF architecture reuses that persisted information through a central backend, while client-specific services adapt responses and operations without accessing PostgreSQL directly.
-
----
-
-# ⚙️ Batch Processing
-
-## Three Core Jobs
-
-The batch implementation contains three independent Spring Batch Jobs.
-
-### 💳 `transaccionJob`
-
-Processes daily banking transactions from:
+## Arquitectura
 
 ```text
-transacciones.csv
+Web Client    -> BFF Web    (HTTPS 8081 / ROLE_WEB)    \
+Mobile Client -> BFF Mobile (HTTPS 8082 / ROLE_MOBILE) ---> Bank Backend (HTTP 8080) ---> PostgreSQL 17
+ATM Client    -> BFF ATM    (HTTPS 8083 / ROLE_ATM)    /
 ```
 
-The Job performs:
+Los BFF consumen el Bank Backend mediante una capa `client` basada en `WebClient`. Ningún BFF accede directamente a PostgreSQL, repositorios JPA ni entidades de persistencia del backend.
 
-- Transaction validation
-- Credit/debit normalization
-- Negative debit correction
-- Functional duplicate detection
-- Persistence
-- Daily financial summary generation
-- Reconciliation between executions
+## Organización interna de los BFF
 
-Functional duplicates are detected using:
+La estructura se alinea con la separación de responsabilidades trabajada en la semana:
 
 ```text
-date
-+
-amount
-+
-transaction type
+controller  -> expone endpoints del canal
+service     -> coordina el caso de uso
+client      -> encapsula llamadas HTTP al Bank Backend
+mapper      -> transforma respuestas del backend al contrato del canal
+dto         -> define contratos de entrada/salida
+exception   -> traduce errores funcionales, indisponibilidad y timeout
+config      -> seguridad y WebClient
 ```
 
-Duplicate records are preserved with:
+En Web no agrego un `mapper` artificial porque el canal conserva una respuesta rica en `JsonNode`; la transformación relevante allí es la agregación concurrente del detalle. Mobile y ATM sí cuentan con mappers explícitos porque reducen el contrato recibido desde el backend.
 
-```text
-DUPLICADO
-```
-
-but excluded from financial totals.
-
-The daily summary calculates:
-
-```text
-net_balance = total_credits - total_debits
-```
-
----
-
-### 💰 `cuentaInteresJob`
-
-Processes monthly interest calculations from:
-
-```text
-intereses.csv
-```
-
-Academic interest rules:
-
-```text
-Savings account → 1%
-Loan            → 2%
-```
-
-Calculation:
-
-```text
-interest = balance × rate
-final_balance = balance + interest
-```
-
-This Job intentionally executes sequentially because multiple input records can reference the same account.
-
-Keeping this process sequential prevents concurrent updates to the same functional entity.
-
----
-
-### 📊 `estadoCuentaAnualJob`
-
-Processes yearly banking movements from:
-
-```text
-cuentas_anuales.csv
-```
-
-Supported operations include:
-
-```text
-deposit
-withdrawal
-purchase
-```
-
-The process normalizes transaction types and monetary signs before consolidating:
-
-- Total deposits
-- Total withdrawals
-- Total purchases
-- Annual balance
-
-The final state is identified by:
-
-```text
-account_id + year
-```
-
-preventing duplicated annual statements.
-
----
-
-## 🔄 Spring Batch Pipeline
-
-The processing model follows the standard Spring Batch architecture:
-
-```text
-CSV
- │
- ▼
-FlatFileItemReader
- │
- ▼
-ItemProcessor
- │
- ▼
-ItemWriter
- │
- ▼
-PostgreSQL
-```
-
-Additional Steps and Tasklets implement:
-
-- Duplicate detection
-- Daily summaries
-- Reconciliation
-- Historical state management
-
----
-
-## 🧩 Reconciliation & Idempotency
-
-The batch implementation supports repeated executions without generating unnecessary functional duplicates.
-
-Processed entities can maintain:
-
-```text
-active
-last_instance_id
-```
-
-During a new execution:
-
-```text
-Present in current dataset
-        → active = true
-
-Missing from current dataset
-        → active = false
-
-Reappears later
-        → active = true
-```
-
-This approach preserves historical information while keeping the current dataset state synchronized.
-
----
-
-## ⚠️ Fault Tolerance
-
-Batch Steps use Spring Batch fault-tolerance mechanisms.
-
-Recoverable invalid records can be skipped without necessarily failing the entire Job.
-
-The project handles errors occurring during:
-
-```text
-READ
-PROCESS
-WRITE
-```
-
-Rejected records are persisted in:
-
-```text
-registros_rechazados
-```
-
-with information about:
-
-- Job
-- Step
-- Processing phase
-- Original content
-- Exception type
-- Error message
-- Job instance
-- Registration date
-
-The configured academic skip limit is:
-
-```properties
-app.batch.skip-limit=750
-```
-
----
-
-## 🔁 Retry Strategy
-
-Transient persistence failures can be retried before declaring a Step failed.
-
-Configuration:
-
-```properties
-app.batch.retry-max-retries=3
-app.batch.retry-delay-ms=500
-```
-
-A controlled retry simulation was also implemented to validate the recovery mechanism experimentally.
-
----
-
-# ⚡ Performance Engineering
-
-Semana 3 introduced controlled performance testing instead of selecting concurrency parameters arbitrarily.
-
-The benchmark evaluated:
-
-- Number of worker threads
-- Chunk size
-- Stability under load
-
-Each stable configuration was executed multiple times.
-
-### Thread Benchmark
-
-With:
-
-```text
-chunk-size = 10
-```
-
-the measured averages were:
-
-| Threads | Average |
-|---:|---:|
-| 1 | 7931.971 ms |
-| 2 | 5465.317 ms |
-| **3** | **4883.985 ms** |
-| 4 | 5373.557 ms |
-
-Three threads produced the best average result.
-
-Compared with a single thread, this represented an improvement of approximately:
-
-```text
-38.4%
-```
-
-Increasing the thread count to four introduced additional coordination overhead and did not improve performance.
-
----
-
-### Chunk Benchmark
-
-Using three threads:
-
-| Chunk | Result | Average |
-|---:|---|---:|
-| 5 | COMPLETED | 6519.185 ms |
-| **10** | **COMPLETED** | **5865.691 ms** |
-| 25 | FAILED | — |
-| 50 | FAILED | — |
-
-Chunks of `25` and `50` saturated the configured executor and produced task rejection errors.
-
-The final stable configuration became:
-
-```properties
-app.batch.threads=3
-app.batch.chunk-size=10
-app.batch.queue-capacity=20
-```
-
-The configuration was selected based on both:
-
-```text
-performance + stability
-```
-
-rather than throughput alone.
-
----
-
-## 📈 Final Batch Execution
-
-The final three Jobs completed successfully with the selected configuration:
-
-| Job | Mode | Threads | Chunk | Result |
-|---|---|---:|---:|---|
-| `transaccionJob` | Parallel | 3 | 10 | ✅ COMPLETED |
-| `cuentaInteresJob` | Sequential | 1 | 10 | ✅ COMPLETED |
-| `estadoCuentaAnualJob` | Parallel | 3 | 10 | ✅ COMPLETED |
-
-The test datasets contained approximately 1,000 input records per process.
-
----
-
-# 🌐 Backend for Frontend
-
-Semana 4 extends BancoXYZ with a **Backend for Frontend architecture**.
-
-The implementation contains four independent Spring Boot applications:
-
-```text
-Semana 4/
-│
-├── bank-backend/
-│
-└── bff/
-    ├── bff-web/
-    ├── bff-mobile/
-    └── bff-atm/
-```
-
-The BFFs communicate with the central backend through HTTP using **Spring WebClient**.
-
-They do not access PostgreSQL directly.
-
----
-
-## 🏦 Bank Backend
-
-Port:
-
-```text
-8080
-```
-
-The central backend provides access to banking information previously persisted in PostgreSQL.
-
-Main resources include:
-
-- Accounts
-- Processed transactions
-- Annual account statements
-- Daily transaction summaries
-- Withdrawal operations
-
-### Endpoints
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/api/cuentas` | List accounts |
-| `GET` | `/api/cuentas/{id}` | Get account |
-| `POST` | `/api/cuentas/{id}/retiro` | Execute withdrawal |
-| `GET` | `/api/transacciones` | List processed transactions |
-| `GET` | `/api/transacciones/{id}` | Get processed transaction |
-| `GET` | `/api/estados-cuenta` | List annual statements |
-| `GET` | `/api/estados-cuenta/cuenta/{cuentaId}` | Statements by account |
-| `GET` | `/api/resumenes` | List daily summaries |
-| `GET` | `/api/resumenes/{fecha}` | Daily summary by date |
-
-The backend accesses the same domain tables generated by the batch-oriented stages, including:
-
-```text
-cuentas_intereses
-transacciones_procesadas
-estados_cuenta_anuales
-resumen_transacciones_diarias
-```
-
----
-
-# 🖥️ BFF Web
-
-Port:
-
-```text
-8081
-```
-
-The Web BFF provides richer responses suitable for interfaces that can display more complete banking information.
-
-Endpoints:
-
-| Method | Endpoint |
-|---|---|
-| `GET` | `/api/web/cuentas` |
-| `GET` | `/api/web/cuentas/{id}` |
-| `GET` | `/api/web/cuentas/{id}/detalle` |
-
-The detail operation combines data obtained from multiple central-backend resources into a Web-oriented response.
-
----
-
-# 📱 BFF Mobile
-
-Port:
-
-```text
-8082
-```
-
-The Mobile BFF intentionally reduces the amount of information sent to the client.
-
-Endpoints:
-
-| Method | Endpoint |
-|---|---|
-| `GET` | `/api/mobile/cuentas` |
-| `GET` | `/api/mobile/cuentas/{id}/resumen` |
-
-A mobile account summary contains only the data required by the channel, such as:
-
-```json
-{
-  "cuentaId": 145,
-  "nombre": "Steve Rogers",
-  "tipo": "ahorro",
-  "estado": "PROCESADO",
-  "saldoFinal": 1620.00
-}
-```
-
-This demonstrates one of the central objectives of the BFF pattern: different clients do not need to consume identical representations.
-
----
-
-# 🏧 BFF ATM
-
-Port:
-
-```text
-8083
-```
-
-The ATM BFF focuses on small and critical banking operations.
-
-Endpoints:
-
-| Method | Endpoint |
-|---|---|
-| `GET` | `/api/atm/cuentas/{id}/saldo` |
-| `POST` | `/api/atm/cuentas/{id}/retiro` |
-
-Example withdrawal request:
-
-```json
-{
-  "monto": 500
-}
-```
-
-The central backend validates withdrawal operations before updating the account balance.
-
----
-
-# 🔐 Channel Security
-
-The three BFFs use **Spring Security with HTTP Basic authentication**.
-
-Each channel has an independent security configuration and credentials.
-
-The Web and Mobile BFFs explicitly enforce their corresponding channel roles.
-
-The ATM service requires authenticated access and is configured with its own ATM credentials.
-
-This separation prevents unauthenticated clients from directly accessing BFF operations.
-
----
-
-## 🛠️ Technology Stack
-
-### Backend & Batch
-
-- Java 21
-- Spring Boot 4.1.x
-- Spring Batch 6
-- Spring Data JPA
-- Hibernate
-- Spring Validation
-- Spring Web
-
-### BFF Architecture
-
-- Spring Web
-- Spring WebFlux
-- WebClient
-- Spring Security
-- HTTP Basic
-- DTO-based response adaptation
-
-### Data
-
-- PostgreSQL 17
-- Spring Batch JDBC JobRepository
-
-### Development & Infrastructure
-
-- Maven / Maven Wrapper
-- Docker
-- Docker Compose
-- Git
-- GitHub
-- Postman
-
----
-
-## 📁 Repository Structure
+## Estructura de entrega
 
 ```text
 bancoxyzbatch/
-│
-├── Semana 1/
-│   └── Initial BancoXYZ Batch implementation
-│
-├── Semana 2/
-│   └── Batch processing evolution and execution evidence
-│
-├── Semana 3/
-│   ├── benchmarks/
-│   ├── evidencias/
-│   ├── Propuesta_Tecnica.md
-│   └── Optimized Spring Batch implementation
-│
-├── Semana 4/
-│   ├── bank-backend/
-│   ├── bff/
-│   │   ├── bff-web/
-│   │   ├── bff-mobile/
-│   │   └── bff-atm/
-│   └── README.md
-│
-├── docs/
-│   └── BancoXYZ_BFF_Documentacion_Semana4.pdf
-│
-└── README.md
+├── README.md
+├── Propuesta_Tecnica.md
+├── ESTRUCTURA_ENTREGA.md
+├── docker-compose.yml
+├── .env.example
+├── .gitignore
+├── pom.xml
+├── mvnw
+├── .mvn/
+└── Semana 5/
+    ├── bank-backend/
+    ├── bff/
+    │   ├── bff-web/
+    │   ├── bff-mobile/
+    │   └── bff-atm/
+    ├── data/legacy/
+    │   ├── intereses.csv
+    │   ├── cuentas_anuales.csv
+    │   └── transacciones.csv
+    ├── database/
+    │   ├── 01_schema.sql
+    │   ├── 02_seed_processed_snapshot.sql
+    │   └── README.md
+    ├── docs/
+    └── scripts/
+        ├── inicializar_bd.fish
+        ├── verificar_bff.fish
+        └── verificar_retiro_controlado.fish
 ```
 
----
+## Datos incluidos
 
-## 🚀 Running the Batch Environment
+La entrega contiene los **tres CSV legacy completos (1000 filas cada uno)** y una base reproducible derivada de ellos:
 
-A PostgreSQL 17 container can be started from the corresponding batch stage using Docker Compose:
+- 50 cuentas procesadas.
+- 20 estados de cuenta anuales.
+- 482 transacciones procesadas válidas/corregidas.
+- 265 resúmenes diarios.
 
-```bash
+Las cuentas 101–108 se mantienen alineadas con la evidencia funcional validada de Semana 5.
+
+## Requisitos
+
+- Java 21
+- Docker + Docker Compose
+- Fish shell (solo para scripts de verificación)
+- `curl`, `jq` y `openssl` para las pruebas automáticas
+
+## 1. Levantar PostgreSQL
+
+Desde la raíz:
+
+```fish
 docker compose up -d
 ```
 
-The database is available by default on:
+En un volumen nuevo se ejecutan automáticamente `01_schema.sql` y `02_seed_processed_snapshot.sql`.
 
-```text
-localhost:5432
+Para comprobarlo:
+
+```fish
+docker exec bancoxyz-postgres psql -U bancoxyz -d bancoxyz -c '\dt'
 ```
 
-Batch Jobs are selected explicitly using the controlled Job runner.
+> Para reconstruir la BD desde cero: `docker compose down -v` y luego `docker compose up -d`. Esto elimina el volumen local actual.
 
-Example:
+## 2. Compilar todos los módulos
 
-```bash
-./mvnw spring-boot:run \
-  -Dspring-boot.run.arguments="--app.batch.job=transaccionJob --app.batch.run-id=1001"
+```fish
+./mvnw clean compile
 ```
 
-Other available Jobs:
+El POM raíz compila:
 
-```text
-cuentaInteresJob
-estadoCuentaAnualJob
-```
+- `bank-backend`
+- `bff-web`
+- `bff-mobile`
+- `bff-atm`
 
-A different run ID identifies a new Spring Batch `JobInstance`.
+## 3. Ejecutar servicios
 
----
+Abrir cuatro terminales.
 
-## 🚀 Running the BFF Architecture
-
-Start PostgreSQL first.
-
-Then start the central backend:
-
-```bash
-cd "Semana 4/bank-backend"
+### Bank Backend
+```fish
+cd "Semana 5/bank-backend"
 ./mvnw spring-boot:run
 ```
 
-The backend runs on:
+### BFF Web
+```fish
+cd "Semana 5/bff/bff-web"
+./mvnw spring-boot:run
+```
+
+### BFF Mobile
+```fish
+cd "Semana 5/bff/bff-mobile"
+./mvnw spring-boot:run
+```
+
+### BFF ATM
+```fish
+cd "Semana 5/bff/bff-atm"
+./mvnw spring-boot:run
+```
+
+## BFF por canal
+
+| Canal | URL | Rol | Objetivo |
+|---|---|---|---|
+| Web | `https://localhost:8081` | `ROLE_WEB` | Datos completos y agregación |
+| Mobile | `https://localhost:8082` | `ROLE_MOBILE` | Payload reducido |
+| ATM | `https://localhost:8083` | `ROLE_ATM` | Saldo y retiro con respuesta mínima |
+
+### Endpoints personalizados
 
 ```text
-http://localhost:8080
+WEB
+GET /api/web/cuentas
+GET /api/web/cuentas/{id}
+GET /api/web/cuentas/{id}/detalle
+
+MOBILE
+GET /api/mobile/cuentas
+GET /api/mobile/cuentas/{id}/resumen
+
+ATM
+GET  /api/atm/cuentas/{id}/saldo
+POST /api/atm/cuentas/{id}/retiro
 ```
 
-Start each BFF independently:
+### Métricas validadas
 
-```bash
-cd "Semana 4/bff/bff-web"
-mvn spring-boot:run
+| Operación | Tamaño observado |
+|---|---:|
+| Web — cuentas completas | 2174 B |
+| Web — detalle agregado | 449 B |
+| Mobile — cuentas resumidas | 784 B |
+| Mobile — resumen individual | 93 B |
+| ATM — saldo | 61 B |
+| ATM — retiro controlado | 65 B |
+
+## Resiliencia y servicios no disponibles
+
+Todos los BFF definen un timeout configurable para las llamadas al Bank Backend:
+
+```properties
+backend.timeout=${BACKEND_TIMEOUT:3s}
 ```
 
-```bash
-cd "Semana 4/bff/bff-mobile"
-mvn spring-boot:run
-```
+La capa `client` aplica ese límite antes de devolver control al `service`.
 
-```bash
-cd "Semana 4/bff/bff-atm"
-mvn spring-boot:run
-```
-
-Result:
+Comportamiento previsto:
 
 ```text
-Bank Backend → 8080
-BFF Web      → 8081
-BFF Mobile   → 8082
-BFF ATM      → 8083
+El backend responde con error funcional -> se conserva su status (400/404/409, etc.)
+El backend no acepta conexión          -> 503 Service Unavailable
+El backend excede el timeout           -> 504 Gateway Timeout
 ```
 
----
+Así evito que una dependencia lenta o caída deje solicitudes esperando indefinidamente y mantengo los detalles HTTP fuera de la lógica de negocio del BFF.
 
-## 🧪 Validation
+## Seguridad
 
-The project was validated through:
+Los tres BFF utilizan HTTPS con certificados PKCS12 académicos y Bearer Tokens asociados a roles.
 
-- Spring Batch execution logs
-- PostgreSQL result inspection
-- Batch reconciliation tests
-- Retry simulation
-- Duplicate detection
-- Controlled performance benchmarks
-- Postman
-- Authenticated and unauthenticated BFF requests
-- Web response validation
-- Mobile response reduction
-- ATM balance queries
-- ATM withdrawal operations
+Comportamiento validado:
 
-The BFF validation produced successful `HTTP 200 OK` responses for correctly authenticated operations and rejected unauthenticated requests. 
+```text
+Sin token                  -> 401
+Token desconocido          -> 401
+WEB -> BFF Mobile          -> 403
+MOBILE -> BFF ATM          -> 403
+ATM -> BFF Web             -> 403
+```
 
----
+Los valores incluidos son exclusivamente académicos. En producción se recomienda OAuth2/OIDC, JWT de corta duración, gestión externa de secretos y certificados emitidos por una CA.
 
-## 📚 Documentation
+## Verificación automática
 
-### Project Stages
+Con los cuatro servicios activos:
 
-- [Semana 1 — Batch](./Semana%201/README.md)
-- [Semana 2 — Batch](./Semana%202/README.md)
-- [Semana 3 — Performance & Reliability](./Semana%203/README.md)
-- [Semana 4 — Backend for Frontend](./Semana%204/README.md)
+```fish
+fish "Semana 5/scripts/verificar_bff.fish"
+```
 
-### Technical Report
+Resultado esperado:
 
-📄 [BancoXYZ — BFF Technical Report](./docs/BancoXYZ_BFF_Documentacion_Semana4.pdf)
+```text
+VERIFICACIÓN FINAL: TODAS LAS PRUEBAS PASARON
+```
 
----
+Para demostrar un retiro real sin alterar las cuentas originales:
 
-## 🎓 Academic Context
+```fish
+fish "Semana 5/scripts/verificar_retiro_controlado.fish"
+```
 
-This project was developed as part of the **Analista Programador** program at **Duoc UC, Chile**, for the **Desarrollo Backend III (PBY2203)** course.
+El script crea una cuenta temporal, retira `$1.00`, comprueba el saldo y elimina el fixture. Resultado esperado:
 
-Developed collaboratively by:
+```text
+VERIFICACIÓN DE RETIRO: OK
+Retiro real validado sin alterar la cuenta original.
+```
 
-- **Natalia Alvarado**
-- **Egor Llancapichun**
+## Evidencias
 
-The repository preserves the progressive technical evolution of the solution rather than replacing earlier implementation stages.
+La documentación final de capturas debe guardarse en:
 
----
+```text
+Semana 5/docs/BancoXYZ_BFF_Evidencias_Semana5.pdf
+```
 
-## 👩‍💻 Profile
+## Buenas prácticas aplicadas
 
-Portfolio repository maintained by:
+- BFF independientes por canal.
+- Endpoints personalizados según consumidor.
+- Separación `controller -> service -> client`.
+- Mappers explícitos donde existe transformación real de contrato.
+- DTOs específicos y payloads mínimos.
+- BFF desacoplados de persistencia y entidades JPA.
+- Timeout configurable en la integración HTTP.
+- `503 Service Unavailable` ante indisponibilidad del backend.
+- `504 Gateway Timeout` ante respuesta demasiado lenta.
+- Autenticación y autorización por rol.
+- HTTPS en los tres BFF.
+- Sesiones stateless.
+- Validación de entradas.
+- Manejo semántico de errores.
+- Compresión de respuestas JSON.
+- Maven multi-módulo.
+- Datos legacy incluidos.
+- PostgreSQL reproducible mediante Docker Compose.
+- Pruebas automáticas sin alterar los datos originales.
 
-**Natalia Alvarado — LadyRed145**
+## Evolución productiva
 
-[GitHub Profile](https://github.com/LadyRed145)
+Para un entorno real agregaría, sin sobrecargar esta entrega académica:
+
+- OAuth2 / OpenID Connect y JWT firmados de corta duración.
+- Gestión externa de secretos.
+- Certificados emitidos por una CA y TLS interno.
+- Circuit breaker y retry únicamente donde sea seguro e idempotente.
+- Rate limiting.
+- Métricas, trazabilidad y alertas.
+- Testcontainers y pipeline CI/CD.

@@ -1,0 +1,27 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: bancoxyz-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-bancoxyz}
+      POSTGRES_USER: ${POSTGRES_USER:-bancoxyz}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bancoxyz123}
+
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+
+    volumes:
+      - bancoxyz_postgres_data:/var/lib/postgresql/data
+      - ./Semana 5/database/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./Semana 5/database/02_seed_processed_snapshot.sql:/docker-entrypoint-initdb.d/02_seed_processed_snapshot.sql:ro
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bancoxyz} -d ${POSTGRES_DB:-bancoxyz}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  bancoxyz_postgres_data:
