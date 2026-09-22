@@ -1,0 +1,29 @@
+{
+  "properties": [
+    {
+      "name": "backend.base-url",
+      "type": "java.lang.String",
+      "description": "URL base del Bank Backend consumido por este BFF."
+    },
+    {
+      "name": "backend.timeout",
+      "type": "java.time.Duration",
+      "description": "Tiempo máximo que este BFF espera una respuesta del Bank Backend."
+    },
+    {
+      "name": "security.tokens.web",
+      "type": "java.lang.String",
+      "description": "Token Bearer académico asociado al rol WEB."
+    },
+    {
+      "name": "security.tokens.mobile",
+      "type": "java.lang.String",
+      "description": "Token Bearer académico asociado al rol MOBILE."
+    },
+    {
+      "name": "security.tokens.atm",
+      "type": "java.lang.String",
+      "description": "Token Bearer académico asociado al rol ATM."
+    }
+  ]
+}

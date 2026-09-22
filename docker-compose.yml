@@ -3,25 +3,208 @@ services:
     image: postgres:17
     container_name: bancoxyz-postgres
     restart: unless-stopped
-
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-bancoxyz}
       POSTGRES_USER: ${POSTGRES_USER:-bancoxyz}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bancoxyz123}
-
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
-
     volumes:
       - bancoxyz_postgres_data:/var/lib/postgresql/data
-      - ./Semana 5/database/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
-      - ./Semana 5/database/02_seed_processed_snapshot.sql:/docker-entrypoint-initdb.d/02_seed_processed_snapshot.sql:ro
-
+      - "./Semana 6/database/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro"
+      - "./Semana 6/database/02_seed_processed_snapshot.sql:/docker-entrypoint-initdb.d/02_seed_processed_snapshot.sql:ro"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bancoxyz} -d ${POSTGRES_DB:-bancoxyz}"]
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - bancoxyz-net
+
+  config-server:
+    build:
+      context: "./Semana 6/config-server"
+    container_name: bancoxyz-config-server
+    restart: unless-stopped
+    environment:
+      CONFIG_REPO_PATH: file:/config-repo
+    volumes:
+      - "./Semana 6/config-repo:/config-repo:ro"
+    ports:
+      - "8888:8888"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8888/actuator/health >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    networks:
+      - bancoxyz-net
+
+  discovery-server:
+    build:
+      context: "./Semana 6/discovery-server"
+    container_name: bancoxyz-discovery-server
+    restart: unless-stopped
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8761/actuator/health >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    networks:
+      - bancoxyz-net
+
+  bank-backend:
+    build:
+      context: "./Semana 6/bank-backend"
+    container_name: bancoxyz-bank-backend
+    restart: unless-stopped
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-bancoxyz}
+      DB_USER: ${POSTGRES_USER:-bancoxyz}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-bancoxyz123}
+      EUREKA_SERVER_URL: http://discovery-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+      EUREKA_INSTANCE_HOSTNAME: bank-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    networks:
+      - bancoxyz-net
+
+  bff-web:
+    build:
+      context: "./Semana 6/bff/bff-web"
+    container_name: bancoxyz-bff-web
+    restart: unless-stopped
+    environment:
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      EUREKA_SERVER_URL: http://discovery-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+      EUREKA_INSTANCE_HOSTNAME: bff-web
+      BACKEND_BASE_URL: http://bank-backend
+      BACKEND_TIMEOUT: ${BACKEND_TIMEOUT:-3s}
+      WEB_API_TOKEN: ${WEB_API_TOKEN:-bancoxyz-web-demo-token-2026}
+      MOBILE_API_TOKEN: ${MOBILE_API_TOKEN:-bancoxyz-mobile-demo-token-2026}
+      ATM_API_TOKEN: ${ATM_API_TOKEN:-bancoxyz-atm-demo-token-2026}
+      SSL_KEYSTORE_PASSWORD: ${SSL_KEYSTORE_PASSWORD:-changeit}
+      RETRY_MAX_ATTEMPTS: ${RETRY_MAX_ATTEMPTS:-3}
+      RETRY_WAIT_DURATION: ${RETRY_WAIT_DURATION:-200ms}
+      RATE_LIMIT_FOR_PERIOD: ${RATE_LIMIT_FOR_PERIOD:-10}
+      RATE_LIMIT_REFRESH_PERIOD: ${RATE_LIMIT_REFRESH_PERIOD:-1s}
+      RATE_LIMIT_TIMEOUT: ${RATE_LIMIT_TIMEOUT:-0ms}
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      bank-backend:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fkSs https://localhost:8081/actuator/health/liveness >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    networks:
+      - bancoxyz-net
+
+  bff-mobile:
+    build:
+      context: "./Semana 6/bff/bff-mobile"
+    container_name: bancoxyz-bff-mobile
+    restart: unless-stopped
+    environment:
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      EUREKA_SERVER_URL: http://discovery-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+      EUREKA_INSTANCE_HOSTNAME: bff-mobile
+      BACKEND_BASE_URL: http://bank-backend
+      BACKEND_TIMEOUT: ${BACKEND_TIMEOUT:-3s}
+      WEB_API_TOKEN: ${WEB_API_TOKEN:-bancoxyz-web-demo-token-2026}
+      MOBILE_API_TOKEN: ${MOBILE_API_TOKEN:-bancoxyz-mobile-demo-token-2026}
+      ATM_API_TOKEN: ${ATM_API_TOKEN:-bancoxyz-atm-demo-token-2026}
+      SSL_KEYSTORE_PASSWORD: ${SSL_KEYSTORE_PASSWORD:-changeit}
+      RETRY_MAX_ATTEMPTS: ${RETRY_MAX_ATTEMPTS:-3}
+      RETRY_WAIT_DURATION: ${RETRY_WAIT_DURATION:-200ms}
+      RATE_LIMIT_FOR_PERIOD: ${RATE_LIMIT_FOR_PERIOD:-10}
+      RATE_LIMIT_REFRESH_PERIOD: ${RATE_LIMIT_REFRESH_PERIOD:-1s}
+      RATE_LIMIT_TIMEOUT: ${RATE_LIMIT_TIMEOUT:-0ms}
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      bank-backend:
+        condition: service_healthy
+    ports:
+      - "8082:8082"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fkSs https://localhost:8082/actuator/health/liveness >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    networks:
+      - bancoxyz-net
+
+  bff-atm:
+    build:
+      context: "./Semana 6/bff/bff-atm"
+    container_name: bancoxyz-bff-atm
+    restart: unless-stopped
+    environment:
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      EUREKA_SERVER_URL: http://discovery-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+      EUREKA_INSTANCE_HOSTNAME: bff-atm
+      BACKEND_BASE_URL: http://bank-backend
+      BACKEND_TIMEOUT: ${BACKEND_TIMEOUT:-3s}
+      WEB_API_TOKEN: ${WEB_API_TOKEN:-bancoxyz-web-demo-token-2026}
+      MOBILE_API_TOKEN: ${MOBILE_API_TOKEN:-bancoxyz-mobile-demo-token-2026}
+      ATM_API_TOKEN: ${ATM_API_TOKEN:-bancoxyz-atm-demo-token-2026}
+      SSL_KEYSTORE_PASSWORD: ${SSL_KEYSTORE_PASSWORD:-changeit}
+      RETRY_MAX_ATTEMPTS: ${RETRY_MAX_ATTEMPTS:-3}
+      RETRY_WAIT_DURATION: ${RETRY_WAIT_DURATION:-200ms}
+      RATE_LIMIT_FOR_PERIOD: ${RATE_LIMIT_FOR_PERIOD:-10}
+      RATE_LIMIT_REFRESH_PERIOD: ${RATE_LIMIT_REFRESH_PERIOD:-1s}
+      RATE_LIMIT_TIMEOUT: ${RATE_LIMIT_TIMEOUT:-0ms}
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      bank-backend:
+        condition: service_healthy
+    ports:
+      - "8083:8083"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fkSs https://localhost:8083/actuator/health/liveness >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    networks:
+      - bancoxyz-net
 
 volumes:
   bancoxyz_postgres_data:
+
+networks:
+  bancoxyz-net:
+    driver: bridge

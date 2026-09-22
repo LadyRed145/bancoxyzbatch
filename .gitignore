@@ -6,3 +6,10 @@ backup_*.sql
 *.dump
 *.log
 classpath.txt
+.env
+.idea/
+.~lock.*#
+*.orig
+*~
+Semana 6/docs/
+Semana 6/capturas/
