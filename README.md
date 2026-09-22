@@ -5,6 +5,10 @@
 
 ---
 
+**Repositorio:** `https://github.com/LadyRed145/bancoxyzbatch/tree/main/Semana%206`
+
+---
+
 ## ✨ Resumen
 
 BancoXYZ evoluciona la solución de migración bancaria hacia una arquitectura distribuida basada en **Spring Boot + Spring Cloud**. La solución mantiene un `bank-backend` como API central sobre PostgreSQL y agrega tres **Backend for Frontend (BFF)** independientes para Web, Mobile y ATM.
@@ -234,7 +238,6 @@ La evidencia principal utiliza:
 bancoxyzbatch/
 ├── README.md
 ├── Propuesta_Tecnica.md
-├── ESTRUCTURA_ENTREGA.md
 ├── docker-compose.yml
 ├── .env.example
 ├── pom.xml
@@ -257,7 +260,6 @@ bancoxyzbatch/
     │   ├── 01_schema.sql
     │   ├── 02_seed_processed_snapshot.sql
     │   └── README.md
-    ├── docs/
     └── scripts/
         ├── inicializar_bd.fish
         ├── verificar_actuator_resilience.fish
@@ -473,28 +475,28 @@ Al superar el umbral configurado, el Circuit Breaker transiciona a `OPEN`. Poste
 
 ---
 
-## 📸 Evidencias recomendadas
+## 📸 Documentación de evidencias
 
-Guardar la documentación final en:
-
-```text
-Semana 6/docs/
-```
-
-Orden sugerido:
+La documentación final de ejecución se entrega como archivo separado:
 
 ```text
-01_build_7_de_7_success.png
-02_config_server_centralizado.png
-03_eureka_servicios_registrados.png
-04_apis_resultados_migracion.png
-05_seguridad_401_403.png
-06_auditoria_actuator_resilience4j.png
-07_retry_tres_microservicios.png
-08_circuit_breaker_open.png
-09_circuit_breaker_recuperacion.png
-10_repositorio_github.png
+BancoXYZ_BFF_Evidencias_Semana6.pdf
 ```
+
+El documento contiene las evidencias mínimas y suficientes para la Semana 6:
+
+1. compilación completa `7/7 SUCCESS`;
+2. configuración centralizada mediante Config Server;
+3. registro de servicios en Eureka;
+4. ejecución de las APIs Web, Mobile y ATM sobre los datos migrados;
+5. autenticación `401` y autorización cruzada `403`;
+6. auditoría de Actuator y mecanismos Resilience4j;
+7. Retry de tres intentos en los tres canales;
+8. Circuit Breaker en `OPEN` con solicitudes no permitidas;
+9. recuperación `HALF_OPEN -> CLOSED`;
+10. repositorio GitHub final de Semana 6.
+
+La documentación y sus capturas se mantienen fuera del repositorio de código para evitar duplicar artefactos de entrega.
 
 ---
 

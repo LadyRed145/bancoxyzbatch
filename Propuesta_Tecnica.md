@@ -490,3 +490,25 @@ BancoXYZ cumple el objetivo de la Semana 6 al integrar configuración centraliza
 La solución no se limita a declarar dependencias: los mecanismos de resiliencia fueron ejecutados y observados en runtime. Se comprobó Retry de tres intentos, Rate Limiter con respuestas 429, apertura y recuperación del Circuit Breaker, fallback ante indisponibilidad y recuperación completa a estado CLOSED.
 
 La arquitectura mantiene además las decisiones de desacoplamiento construidas en semanas anteriores, conservando al Bank Backend como dueño de la persistencia y utilizando los BFF como fronteras específicas de cada canal.
+
+21. Estado final de entrega
+
+La versión final de Semana 6 queda respaldada por el repositorio:
+
+https://github.com/LadyRed145/bancoxyzbatch/tree/main/Semana%206
+
+Antes de la entrega se validó:
+
+- reactor Maven completo: 7/7 SUCCESS;
+- Config Server funcional para WEB, MOBILE y ATM;
+- Eureka con BFF-WEB, BFF-MOBILE, BFF-ATM y BANK-BACKEND en UP;
+- seis Dockerfile y seis .dockerignore, uno por servicio Java;
+- docker-compose.yml válido con siete servicios;
+- tres CSV legacy presentes con 1000 registros cada uno;
+- seguridad 401/403;
+- Retry de tres intentos;
+- Rate Limiter con respuestas 429 en los tres canales;
+- Circuit Breaker CLOSED -> OPEN -> HALF_OPEN -> CLOSED;
+- recuperación correcta del backend y retorno a CLOSED.
+
+La documentación visual se entrega por separado en BancoXYZ_BFF_Evidencias_Semana6.pdf para mantener el repositorio enfocado en código, configuración y scripts reproducibles.
