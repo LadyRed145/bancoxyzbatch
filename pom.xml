@@ -14,7 +14,7 @@
 
     <packaging>pom</packaging>
 
-    <name>BancoXYZ - Semana 6</name>
+    <name>BancoXYZ - Semana 7</name>
 
     <description>
         Proyecto agregador Maven de BancoXYZ para la implementación
@@ -25,16 +25,16 @@
     <modules>
 
         <!-- Infraestructura Spring Cloud -->
-        <module>Semana 6/config-server</module>
-        <module>Semana 6/discovery-server</module>
+        <module>Semana 7/config-server</module>
+        <module>Semana 7/discovery-server</module>
 
         <!-- API bancaria -->
-        <module>Semana 6/bank-backend</module>
+        <module>Semana 7/bank-backend</module>
 
         <!-- Backend for Frontend -->
-        <module>Semana 6/bff/bff-web</module>
-        <module>Semana 6/bff/bff-mobile</module>
-        <module>Semana 6/bff/bff-atm</module>
+        <module>Semana 7/bff/bff-web</module>
+        <module>Semana 7/bff/bff-mobile</module>
+        <module>Semana 7/bff/bff-atm</module>
 
     </modules>
 
