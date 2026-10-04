@@ -1,13 +1,13 @@
 # Propuesta Técnica — BancoXYZ
 
-## Arquitectura resiliente y orientada a eventos con Spring Cloud y Apache Kafka — Semana 7
+## Microservicios resilientes, seguridad y arquitectura orientada a eventos — Semana 8
 
 **Asignatura:** Desarrollo Backend III (PBY2203)  
 **Grupo:** 13
 
 ## 1. Objetivo
 
-La propuesta técnica de Semana 7 da continuidad a BancoXYZ mediante una arquitectura distribuida que mantiene configuración centralizada, descubrimiento de servicios y tolerancia a fallos, e incorpora mensajería asíncrona con Apache Kafka en el proceso de retiro.
+La propuesta técnica de Semana 8 da continuidad a BancoXYZ sobre la base estable de microservicios construida previamente. Se mantienen la configuración centralizada, el descubrimiento de servicios, Resilience4j, PostgreSQL y la mensajería asíncrona con Apache Kafka. Durante esta etapa se incorporará OAuth2.0 como mecanismo de seguridad y se consolidará el despliegue mediante Docker y Docker Compose.
 
 El `bank-backend` continúa concentrando la lógica bancaria y la persistencia. Los tres Backend for Frontend —Web, Mobile y ATM— mantienen contratos específicos para cada consumidor. Kafka desacopla el resultado de una operación de retiro de su procesamiento posterior mediante el evento `RetiroRealizadoEvent`.
 
@@ -110,7 +110,7 @@ Ante indisponibilidad del Bank Backend, el BFF entrega `HTTP 503 Service Unavail
 
 ## 8. Arquitectura de eventos con Kafka
 
-La Semana 7 incorpora Apache Kafka al flujo de retiro.
+La base inicial de Semana 8 conserva Apache Kafka integrado al flujo de retiro.
 
 ### 8.1 Evento
 
@@ -184,13 +184,13 @@ Las dependencias de inicio utilizan healthchecks para evitar levantar servicios 
 
 ## 11. Seguridad
 
-La base Semana 7 conserva el mecanismo académico stateless mediante Bearer Tokens y roles por canal:
+La base inicial de Semana 8 conserva temporalmente el mecanismo académico stateless mediante Bearer Tokens y roles por canal:
 
 - `ROLE_WEB`
 - `ROLE_MOBILE`
 - `ROLE_ATM`
 
-Los BFF utilizan HTTPS con certificados PKCS12 académicos. OAuth2.0 se reserva para la evolución solicitada en Semana 8, evitando alterar retrospectivamente la implementación entregada de Semana 7.
+Los BFF utilizan HTTPS con certificados PKCS12 académicos. **OAuth2.0 aún no está implementado en esta copia inicial** y constituye el primer cambio funcional requerido para Semana 8. La migración se realizará sobre esta base sin modificar retrospectivamente la entrega estable anterior.
 
 ## 12. Organización del código
 
@@ -200,7 +200,7 @@ bancoxyzbatch/
 ├── pom.xml
 ├── README.md
 ├── Propuesta_Tecnica.md
-└── Semana 7/
+└── Semana 8/
     ├── bank-backend/
     │   └── src/main/java/
     │       └── cl/duoc/bancoxyz/
@@ -240,4 +240,4 @@ docker compose up --build -d
 
 ## 14. Resultado técnico
 
-La versión estable de Semana 7 conserva la arquitectura de microservicios y resiliencia de BancoXYZ e incorpora un flujo de eventos de retiro basado en Kafka. El proyecto queda preparado como base limpia para la Semana 8 sin mezclar todavía la implementación de OAuth2.0 correspondiente a esa etapa.
+La base inicial de Semana 8 conserva la arquitectura de microservicios, Resilience4j y el flujo de eventos de retiro con Kafka ya validados. El siguiente paso técnico es incorporar OAuth2.0, mantener funcionales las imágenes Docker de todos los microservicios y verificar la orquestación completa mediante Docker Compose.

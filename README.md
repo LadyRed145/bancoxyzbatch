@@ -1,13 +1,13 @@
 # 🏦 BancoXYZ — Microservicios resilientes y arquitectura orientada a eventos
 
-> **Desarrollo Backend III (PBY2203) · Semana 7 · Grupo 13**  
+> **Desarrollo Backend III (PBY2203) · Semana 8 · Grupo 13**  
 > Spring Cloud, Service Discovery, BFF por canal, Resilience4j, Apache Kafka y PostgreSQL.
 
 ---
 
 ## ✨ Resumen
 
-BancoXYZ continúa la evolución de la solución bancaria hacia una arquitectura distribuida. La Semana 7 conserva la base de microservicios de la semana anterior e incorpora **mensajería asíncrona con Apache Kafka** sobre el flujo de retiro, manteniendo los mecanismos de resiliencia implementados con **Resilience4j**.
+BancoXYZ continúa la evolución de la solución bancaria hacia una arquitectura distribuida. La **Semana 8** parte desde la base estable construida en la semana anterior: microservicios, configuración centralizada, descubrimiento de servicios, **Resilience4j**, **Apache Kafka** y PostgreSQL. Sobre esta base se incorporará la seguridad requerida con **OAuth2.0** y se reforzará el despliegue mediante Docker y Docker Compose.
 
 La solución incluye:
 
@@ -105,9 +105,9 @@ Ante la indisponibilidad del backend, el BFF entrega una respuesta controlada `H
 
 ---
 
-## 🔐 Seguridad de la base Semana 7
+## 🔐 Seguridad — estado inicial de Semana 8
 
-La Semana 7 conserva la autenticación académica por Bearer Token y roles por canal:
+La base heredada conserva temporalmente la autenticación académica por Bearer Token y roles por canal:
 
 ```text
 ROLE_WEB
@@ -115,7 +115,7 @@ ROLE_MOBILE
 ROLE_ATM
 ```
 
-Los BFF funcionan sobre HTTPS con certificados PKCS12 académicos. La evolución a OAuth2.0 corresponde a la Semana 8 y no se mezcla con esta base estable.
+Los BFF funcionan sobre HTTPS con certificados PKCS12 académicos. **OAuth2.0 todavía no está implementado en esta base inicial de Semana 8**; será el primer cambio funcional de esta etapa.
 
 ---
 
@@ -134,7 +134,7 @@ bancoxyzbatch/
 ├── pom.xml
 ├── README.md
 ├── Propuesta_Tecnica.md
-└── Semana 7/
+└── Semana 8/
     ├── bank-backend/
     ├── bff/
     │   ├── bff-atm/
@@ -277,18 +277,18 @@ Ejemplos:
 Desde la raíz:
 
 ```fish
-fish "Semana 7/scripts/inicializar_bd.fish"
-fish "Semana 7/scripts/verificar_bff.fish"
-fish "Semana 7/scripts/verificar_actuator_resilience.fish"
-fish "Semana 7/scripts/verificar_retiro_controlado.fish"
+fish "Semana 8/scripts/inicializar_bd.fish"
+fish "Semana 8/scripts/verificar_bff.fish"
+fish "Semana 8/scripts/verificar_actuator_resilience.fish"
+fish "Semana 8/scripts/verificar_retiro_controlado.fish"
 ```
 
 ---
 
-## ✅ Alcance de Semana 7
+## ✅ Alcance inicial de Semana 8
 
-La base estable de Semana 7 deja funcionando y organizada la arquitectura distribuida previa e incorpora el flujo asíncrono de retiro con Kafka. Esta versión se utiliza como punto de partida para la Semana 8, donde se agregará OAuth2.0 y se reforzará el despliegue Cloud sin alterar el histórico de esta entrega.
+La base de Semana 8 parte con la arquitectura distribuida, Resilience4j, Kafka, Docker Compose y los BFF funcionando desde la entrega anterior. En esta etapa se implementará **OAuth2.0**, se validarán las imágenes Docker de todos los microservicios y se consolidará la orquestación Cloud sin alterar el histórico de las semanas anteriores.
 
 ---
 
-**BancoXYZ · Grupo 13 · Desarrollo Backend III (PBY2203) · Semana 7**
+**BancoXYZ · Grupo 13 · Desarrollo Backend III (PBY2203) · Semana 8**

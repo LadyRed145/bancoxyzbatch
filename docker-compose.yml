@@ -11,8 +11,8 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - bancoxyz_postgres_data:/var/lib/postgresql/data
-      - "./Semana 7/database/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro"
-      - "./Semana 7/database/02_seed_processed_snapshot.sql:/docker-entrypoint-initdb.d/02_seed_processed_snapshot.sql:ro"
+      - "./Semana 8/database/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro"
+      - "./Semana 8/database/02_seed_processed_snapshot.sql:/docker-entrypoint-initdb.d/02_seed_processed_snapshot.sql:ro"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bancoxyz} -d ${POSTGRES_DB:-bancoxyz}"]
       interval: 5s
@@ -57,13 +57,13 @@ services:
 
   config-server:
     build:
-      context: "./Semana 7/config-server"
+      context: "./Semana 8/config-server"
     container_name: bancoxyz-config-server
     restart: unless-stopped
     environment:
       CONFIG_REPO_PATH: file:/config-repo
     volumes:
-      - "./Semana 7/config-repo:/config-repo:ro"
+      - "./Semana 8/config-repo:/config-repo:ro"
     ports:
       - "8888:8888"
     healthcheck:
@@ -78,7 +78,7 @@ services:
 
   discovery-server:
     build:
-      context: "./Semana 7/discovery-server"
+      context: "./Semana 8/discovery-server"
     container_name: bancoxyz-discovery-server
     restart: unless-stopped
     ports:
@@ -94,7 +94,7 @@ services:
 
   bank-backend:
     build:
-      context: "./Semana 7/bank-backend"
+      context: "./Semana 8/bank-backend"
     container_name: bancoxyz-bank-backend
     restart: unless-stopped
     environment:
@@ -125,7 +125,7 @@ services:
 
   bff-web:
     build:
-      context: "./Semana 7/bff/bff-web"
+      context: "./Semana 8/bff/bff-web"
     container_name: bancoxyz-bff-web
     restart: unless-stopped
     environment:
@@ -164,7 +164,7 @@ services:
 
   bff-mobile:
     build:
-      context: "./Semana 7/bff/bff-mobile"
+      context: "./Semana 8/bff/bff-mobile"
     container_name: bancoxyz-bff-mobile
     restart: unless-stopped
     environment:
@@ -203,7 +203,7 @@ services:
 
   bff-atm:
     build:
-      context: "./Semana 7/bff/bff-atm"
+      context: "./Semana 8/bff/bff-atm"
     container_name: bancoxyz-bff-atm
     restart: unless-stopped
     environment:
