@@ -14,9 +14,23 @@
 # La prueba destructiva de Retry/Circuit Breaker (backend DOWN) se realiza aparte
 # para no detener servicios automáticamente durante una auditoría normal.
 
-set WEB_TOKEN (set -q WEB_API_TOKEN; and echo $WEB_API_TOKEN; or echo 'bancoxyz-web-demo-token-2026')
-set MOBILE_TOKEN (set -q MOBILE_API_TOKEN; and echo $MOBILE_API_TOKEN; or echo 'bancoxyz-mobile-demo-token-2026')
-set ATM_TOKEN (set -q ATM_API_TOKEN; and echo $ATM_API_TOKEN; or echo 'bancoxyz-atm-demo-token-2026')
+set SCRIPT_DIR (cd (dirname (status --current-filename)); and pwd)
+
+set WEB_TOKEN (fish "$SCRIPT_DIR/oauth2_obtener_token.fish" web)
+if test -z "$WEB_TOKEN"
+    echo "ERROR: no pude obtener token OAuth2 para web."
+    exit 1
+end
+set MOBILE_TOKEN (fish "$SCRIPT_DIR/oauth2_obtener_token.fish" mobile)
+if test -z "$MOBILE_TOKEN"
+    echo "ERROR: no pude obtener token OAuth2 para mobile."
+    exit 1
+end
+set ATM_TOKEN (fish "$SCRIPT_DIR/oauth2_obtener_token.fish" atm)
+if test -z "$ATM_TOKEN"
+    echo "ERROR: no pude obtener token OAuth2 para atm."
+    exit 1
+end
 
 set FALLAS 0
 set TMP_JSON /tmp/bancoxyz_actuator.json
@@ -165,7 +179,7 @@ function comprobar_cb_web_sano
 end
 
 set_color --bold
-printf '\nBANCOXYZ — AUDITORÍA ACTUATOR + RESILIENCE4J — SEMANA 6\n'
+printf '\nBANCOXYZ — AUDITORÍA ACTUATOR + RESILIENCE4J — SEMANA 8\n'
 set_color normal
 printf 'Modo: no destructivo\n'
 printf 'Instancia Resilience4j esperada: bankbackend\n'

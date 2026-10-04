@@ -1,10 +1,25 @@
 #!/usr/bin/env fish
 
-# Tokens académicos. Si existen variables de entorno, las uso para no depender de valores hardcodeados.
-set WEB_TOKEN (set -q WEB_API_TOKEN; and echo $WEB_API_TOKEN; or echo 'bancoxyz-web-demo-token-2026')
-set MOBILE_TOKEN (set -q MOBILE_API_TOKEN; and echo $MOBILE_API_TOKEN; or echo 'bancoxyz-mobile-demo-token-2026')
-set ATM_TOKEN (set -q ATM_API_TOKEN; and echo $ATM_API_TOKEN; or echo 'bancoxyz-atm-demo-token-2026')
-set UNKNOWN_TOKEN 'token-desconocido-para-prueba'
+# Obtengo access tokens reales desde Keycloak mediante OAuth2 Client Credentials.
+set SCRIPT_DIR (cd (dirname (status --current-filename)); and pwd)
+
+set WEB_TOKEN (fish "$SCRIPT_DIR/oauth2_obtener_token.fish" web)
+if test -z "$WEB_TOKEN"
+    echo "ERROR: no pude obtener token OAuth2 para web."
+    exit 1
+end
+set MOBILE_TOKEN (fish "$SCRIPT_DIR/oauth2_obtener_token.fish" mobile)
+if test -z "$MOBILE_TOKEN"
+    echo "ERROR: no pude obtener token OAuth2 para mobile."
+    exit 1
+end
+set ATM_TOKEN (fish "$SCRIPT_DIR/oauth2_obtener_token.fish" atm)
+if test -z "$ATM_TOKEN"
+    echo "ERROR: no pude obtener token OAuth2 para atm."
+    exit 1
+end
+
+set UNKNOWN_TOKEN 'jwt-invalido-para-prueba'
 set -g FALLAS 0
 
 function registrar_falla
@@ -112,7 +127,7 @@ function prueba_retiro_invalido
     end
 end
 
-echo 'BancoXYZ - verificación BFF Semana 5'
+echo 'BancoXYZ - verificación BFF Semana 8 / OAuth2'
 echo 'Pruebo funcionalidad, optimización, HTTPS, autenticación y autorización sin modificar saldos reales.'
 
 # Funcionalidad y adaptación de payload por canal.
@@ -127,7 +142,7 @@ mostrar_certificado 'BFF Web :8081' 8081
 mostrar_certificado 'BFF Mobile :8082' 8082
 mostrar_certificado 'BFF ATM :8083' 8083
 
-# Distingo autenticación de autorización: token ausente/desconocido => 401; token válido de otro rol => 403.
+# Distingo autenticación de autorización: token ausente/inválido => 401; token OAuth2 válido con scope de otro canal => 403.
 prueba_codigo 'SEGURIDAD - ATM sin token' 401 - https://localhost:8083/api/atm/cuentas/101/saldo
 prueba_codigo 'SEGURIDAD - token desconocido en Web' 401 $UNKNOWN_TOKEN https://localhost:8081/api/web/cuentas
 prueba_codigo 'AUTORIZACIÓN - token WEB intentando usar Mobile' 403 $WEB_TOKEN https://localhost:8082/api/mobile/cuentas

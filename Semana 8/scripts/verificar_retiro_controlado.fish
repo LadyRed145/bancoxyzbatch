@@ -4,7 +4,12 @@
 # a través del BFF ATM y elimina la cuenta temporal al terminar.
 # De esta forma puedo demostrar una operación crítica real sin alterar los datos originales.
 
-set ATM_TOKEN (set -q ATM_API_TOKEN; and echo $ATM_API_TOKEN; or echo 'bancoxyz-atm-demo-token-2026')
+set SCRIPT_DIR (cd (dirname (status --current-filename)); and pwd)
+set ATM_TOKEN (fish "$SCRIPT_DIR/oauth2_obtener_token.fish" atm)
+if test -z "$ATM_TOKEN"
+    echo 'ERROR: no pude obtener token OAuth2 para atm.'
+    exit 1
+end
 set DB_CONTAINER (set -q DB_CONTAINER; and echo $DB_CONTAINER; or echo 'bancoxyz-postgres')
 set DB_USER (set -q DB_USER; and echo $DB_USER; or echo 'bancoxyz')
 set DB_NAME (set -q DB_NAME; and echo $DB_NAME; or echo 'bancoxyz')

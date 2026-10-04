@@ -55,6 +55,39 @@ services:
       - bancoxyz-net
 
 
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.0
+    container_name: bancoxyz-keycloak
+    restart: unless-stopped
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin-change-me}
+      KC_HOSTNAME: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8084}
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KC_HEALTH_ENABLED: "true"
+      OAUTH2_WEB_CLIENT_SECRET: ${OAUTH2_WEB_CLIENT_SECRET:-bancoxyz-web-oauth2-secret-S8-2026}
+      OAUTH2_MOBILE_CLIENT_SECRET: ${OAUTH2_MOBILE_CLIENT_SECRET:-bancoxyz-mobile-oauth2-secret-S8-2026}
+      OAUTH2_ATM_CLIENT_SECRET: ${OAUTH2_ATM_CLIENT_SECRET:-bancoxyz-atm-oauth2-secret-S8-2026}
+    ports:
+      - "8084:8080"
+    volumes:
+      - "./Semana 8/keycloak/bancoxyz-realm.json:/opt/keycloak/data/import/bancoxyz-realm.json:ro"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "{ printf 'HEAD /health/ready HTTP/1.0\\r\\n\\r\\n' >&0; grep 'HTTP/1.0 200'; } 0<>/dev/tcp/127.0.0.1/9000"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 15s
+    networks:
+      - bancoxyz-net
+
+
   config-server:
     build:
       context: "./Semana 8/config-server"
@@ -135,9 +168,8 @@ services:
       EUREKA_INSTANCE_HOSTNAME: bff-web
       BACKEND_BASE_URL: http://bank-backend
       BACKEND_TIMEOUT: ${BACKEND_TIMEOUT:-3s}
-      WEB_API_TOKEN: ${WEB_API_TOKEN:-bancoxyz-web-demo-token-2026}
-      MOBILE_API_TOKEN: ${MOBILE_API_TOKEN:-bancoxyz-mobile-demo-token-2026}
-      ATM_API_TOKEN: ${ATM_API_TOKEN:-bancoxyz-atm-demo-token-2026}
+      OAUTH2_ISSUER_URI: ${OAUTH2_ISSUER_URI:-http://localhost:8084/realms/bancoxyz}
+      OAUTH2_JWK_SET_URI: http://keycloak:8080/realms/bancoxyz/protocol/openid-connect/certs
       SSL_KEYSTORE_PASSWORD: ${SSL_KEYSTORE_PASSWORD:-changeit}
       RETRY_MAX_ATTEMPTS: ${RETRY_MAX_ATTEMPTS:-3}
       RETRY_WAIT_DURATION: ${RETRY_WAIT_DURATION:-200ms}
@@ -145,6 +177,8 @@ services:
       RATE_LIMIT_REFRESH_PERIOD: ${RATE_LIMIT_REFRESH_PERIOD:-1s}
       RATE_LIMIT_TIMEOUT: ${RATE_LIMIT_TIMEOUT:-0ms}
     depends_on:
+      keycloak:
+        condition: service_healthy
       config-server:
         condition: service_healthy
       discovery-server:
@@ -174,9 +208,8 @@ services:
       EUREKA_INSTANCE_HOSTNAME: bff-mobile
       BACKEND_BASE_URL: http://bank-backend
       BACKEND_TIMEOUT: ${BACKEND_TIMEOUT:-3s}
-      WEB_API_TOKEN: ${WEB_API_TOKEN:-bancoxyz-web-demo-token-2026}
-      MOBILE_API_TOKEN: ${MOBILE_API_TOKEN:-bancoxyz-mobile-demo-token-2026}
-      ATM_API_TOKEN: ${ATM_API_TOKEN:-bancoxyz-atm-demo-token-2026}
+      OAUTH2_ISSUER_URI: ${OAUTH2_ISSUER_URI:-http://localhost:8084/realms/bancoxyz}
+      OAUTH2_JWK_SET_URI: http://keycloak:8080/realms/bancoxyz/protocol/openid-connect/certs
       SSL_KEYSTORE_PASSWORD: ${SSL_KEYSTORE_PASSWORD:-changeit}
       RETRY_MAX_ATTEMPTS: ${RETRY_MAX_ATTEMPTS:-3}
       RETRY_WAIT_DURATION: ${RETRY_WAIT_DURATION:-200ms}
@@ -184,6 +217,8 @@ services:
       RATE_LIMIT_REFRESH_PERIOD: ${RATE_LIMIT_REFRESH_PERIOD:-1s}
       RATE_LIMIT_TIMEOUT: ${RATE_LIMIT_TIMEOUT:-0ms}
     depends_on:
+      keycloak:
+        condition: service_healthy
       config-server:
         condition: service_healthy
       discovery-server:
@@ -213,9 +248,8 @@ services:
       EUREKA_INSTANCE_HOSTNAME: bff-atm
       BACKEND_BASE_URL: http://bank-backend
       BACKEND_TIMEOUT: ${BACKEND_TIMEOUT:-3s}
-      WEB_API_TOKEN: ${WEB_API_TOKEN:-bancoxyz-web-demo-token-2026}
-      MOBILE_API_TOKEN: ${MOBILE_API_TOKEN:-bancoxyz-mobile-demo-token-2026}
-      ATM_API_TOKEN: ${ATM_API_TOKEN:-bancoxyz-atm-demo-token-2026}
+      OAUTH2_ISSUER_URI: ${OAUTH2_ISSUER_URI:-http://localhost:8084/realms/bancoxyz}
+      OAUTH2_JWK_SET_URI: http://keycloak:8080/realms/bancoxyz/protocol/openid-connect/certs
       SSL_KEYSTORE_PASSWORD: ${SSL_KEYSTORE_PASSWORD:-changeit}
       RETRY_MAX_ATTEMPTS: ${RETRY_MAX_ATTEMPTS:-3}
       RETRY_WAIT_DURATION: ${RETRY_WAIT_DURATION:-200ms}
@@ -223,6 +257,8 @@ services:
       RATE_LIMIT_REFRESH_PERIOD: ${RATE_LIMIT_REFRESH_PERIOD:-1s}
       RATE_LIMIT_TIMEOUT: ${RATE_LIMIT_TIMEOUT:-0ms}
     depends_on:
+      keycloak:
+        condition: service_healthy
       config-server:
         condition: service_healthy
       discovery-server:
