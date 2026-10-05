@@ -86,11 +86,11 @@ else
     fail "Servicio retiros-event-consumer aparece $SERVICE_COUNT veces en Compose"
 end
 
-# 8) El puerto 8090 NO debe publicarse al host.
-if grep -q '8090:8090' "$COMPOSE"
-    fail "Puerto 8090 está publicado al host y no es necesario"
+# 8) La API administrativa usa 8091 -> 8090 y queda en loopback por defecto.
+if grep -q '8091:8090' "$COMPOSE"
+    ok "API administrativa del consumer publicada en 8091"
 else
-    ok "Puerto 8090 sólo interno; no publicado al host"
+    fail "Falta publicación 8091 -> 8090 para administración del listener"
 end
 
 # 9) El nuevo servicio conserva healthcheck interno.
@@ -100,15 +100,30 @@ else
     fail "Falta healthcheck interno del consumer"
 end
 
-# 10) Sin target dentro del microservicio nuevo.
-set -l TARGETS (find "$CONSUMER" -type d -name target -print 2>/dev/null)
-if test (count $TARGETS) -eq 0
-    ok "Sin target/ residual en retiros-event-consumer"
+# 10) target/ puede existir después de compilar, pero nunca debe estar versionado.
+set -l TRACKED_TARGETS (git -C "$ROOT" ls-files -- 'Semana 8/retiros-event-consumer/target/**' 2>/dev/null)
+if test (count $TRACKED_TARGETS) -eq 0
+    ok "target/ del consumer no está versionado"
 else
-    fail "Existe target/ residual en retiros-event-consumer"
+    fail "Hay artefactos target/ versionados en retiros-event-consumer"
+    printf '   %s\n' $TRACKED_TARGETS
 end
 
-# 11) Docker Compose válido.
+# 11) Listener Kafka identificable para pausa/reanudación.
+if grep -q 'id = KafkaConsumerControlService.LISTENER_ID' "$CONSUMER/src/main/java/cl/duoc/bancoxyz/retirosconsumer/kafka/RetiroKafkaConsumer.java"
+    ok "@KafkaListener tiene id administrable"
+else
+    fail "Falta id administrable en @KafkaListener"
+end
+
+# 12) API administrativa protegida por Spring Security.
+if test -f "$CONSUMER/src/main/java/cl/duoc/bancoxyz/retirosconsumer/config/SecurityConfig.java"
+    ok "Spring Security presente en retiros-event-consumer"
+else
+    fail "Falta SecurityConfig en retiros-event-consumer"
+end
+
+# 13) Docker Compose válido.
 if type -q docker
     docker compose -f "$COMPOSE" config >/dev/null 2>&1
     if test $status -eq 0

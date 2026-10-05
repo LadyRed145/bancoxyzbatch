@@ -2,14 +2,7 @@
 
 # BancoXYZ - Semana 8
 # Evidencia funcional de OAuth2 con Keycloak + Spring Security Resource Server.
-#
-# Comprueba:
-# - Keycloak disponible.
-# - Client Credentials para WEB, MOBILE y ATM.
-# - Access token correcto -> 200.
-# - Sin token -> 401.
-# - Token inválido -> 401.
-# - Token válido de otro canal -> 403.
+# Incluye readiness acotado para evitar falsos negativos durante el arranque.
 
 set SCRIPT_DIR (cd (dirname (status --current-filename)); and pwd)
 set -g FALLAS 0
@@ -34,16 +27,27 @@ function fail
     set -g FALLAS (math $FALLAS + 1)
 end
 
-function obtener_token
-    set canal $argv[1]
-    set token (fish "$SCRIPT_DIR/oauth2_obtener_token.fish" "$canal")
+function esperar_http_200 --argument-names nombre url insecure
+    set -l codigo 000
 
-    if test $status -ne 0; or test -z "$token"
-        fail "No pude obtener token OAuth2 para $canal"
-        return 1
+    for intento in (seq 1 20)
+        if test "$insecure" = "1"
+            set codigo (curl -ksS -o /dev/null -w '%{http_code}' \
+                --connect-timeout 3 --max-time 8 "$url" 2>/dev/null)
+        else
+            set codigo (curl -sS -o /dev/null -w '%{http_code}' \
+                --connect-timeout 3 --max-time 8 "$url" 2>/dev/null)
+        end
+
+        if test "$codigo" = "200"
+            return 0
+        end
+
+        sleep 2
     end
 
-    printf '%s\n' "$token"
+    fail "$nombre no quedó listo (último HTTP $codigo)"
+    return 1
 end
 
 function comprobar
@@ -76,29 +80,47 @@ set_color --bold cyan
 echo '===== BANCOXYZ — OAUTH2 / KEYCLOAK — SEMANA 8 ====='
 set_color normal
 
-set discovery_code (curl -sS -o /dev/null -w '%{http_code}' \
-    'http://localhost:8084/realms/bancoxyz/.well-known/openid-configuration')
-
-if test "$discovery_code" = '200'
+if esperar_http_200 'Keycloak / realm bancoxyz' \
+        'http://localhost:8084/realms/bancoxyz/.well-known/openid-configuration' 0
     ok 'Keycloak / realm bancoxyz disponible'
-else
-    fail "Keycloak no está disponible (HTTP $discovery_code)"
 end
 
-set WEB_TOKEN (obtener_token web)
-set MOBILE_TOKEN (obtener_token mobile)
-set ATM_TOKEN (obtener_token atm)
+# Esperamos que los BFF hayan terminado de arrancar antes de usarlos como evidencia.
+if esperar_http_200 'BFF WEB health' 'https://localhost:8081/actuator/health' 1
+    ok 'BFF WEB disponible'
+end
+if esperar_http_200 'BFF MOBILE health' 'https://localhost:8082/actuator/health' 1
+    ok 'BFF MOBILE disponible'
+end
+if esperar_http_200 'BFF ATM health' 'https://localhost:8083/actuator/health' 1
+    ok 'BFF ATM disponible'
+end
 
-if test -n "$WEB_TOKEN"
+set WEB_TOKEN (fish "$SCRIPT_DIR/oauth2_obtener_token.fish" web)
+set WEB_STATUS $status
+if test $WEB_STATUS -eq 0; and test -n "$WEB_TOKEN"
     ok 'Client Credentials WEB -> access token obtenido'
+else
+    set WEB_TOKEN 'token-web-no-disponible'
+    fail 'No pude obtener token OAuth2 para web'
 end
 
-if test -n "$MOBILE_TOKEN"
+set MOBILE_TOKEN (fish "$SCRIPT_DIR/oauth2_obtener_token.fish" mobile)
+set MOBILE_STATUS $status
+if test $MOBILE_STATUS -eq 0; and test -n "$MOBILE_TOKEN"
     ok 'Client Credentials MOBILE -> access token obtenido'
+else
+    set MOBILE_TOKEN 'token-mobile-no-disponible'
+    fail 'No pude obtener token OAuth2 para mobile'
 end
 
-if test -n "$ATM_TOKEN"
+set ATM_TOKEN (fish "$SCRIPT_DIR/oauth2_obtener_token.fish" atm)
+set ATM_STATUS $status
+if test $ATM_STATUS -eq 0; and test -n "$ATM_TOKEN"
     ok 'Client Credentials ATM -> access token obtenido'
+else
+    set ATM_TOKEN 'token-atm-no-disponible'
+    fail 'No pude obtener token OAuth2 para atm'
 end
 
 echo

@@ -10,18 +10,18 @@
 
 BancoXYZ es una solución bancaria distribuida basada en microservicios. La **Semana 8** consolida la arquitectura construida en las entregas anteriores e integra los requerimientos finales de **seguridad OAuth2, resiliencia, mensajería asíncrona, contenerización, observabilidad y despliegue Cloud**.
 
-La solución final está compuesta por **10 servicios orquestados mediante Docker Compose** y fue validada tanto en entorno local como en una instancia **AWS EC2**.
+La arquitectura final está compuesta por **13 servicios orquestados mediante Docker Compose**. La versión Kafka 3×3 ya fue validada localmente; el mismo commit se redepliega y revalida en **AWS EC2** antes de generar la evidencia definitiva.
 
 | Área | Estado final |
 |---|---|
 | Docker Compose | ✅ válido |
-| Servicios | ✅ `10/10 healthy` |
+| Servicios locales | ✅ `13/13 operativos` (`12 healthy` + Kafka UI `running`) |
 | OAuth2 / Keycloak | ✅ `200 / 401 / 403` |
-| Kafka entre microservicios | ✅ productor + consumidor + `lag 0` |
+| Kafka entre microservicios | ✅ 3 brokers + 3 particiones + RF=3 + productor/consumidor + `lag 0` |
 | Resilience4j | ✅ `CLOSED → OPEN → HALF_OPEN → CLOSED` |
-| Acceso externo EC2 | ✅ Keycloak + BFF accesibles |
+| Acceso externo EC2 | ⏳ revalidación final después del redeploy |
 | Secretos | ✅ externalizados y fuera de Git |
-| Evidencia | ✅ preparada en `Semana 8/docs/` |
+| Evidencia definitiva | ⏳ se regenera después de validar EC2 final |
 
 ### ✅ Criterio de rúbrica — OAuth2 / Keycloak (implementado)
 
@@ -57,15 +57,22 @@ flowchart TB
     EUREKA <--> MOB
     EUREKA <--> ATM
     EUREKA <--> BACK["🏦 Bank Backend<br/>:8080"]
-    EUREKA <--> CONSUMER["📨 Retiros Event Consumer<br/>:8090"]
+    EUREKA <--> CONSUMER["📨 Retiros Event Consumer<br/>interno :8090 / admin host :8091"]
 
     WEB --> BACK
     MOB --> BACK
     ATM --> BACK
 
     BACK --> DB["💾 PostgreSQL 17<br/>:5432"]
-    BACK --> KAFKA["📬 Apache Kafka<br/>:29092 interno"]
-    KAFKA --> CONSUMER
+    BACK --> K1["📬 Kafka Broker 1<br/>kafka-1:19092"]
+    BACK --> K2["📬 Kafka Broker 2<br/>kafka-2:19092"]
+    BACK --> K3["📬 Kafka Broker 3<br/>kafka-3:19092"]
+    K1 --> CONSUMER
+    K2 --> CONSUMER
+    K3 --> CONSUMER
+    KUI["🖥️ Kafka UI<br/>host :8090"] -. observa .-> K1
+    KUI -. observa .-> K2
+    KUI -. observa .-> K3
 
     KC -. JWT / scopes .-> WEB
     KC -. JWT / scopes .-> MOB
@@ -91,7 +98,7 @@ Bank Backend
   │
   ├── PostgreSQL
   │
-  └── Kafka ──► Retiros Event Consumer
+  └── Kafka 3 brokers / 3 particiones / RF=3 ──► Retiros Event Consumer
 ```
 
 ---
@@ -101,17 +108,20 @@ Bank Backend
 | # | Servicio | Responsabilidad principal | Exposición |
 |---:|---|---|---|
 | 1 | PostgreSQL 17 | Persistencia bancaria | `127.0.0.1:5432` |
-| 2 | Apache Kafka | Transporte asíncrono de eventos | `127.0.0.1:9092` / `kafka:29092` |
-| 3 | Keycloak 26.8.0 | OAuth2 y emisión de JWT | `0.0.0.0:8084` |
-| 4 | Config Server | Configuración centralizada | `127.0.0.1:8888` |
-| 5 | Eureka Discovery Server | Registro y descubrimiento | `127.0.0.1:8761` |
-| 6 | Bank Backend | Lógica bancaria, persistencia y productor Kafka | `127.0.0.1:8080` |
-| 7 | BFF Web | Contrato Web | `0.0.0.0:8081` |
-| 8 | BFF Mobile | Contrato Mobile | `0.0.0.0:8082` |
-| 9 | BFF ATM | Contrato ATM | `0.0.0.0:8083` |
-| 10 | Retiros Event Consumer | Consumo independiente de retiros | sólo red Docker `:8090` |
+| 2 | Kafka Broker 1 | Broker/controller KRaft | `127.0.0.1:9092` / `kafka-1:19092` |
+| 3 | Kafka Broker 2 | Broker/controller KRaft | `127.0.0.1:9094` / `kafka-2:19092` |
+| 4 | Kafka Broker 3 | Broker/controller KRaft | `127.0.0.1:9096` / `kafka-3:19092` |
+| 5 | Kafka UI 0.7.2 | Observación del cluster, topic y consumer groups | `127.0.0.1:8090` |
+| 6 | Keycloak 26.8.0 | OAuth2 y emisión de JWT | `0.0.0.0:8084` |
+| 7 | Config Server | Configuración centralizada | `127.0.0.1:8888` |
+| 8 | Eureka Discovery Server | Registro y descubrimiento | `127.0.0.1:8761` |
+| 9 | Bank Backend | Lógica bancaria, persistencia y productor Kafka | `127.0.0.1:8080` |
+| 10 | Retiros Event Consumer | Consumo independiente + administración segura del listener | interno `:8090`, host `127.0.0.1:8091` |
+| 11 | BFF Web | Contrato Web | `0.0.0.0:8081` |
+| 12 | BFF Mobile | Contrato Mobile | `0.0.0.0:8082` |
+| 13 | BFF ATM | Contrato ATM | `0.0.0.0:8083` |
 
-Los servicios internos se comunican mediante la red `bancoxyz-net`. La infraestructura sensible permanece ligada a loopback o exclusivamente a la red Docker.
+Los tres brokers trabajan en **KRaft**, con listeners `INTERNAL`, `EXTERNAL` y `CONTROLLER`. El topic `bancoxyz.retiros` usa **3 particiones, factor de replicación 3 y `min.insync.replicas=2`**. Kafka UI y la API administrativa del consumer permanecen ligadas a loopback; en EC2 se consultan mediante túnel SSH en vez de abrir puertos públicos. La replicación tolera la caída de un broker/contenedor dentro del laboratorio, pero al ejecutarse los tres brokers sobre el mismo host **no sustituye alta disponibilidad multi-host o multi-AZ**.
 
 ---
 
@@ -151,7 +161,7 @@ Sin token / token inválido       → HTTP 401
 Token válido + scope incorrecto  → HTTP 403
 ```
 
-La validación en EC2 confirmó los tres clientes y los tres escenarios de seguridad.
+La validación local confirma los tres clientes y los tres escenarios de seguridad. La misma batería se ejecuta nuevamente en EC2 después del redeploy final.
 
 ---
 
@@ -278,19 +288,44 @@ RetiroRealizadoEvent
 └── tipo = RETIRO
 ```
 
-### Validación EC2
+### Validación funcional
 
 ```text
-Saldo antes .............. 5050.0
-Retiro ................... HTTP 200
-Saldo después ............ 5049.0
+Brokers .................. 3
+Particiones .............. 3
+Replication Factor ....... 3
+min.insync.replicas ...... 2
 Producer ................. EVENTO PUBLICADO
 Consumer ................. EVENTO CONSUMIDO
-Offset ................... 0 → 1
-Lag ...................... 0
+Consumer Group ........... bancoxyz-retiros-group
+Lag final ................ 0
 ```
 
 El consumidor fue separado de `bank-backend` para demostrar mensajería real entre microservicios y permitir escalamiento independiente.
+
+### Administración segura del listener
+
+El listener tiene id explícito `retirosListener` y se administra mediante `KafkaListenerEndpointRegistry`:
+
+```text
+GET  /api/kafka/consumer/estado
+GET  /api/kafka/consumer/resumen
+POST /api/kafka/consumer/pausar
+POST /api/kafka/consumer/reanudar
+```
+
+La API funciona como **OAuth2 Resource Server JWT** y exige `SCOPE_bancoxyz.web`. La validación local final demostró:
+
+```text
+Sin token ................ HTTP 401
+Scope ATM ................ HTTP 403
+Scope WEB ................ HTTP 200
+Listener pausado ......... true
+Lag durante pausa ........ 1
+Reanudación .............. ACTIVO
+Lag final ................ 0
+Resumen .................. 3 brokers / 3 particiones / RF=3
+```
 
 ---
 
@@ -549,17 +584,30 @@ docker compose down
 La validación local final alcanzó:
 
 ```text
-10/10 servicios healthy
+13/13 servicios operativos (12 healthy + Kafka UI running)
 OAuth2 3/3 clientes funcionales
-Kafka productor + consumidor + lag 0
+Kafka 3 brokers + 3 particiones + RF=3 + producer/consumer + lag 0
+Listener seguro: 401/403/200 + pausa/reanudación + lag 1 → 0
 Resilience4j fallo + recuperación verificados
 ```
 
+### Recursos del runtime
+
+La arquitectura final se validó con **8 GiB asignados al runtime Docker**, valor alineado con la instancia `t3.large` usada en EC2. Para evitar que la infraestructura JVM monopolice la memoria del host, Compose aplica límites parametrizables a los componentes más pesados:
+
+```text
+Kafka broker x3  -> 768 MiB por broker | heap -Xms256m -Xmx384m
+Keycloak         -> 1 GiB              | heap 25% inicial / 60% máximo
+Kafka UI         -> 256 MiB
+```
+
+Los valores pueden sobrescribirse desde `.env` mediante `KAFKA_MEM_LIMIT`, `KAFKA_HEAP_OPTS`, `KAFKA_UI_MEM_LIMIT`, `KEYCLOAK_MEM_LIMIT` y `KEYCLOAK_JAVA_OPTS_KC_HEAP`. En Docker Desktop se recomienda asignar **al menos 8 GiB** al motor antes de levantar los 13 servicios.
+
 ---
 
-## ☁️ Despliegue validado en AWS EC2
+## ☁️ Despliegue final en AWS EC2
 
-La solución fue desplegada y comprobada funcionalmente sobre AWS.
+La solución ya fue comprobada en AWS durante la iteración anterior. Tras incorporar Kafka 3×3, Kafka UI y la administración segura del listener, el **mismo commit final** debe redeplegarse y revalidarse antes de cerrar las evidencias.
 
 ### Entorno utilizado
 
@@ -595,7 +643,8 @@ Infraestructura no publicada a Internet:
 8761  Eureka
 9092  Kafka
 5432  PostgreSQL
-8090  Retiros Event Consumer
+8090  Kafka UI (loopback)
+8091  API administrativa del consumer (loopback)
 ```
 
 ### Clonado
@@ -684,8 +733,13 @@ fish "Semana 8/scripts/verificar_bff.fish"
 fish "Semana 8/scripts/verificar_oauth2.fish"
 fish "Semana 8/scripts/verificar_actuator_resilience.fish"
 fish "Semana 8/scripts/verificar_resilience4j_fallo_recuperacion.fish"
+fish "Semana 8/scripts/verificar_kafka_cluster.fish"
 fish "Semana 8/scripts/verificar_kafka_microservicios.fish"
+fish "Semana 8/scripts/verificar_control_kafka_listener.fish"
 fish "Semana 8/scripts/auditar_kafka_huerfanos.fish"
+
+# Sólo EC2 / Bash
+bash "Semana 8/scripts/desplegar_ec2_final.sh"
 ```
 
 Helper OAuth2:
@@ -710,45 +764,45 @@ Buenas prácticas incorporadas al cierre Cloud:
 
 | Validación | Local | AWS EC2 |
 |---|:---:|:---:|
-| Docker Compose válido | ✅ | ✅ |
-| `10/10` servicios healthy | ✅ | ✅ |
-| BFF Web / Mobile / ATM | ✅ | ✅ |
-| OAuth2 credenciales válidas `200` | ✅ | ✅ |
-| OAuth2 sin token / inválido `401` | ✅ | ✅ |
-| OAuth2 scope incorrecto `403` | ✅ | ✅ |
-| Circuit Breaker | ✅ | ✅ |
-| Retry | ✅ | ✅ |
-| Rate Limiter | ✅ | ✅ |
-| `CLOSED → OPEN → HALF_OPEN → CLOSED` | ✅ | ✅ |
-| Kafka Producer | ✅ | ✅ |
-| Kafka Consumer independiente | ✅ | ✅ |
-| Consumer Group `lag 0` | ✅ | ✅ |
-| Secretos fuera del código | ✅ | ✅ |
-| `.env` fuera de Git | ✅ | ✅ |
-| Acceso externo por Elastic IP | — | ✅ |
+| Docker Compose válido | ✅ | ⏳ revalidar tras redeploy |
+| 13 servicios operativos | ✅ | ⏳ revalidar tras redeploy |
+| BFF Web / Mobile / ATM | ✅ | ⏳ revalidar tras redeploy |
+| OAuth2 credenciales válidas `200` | ✅ | ⏳ revalidar tras redeploy |
+| OAuth2 sin token / inválido `401` | ✅ | ⏳ revalidar tras redeploy |
+| OAuth2 scope incorrecto `403` | ✅ | ⏳ revalidar tras redeploy |
+| Circuit Breaker | ✅ | ⏳ revalidar tras redeploy |
+| Retry | ✅ | ⏳ revalidar tras redeploy |
+| Rate Limiter | ✅ | ⏳ revalidar tras redeploy |
+| `CLOSED → OPEN → HALF_OPEN → CLOSED` | ✅ | ⏳ revalidar tras redeploy |
+| Kafka 3 brokers / 3 particiones / RF=3 | ✅ | ⏳ revalidar tras redeploy |
+| Kafka Producer | ✅ | ⏳ revalidar tras redeploy |
+| Kafka Consumer independiente | ✅ | ⏳ revalidar tras redeploy |
+| Listener pause/resume + resumen protegido | ✅ | ⏳ revalidar tras redeploy |
+| Consumer Group `lag 0` | ✅ | ⏳ revalidar tras redeploy |
+| Secretos fuera del código | ✅ | ✅ diseño |
+| `.env` fuera de Git | ✅ | ✅ diseño |
+| Acceso externo por Elastic IP | — | ⏳ revalidar tras redeploy |
 
 ---
 
 ## 📸 Evidencia de despliegue Cloud
 
-La documentación final se concentra en:
+La evidencia definitiva se genera **después del redeploy del commit final en EC2**, para evitar mezclar capturas de arquitecturas distintas. Debe cubrir como mínimo:
 
 ```text
-Semana 8/docs/Documentacion_Capturas.pdf
+Docker Compose final con 13 servicios
+OAuth2 200 / 401 / 403
+Kafka UI: 3 brokers
+Topic bancoxyz.retiros: 3 particiones / RF=3 / ISR completo
+Consumer Group estable y lag 0
+Producer + Consumer entre microservicios
+Listener seguro: pausa → lag > 0 → reanudar → lag 0
+Resilience4j: CLOSED → OPEN → HALF_OPEN → CLOSED
+Acceso externo por Elastic IP a Keycloak y BFF
+Repositorio GitHub en el commit final
 ```
 
-Capturas principales:
-
-```text
-08_BANCOXYZ - HEALTHCHECK FINAL_EC2.png
-09_PRUEBA_OAUT2_EC2_FINALIZADA.png
-10_KAFKA_ENTRE_MICROSERVICIOS_EC2.png
-11A_RESILIENCE4J_EC2_FINALIZADA.png
-11B_RESILIENCE4J_EC2_FINALIZADA.png
-12B_ACCESO_EXTERNO_ELASTIC_IP_EC2.png
-```
-
-Las evidencias cubren salud del stack, OAuth2, Kafka entre microservicios, Resilience4j y acceso externo desde Internet.
+El PDF final se consolida en `Semana 8/docs/Documentacion_Capturas.pdf` una vez que Local, GitHub y EC2 correspondan a la misma versión funcional.
 
 ---
 
@@ -783,7 +837,7 @@ El proyecto corresponde a un entorno académico. **OAuth2 + Keycloak ya están i
 - gestión centralizada de secretos;
 - CI/CD;
 - monitoreo y alertas;
-- Kafka con alta disponibilidad;
+- Kafka administrado o distribuido entre múltiples zonas de disponibilidad, con TLS/SASL y monitoreo centralizado;
 - PostgreSQL administrado o replicado;
 - backups automáticos;
 - rotación de credenciales;

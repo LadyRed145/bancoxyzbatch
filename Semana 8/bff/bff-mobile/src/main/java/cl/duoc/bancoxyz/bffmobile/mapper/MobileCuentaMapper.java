@@ -34,7 +34,9 @@ public class MobileCuentaMapper {
 
     private BigDecimal convertirBigDecimal(Object valor) {
         if (valor == null) {
-            return BigDecimal.ZERO;
+            throw new IllegalStateException(
+                    "El backend no devolvió un valor monetario esperado"
+            );
         }
 
         if (valor instanceof BigDecimal bigDecimal) {
@@ -45,6 +47,8 @@ public class MobileCuentaMapper {
             return new BigDecimal(numero.toString());
         }
 
-        return new BigDecimal(valor.toString());
+        throw new IllegalStateException(
+                "El backend devolvió un valor monetario inválido"
+        );
     }
 }

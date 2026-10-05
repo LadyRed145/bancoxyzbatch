@@ -10,7 +10,7 @@
 
 BancoXYZ evoluciona el trabajo de semanas anteriores hacia una solución distribuida preparada para ejecutarse en un entorno Cloud. La propuesta busca resolver cinco necesidades técnicas centrales: **seguridad de acceso**, **portabilidad**, **orquestación**, **tolerancia a fallos** y **comunicación asíncrona entre microservicios**.
 
-La solución final fue desplegada y validada en AWS EC2. El objetivo no fue únicamente lograr que los servicios iniciaran, sino demostrar que cada mecanismo exigido por la pauta funciona bajo condiciones reales de integración.
+La solución fue validada localmente con la arquitectura Kafka 3×3 y se redepliega en AWS EC2 desde el mismo commit antes de cerrar la evidencia. El objetivo no es únicamente iniciar servicios, sino demostrar cada mecanismo exigido mediante comportamiento observable.
 
 ---
 
@@ -34,7 +34,7 @@ Estos principios permiten que la solución sea reproducible localmente y tambié
 
 ## 3. Arquitectura propuesta
 
-La solución final utiliza **10 servicios orquestados con Docker Compose**, de los cuales **7 corresponden a microservicios Java construidos desde el proyecto**.
+La solución final utiliza **13 servicios orquestados con Docker Compose**, de los cuales **7 corresponden a microservicios Java construidos desde el proyecto**.
 
 ```mermaid
 flowchart TB
@@ -47,7 +47,10 @@ flowchart TB
     EUREKA["🧭 Eureka"]
     BACKEND["🏦 Bank Backend"]
     DB["💾 PostgreSQL"]
-    KAFKA["📬 Kafka"]
+    K1["📬 Kafka 1"]
+    K2["📬 Kafka 2"]
+    K3["📬 Kafka 3"]
+    KUI["🖥️ Kafka UI"]
     CONSUMER["📨 Retiros Event Consumer"]
 
     CLIENT --> KC
@@ -74,8 +77,15 @@ flowchart TB
     ATM --> BACKEND
 
     BACKEND --> DB
-    BACKEND --> KAFKA
-    KAFKA --> CONSUMER
+    BACKEND --> K1
+    BACKEND --> K2
+    BACKEND --> K3
+    K1 --> CONSUMER
+    K2 --> CONSUMER
+    K3 --> CONSUMER
+    KUI -. observa .-> K1
+    KUI -. observa .-> K2
+    KUI -. observa .-> K3
 ```
 
 ### Responsabilidades principales
@@ -91,7 +101,8 @@ flowchart TB
 | Config Server | Configuración centralizada |
 | Eureka | Registro y descubrimiento de servicios |
 | PostgreSQL | Persistencia bancaria |
-| Kafka | Transporte asíncrono de eventos |
+| Kafka 1/2/3 | Cluster KRaft para transporte asíncrono con replicación |
+| Kafka UI | Observación de brokers, topics, particiones y consumer groups |
 
 ---
 
@@ -111,7 +122,7 @@ bff-atm-client     → bancoxyz.atm
 
 Cada BFF funciona como **Spring Resource Server JWT** y exige el scope correspondiente a su canal. La decisión evita que un token válido para un consumidor pueda utilizarse indistintamente sobre otro.
 
-El flujo fue validado en AWS EC2 con los resultados esperados:
+El flujo está validado localmente y se repite en EC2 después del redeploy final:
 
 ```text
 Token + scope correctos   → HTTP 200
@@ -176,15 +187,17 @@ sequenceDiagram
     RC->>RC: Procesar evento
 ```
 
-El evento se publica sólo después de completar la operación principal. La validación demostró publicación, consumo, avance de offset y **lag final igual a 0** en el consumer group `bancoxyz-retiros-group`.
+El evento se publica después de persistir el nuevo saldo dentro del método transaccional. La validación demostró publicación, consumo, avance de offset y **lag final igual a 0** en el consumer group `bancoxyz-retiros-group`. Para producción, la atomicidad entre base de datos y broker se reforzaría con un patrón Transactional Outbox.
 
-La separación productor/consumidor permite escalar el procesamiento asíncrono sin acoplarlo al ciclo de respuesta del retiro.
+La separación productor/consumidor permite escalar el procesamiento asíncrono sin acoplarlo al ciclo de respuesta del retiro. El topic usa **3 particiones, factor de replicación 3 y `min.insync.replicas=2`** sobre tres brokers KRaft. El listener `retirosListener` puede pausarse, reanudarse y resumirse mediante una API protegida por OAuth2; la prueba local confirmó `lag 1` durante la pausa y retorno a `lag 0` al reanudar. Los tres brokers comparten el mismo host Docker en el entorno académico: esto demuestra replicación y tolerancia a fallo de broker, pero no elimina el punto único de fallo del host.
 
 ### 4.6 Docker y Docker Compose
 
-Cada uno de los siete microservicios Java ejecutables dispone de Dockerfile. Docker Compose agrega PostgreSQL, Kafka y Keycloak y coordina los **10 servicios** dentro de una misma red.
+Cada uno de los siete microservicios Java ejecutables dispone de Dockerfile. Docker Compose agrega PostgreSQL, **tres brokers Kafka**, Kafka UI y Keycloak y coordina los **13 servicios** dentro de una misma red.
 
-La composición utiliza healthchecks, dependencias condicionadas por salud, variables de entorno y volumen persistente de PostgreSQL. Con esto se obtiene una unidad reproducible de despliegue local y Cloud.
+La composición utiliza healthchecks, dependencias condicionadas por salud, variables de entorno y volúmenes persistentes para PostgreSQL y los tres brokers Kafka. Con esto se obtiene una unidad reproducible de despliegue local y Cloud.
+
+Como medida de estabilidad y portabilidad, la infraestructura más intensiva en memoria tiene límites explícitos y configurables: cada broker Kafka dispone de `768 MiB` con heap `256–384 MiB`, Keycloak de `1 GiB` con heap relativo controlado y Kafka UI de `256 MiB`. Los valores por defecto están dimensionados para el entorno académico de **8 GiB** utilizado tanto en Docker Desktop como en la instancia EC2 `t3.large`, evitando reinicios por presión de memoria sin sobredimensionar el laboratorio.
 
 ---
 
@@ -195,10 +208,10 @@ La política de red distingue componentes públicos de infraestructura interna.
 | Exposición | Componentes |
 |---|---|
 | Pública y controlada por Security Group | BFF Web `8081`, Mobile `8082`, ATM `8083`, Keycloak `8084` |
-| Loopback del host | Backend `8080`, Config Server `8888`, Eureka `8761`, Kafka `9092`, PostgreSQL `5432` |
-| Sólo red Docker | Retiros Event Consumer `8090` |
+| Loopback del host | Backend `8080`, Config Server `8888`, Eureka `8761`, PostgreSQL `5432`, Kafka `9092/9094/9096`, Kafka UI `8090`, Admin Consumer `8091` |
+| Red Docker | Brokers `19092`, controllers `9093`, consumer interno `8090` |
 
-Esta decisión reduce superficie de ataque: Kafka, PostgreSQL, Eureka, Config Server y el backend no necesitan exposición directa a Internet.
+Esta decisión reduce superficie de ataque: Kafka, Kafka UI, la API administrativa del consumer, PostgreSQL, Eureka, Config Server y el backend no necesitan exposición directa a Internet. En EC2, Kafka UI y la administración del listener se consultan mediante túnel SSH.
 
 Los secretos se suministran mediante `.env`, que permanece fuera de Git. `.env.example` contiene únicamente la estructura necesaria para reproducir la configuración.
 
@@ -233,20 +246,21 @@ Esta decisión no se propone como configuración productiva. Un despliegue real 
 
 ## 7. Validación de la propuesta
 
-La aceptación técnica se realizó contra comportamientos observables, no sólo contra configuración estática.
+La aceptación técnica se realiza contra comportamientos observables, no sólo contra configuración estática.
 
-| Área | Resultado validado |
-|---|---|
-| Salud del stack | `10/10` servicios operativos |
-| OAuth2 | `200` válido, `401` sin/invalid token, `403` scope incorrecto |
-| Docker | 7 microservicios Java con imagen construible |
-| Docker Compose | 10 servicios orquestados |
-| Resilience4j | `CLOSED → OPEN → HALF_OPEN → CLOSED` |
-| Kafka | productor y consumidor independientes, offset avanza, lag `0` |
-| Acceso Cloud | Keycloak y los 3 BFF accesibles desde equipo externo |
-| Build | Reactor Maven completo con `BUILD SUCCESS` |
+| Área | Resultado local validado | AWS EC2 final |
+|---|---|---|
+| Salud del stack | 13 servicios operativos (`12 healthy` + Kafka UI `running`) | Pendiente revalidación del commit final |
+| OAuth2 | `200` válido, `401` sin token, `403` scope incorrecto | Pendiente revalidación |
+| Docker | 7 microservicios Java con imagen construible | Pendiente redeploy |
+| Docker Compose | 13 servicios orquestados | Pendiente redeploy |
+| Resilience4j | `CLOSED → OPEN → HALF_OPEN → CLOSED` | Se repite tras redeploy |
+| Kafka cluster | 3 brokers, 3 particiones, RF=3, min ISR=2 | Pendiente revalidación |
+| Kafka eventos | Producer + consumer independientes, offset avanza, lag `0` | Pendiente revalidación |
+| Listener seguro | `401/403/200`, pausa, lag `1`, reanudación, lag `0` | Pendiente revalidación |
+| Build | Reactor Maven con `BUILD SUCCESS` | Se construye desde el mismo commit |
 
-Las capturas y salidas completas se consolidan en `Semana 8/docs/Documentacion_Capturas.pdf`.
+Las capturas definitivas se consolidan en `Semana 8/docs/Documentacion_Capturas.pdf` sólo después de que GitHub y EC2 correspondan a la misma versión.
 
 ---
 
@@ -256,9 +270,9 @@ Las capturas y salidas completas se consolidan en `Semana 8/docs/Documentacion_C
 |---|---|
 | OAuth2.0 funcional | Keycloak, JWT, clientes/scopes independientes y pruebas `200/401/403` |
 | Imágenes Docker | Dockerfile por cada microservicio Java ejecutable |
-| Docker Compose | Orquestación funcional de los 10 servicios |
+| Docker Compose | Orquestación funcional de los 13 servicios |
 | Resilience4j | Circuit Breaker, Retry y Rate Limiter con prueba de fallo/recuperación |
-| Kafka/JMS | Kafka entre productor y consumidor independientes, con lag final `0` |
+| Kafka/JMS | Cluster de 3 brokers, 3 particiones, RF=3, Producer/Consumer independientes, listener administrable y lag final `0` |
 | Código, documentación y evidencia | GitHub, README, propuesta técnica y PDF de ejecución |
 
 ---
@@ -273,7 +287,7 @@ La solución prioriza reproducibilidad académica y demostración funcional. Par
 - gestor de secretos;
 - rotación de credenciales;
 - PostgreSQL administrado o replicado;
-- Kafka con múltiples brokers/réplicas;
+- Kafka administrado o distribuido entre zonas de disponibilidad, con TLS/SASL y observabilidad centralizada;
 - monitoreo y logs centralizados;
 - backups y recuperación probada;
 - CI/CD y políticas de despliegue;
@@ -287,7 +301,7 @@ El principal trade-off del entorno actual es aceptar componentes de laboratorio 
 
 BancoXYZ Semana 8 entrega una arquitectura distribuida que integra seguridad OAuth2, BFF especializados, descubrimiento de servicios, configuración centralizada, resiliencia, persistencia, mensajería asíncrona y despliegue Cloud.
 
-La propuesta quedó validada mediante ejecución real en AWS EC2 y evidencia reproducible de los criterios técnicos solicitados.
+La arquitectura final queda primero validada localmente y luego se redepliega desde el mismo commit en AWS EC2 para producir la evidencia Cloud definitiva y reproducible.
 
 ---
 

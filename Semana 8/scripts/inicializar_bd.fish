@@ -1,12 +1,18 @@
 #!/usr/bin/env fish
 
-# Levanto PostgreSQL con el esquema y snapshot incluidos en la entrega.
+# Levanta únicamente PostgreSQL con el esquema y snapshot incluidos en la entrega.
 # Si el volumen ya existe, Docker conserva sus datos y no vuelve a ejecutar los scripts de init.
 
 set ROOT (cd (dirname (status --current-filename))/../..; and pwd)
 cd "$ROOT"; or exit 1
 
-docker compose up -d
+# Este helper no debe arrancar los 13 servicios: su responsabilidad es sólo la base de datos.
+docker compose up -d postgres
+
+if test $status -ne 0
+    echo 'ERROR: no fue posible iniciar PostgreSQL.'
+    exit 1
+end
 
 echo 'Esperando PostgreSQL...'
 for intento in (seq 1 30)

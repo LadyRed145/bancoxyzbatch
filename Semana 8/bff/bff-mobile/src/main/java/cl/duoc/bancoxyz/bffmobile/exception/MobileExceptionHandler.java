@@ -54,6 +54,21 @@ public class MobileExceptionHandler {
                 .body(problem);
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ProblemDetail> manejarContratoBackendInvalido(
+            IllegalStateException exception) {
+
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_GATEWAY,
+                exception.getMessage()
+        );
+        problem.setTitle("Respuesta inválida del Bank Backend");
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_GATEWAY)
+                .body(problem);
+    }
+
     @ExceptionHandler(BackendTimeoutException.class)
     public ResponseEntity<ProblemDetail> manejarTimeoutBackend(
             BackendTimeoutException exception) {

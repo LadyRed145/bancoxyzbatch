@@ -1,13 +1,20 @@
 package cl.duoc.bancoxyz.backend.kafka;
 
 import cl.duoc.bancoxyz.event.RetiroRealizadoEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+/**
+ * Publica eventos de retiro en Kafka sin mezclar la mensajería con la lógica
+ * de negocio del servicio de cuentas.
+ */
 @Service
 public class RetiroKafkaProducer {
 
-    private static final String TOPIC = "bancoxyz.retiros";
+    private static final Logger LOGGER = LoggerFactory.getLogger(RetiroKafkaProducer.class);
+    private static final String TOPIC = KafkaTopicConfig.RETIROS_TOPIC;
 
     private final KafkaTemplate<String, RetiroRealizadoEvent> kafkaTemplate;
 
@@ -17,27 +24,36 @@ public class RetiroKafkaProducer {
     }
 
     public void publicarRetiro(RetiroRealizadoEvent evento) {
-
-        System.out.println(">>> ENTRANDO AL PRODUCER KAFKA");
-        System.out.println("Cuenta: " + evento.getCuentaId());
-        System.out.println("Monto: " + evento.getMonto());
-        System.out.println("Saldo final: " + evento.getSaldoFinal());
+        LOGGER.debug(
+                "Publicando retiro Kafka cuentaId={} monto={} saldoFinal={} tipo={}",
+                evento.getCuentaId(),
+                evento.getMonto(),
+                evento.getSaldoFinal(),
+                evento.getTipo()
+        );
 
         kafkaTemplate.send(
                 TOPIC,
                 String.valueOf(evento.getCuentaId()),
                 evento
         ).whenComplete((resultado, error) -> {
-
             if (error != null) {
-                System.err.println("ERROR PUBLICANDO EVENTO KAFKA:");
-                error.printStackTrace();
-            } else {
-                System.out.println("EVENTO KAFKA PUBLICADO CORRECTAMENTE:");
-                System.out.println("Topic: " + resultado.getRecordMetadata().topic());
-                System.out.println("Partition: " + resultado.getRecordMetadata().partition());
-                System.out.println("Offset: " + resultado.getRecordMetadata().offset());
+                LOGGER.error(
+                        "ERROR PUBLICANDO EVENTO KAFKA cuentaId={} topic={}",
+                        evento.getCuentaId(),
+                        TOPIC,
+                        error
+                );
+                return;
             }
+
+            LOGGER.info(
+                    "EVENTO KAFKA PUBLICADO CORRECTAMENTE topic={} partition={} offset={} cuentaId={}",
+                    resultado.getRecordMetadata().topic(),
+                    resultado.getRecordMetadata().partition(),
+                    resultado.getRecordMetadata().offset(),
+                    evento.getCuentaId()
+            );
         });
     }
 }

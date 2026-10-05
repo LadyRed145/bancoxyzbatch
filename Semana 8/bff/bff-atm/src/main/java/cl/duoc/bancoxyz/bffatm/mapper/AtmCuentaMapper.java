@@ -55,6 +55,8 @@ public class AtmCuentaMapper {
             return new BigDecimal(numero.toString());
         }
 
-        return new BigDecimal(valor.toString());
+        throw new IllegalStateException(
+                "El backend devolvió un valor monetario inválido"
+        );
     }
 }

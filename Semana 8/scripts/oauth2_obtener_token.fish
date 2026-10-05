@@ -1,12 +1,11 @@
 #!/usr/bin/env fish
 # BancoXYZ - OAuth2 Client Credentials helper.
-# Sin secretos hardcodeados. Lee variables exportadas o .env.
-# Diseñado para Fish: sin indirecciones ni funciones dinámicas.
+# Lee secretos desde el entorno o .env y reintenta de forma acotada mientras
+# Keycloak termina de arrancar. stdout contiene únicamente el access token.
 
 set -l SCRIPT_FILE (status --current-filename)
 set -l SCRIPT_DIR (realpath (dirname "$SCRIPT_FILE"))
 
-# Resolver raíz del repositorio de forma robusta.
 set -l PROJECT_ROOT (git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null)
 if test -z "$PROJECT_ROOT"
     set PROJECT_ROOT (realpath "$SCRIPT_DIR/../..")
@@ -19,7 +18,6 @@ if not test -f "$ENV_FILE"
     exit 10
 end
 
-# Lee UNA clave exacta desde .env sin imprimir otras variables.
 function dotenv_get
     set -l NAME "$argv[1]"
     awk -F= -v key="$NAME" '
@@ -31,7 +29,6 @@ function dotenv_get
     ' "$ENV_FILE"
 end
 
-# Cargar únicamente las variables que este helper necesita.
 set -l ENV_WEB (dotenv_get OAUTH2_WEB_CLIENT_SECRET)
 set -l ENV_MOBILE (dotenv_get OAUTH2_MOBILE_CLIENT_SECRET)
 set -l ENV_ATM (dotenv_get OAUTH2_ATM_CLIENT_SECRET)
@@ -101,26 +98,50 @@ else
     set TOKEN_URL "$PUBLIC_URL/realms/bancoxyz/protocol/openid-connect/token"
 end
 
-set -l RESPONSE (curl -fsS \
-    --connect-timeout 5 \
-    --max-time 15 \
-    -X POST "$TOKEN_URL" \
-    -H 'Content-Type: application/x-www-form-urlencoded' \
-    --data-urlencode 'grant_type=client_credentials' \
-    --data-urlencode "client_id=$CLIENT_ID" \
-    --data-urlencode "client_secret=$CLIENT_SECRET" 2>/dev/null)
+set -l MAX_ATTEMPTS 15
+set -l RETRY_SECONDS 2
+set -l LAST_ERROR ""
 
-if test $status -ne 0; or test -z "$RESPONSE"
-    echo "No se pudo obtener token OAuth2 para $PERFIL" >&2
-    exit 4
+for intento in (seq 1 $MAX_ATTEMPTS)
+    set -l RESPONSE (curl -fsS \
+        --connect-timeout 5 \
+        --max-time 15 \
+        -X POST "$TOKEN_URL" \
+        -H 'Content-Type: application/x-www-form-urlencoded' \
+        --data-urlencode 'grant_type=client_credentials' \
+        --data-urlencode "client_id=$CLIENT_ID" \
+        --data-urlencode "client_secret=$CLIENT_SECRET" 2>/dev/null)
+
+    set -l CURL_STATUS $status
+
+    if test $CURL_STATUS -eq 0; and test -n "$RESPONSE"
+        set -l TOKEN (printf '%s' "$RESPONSE" | jq -r '.access_token // empty' 2>/dev/null)
+
+        if test -n "$TOKEN"
+            printf '%s\n' "$TOKEN"
+            exit 0
+        end
+
+        set LAST_ERROR (printf '%s' "$RESPONSE" | jq -r '.error_description // .error // empty' 2>/dev/null)
+
+        # Errores de credenciales/configuración no mejorarán esperando.
+        set -l OAUTH_ERROR (printf '%s' "$RESPONSE" | jq -r '.error // empty' 2>/dev/null)
+        if test "$OAUTH_ERROR" = "invalid_client"; or test "$OAUTH_ERROR" = "unauthorized_client"
+            echo "Keycloak rechazó las credenciales OAuth2 para $PERFIL: $LAST_ERROR" >&2
+            exit 5
+        end
+    else
+        set LAST_ERROR "Keycloak todavía no responde al endpoint de token"
+    end
+
+    if test $intento -lt $MAX_ATTEMPTS
+        sleep $RETRY_SECONDS
+    end
 end
 
-set -l TOKEN (printf '%s' "$RESPONSE" | jq -r '.access_token // empty' 2>/dev/null)
-
-if test -z "$TOKEN"
-    echo "Keycloak no devolvió access_token para $PERFIL" >&2
-    exit 5
+if test -z "$LAST_ERROR"
+    set LAST_ERROR "no se recibió access_token"
 end
 
-# stdout contiene únicamente el token.
-printf '%s\n' "$TOKEN"
+echo "No se pudo obtener token OAuth2 para $PERFIL después de $MAX_ATTEMPTS intentos: $LAST_ERROR" >&2
+exit 4

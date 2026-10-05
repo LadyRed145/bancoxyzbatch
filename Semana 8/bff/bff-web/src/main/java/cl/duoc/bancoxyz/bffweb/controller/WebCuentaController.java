@@ -3,7 +3,10 @@ package cl.duoc.bancoxyz.bffweb.controller;
 import cl.duoc.bancoxyz.bffweb.dto.WebCuentaDetalle;
 import cl.duoc.bancoxyz.bffweb.service.WebCuentaService;
 import tools.jackson.databind.JsonNode;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/web/cuentas")

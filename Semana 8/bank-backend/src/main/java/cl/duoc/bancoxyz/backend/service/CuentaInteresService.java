@@ -14,6 +14,10 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Servicio de cuentas: valida el retiro, persiste el nuevo saldo y delega la
+ * publicación del evento Kafka al producer dedicado.
+ */
 @Service
 public class CuentaInteresService {
 
@@ -60,10 +64,11 @@ public class CuentaInteresService {
 
         CuentaInteres cuentaActualizada = repository.save(cuenta);
 
+        // El contrato Kafka conserva BigDecimal para no degradar precisión monetaria.
         RetiroRealizadoEvent evento = new RetiroRealizadoEvent(
                 cuentaId,
-                monto.doubleValue(),
-                cuentaActualizada.getSaldoFinal().doubleValue(),
+                monto,
+                cuentaActualizada.getSaldoFinal(),
                 "RETIRO"
         );
 

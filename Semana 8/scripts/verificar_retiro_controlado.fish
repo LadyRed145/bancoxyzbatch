@@ -1,15 +1,16 @@
 #!/usr/bin/env fish
 
-# Esta prueba crea una cuenta temporal a partir de la 101, ejecuta un retiro real de $1
-# a través del BFF ATM y elimina la cuenta temporal al terminar.
-# De esta forma puedo demostrar una operación crítica real sin alterar los datos originales.
+# Crea una cuenta temporal a partir de la 101, ejecuta un retiro real de $1
+# mediante el BFF ATM y elimina el fixture al terminar. Incluye reintentos
+# acotados para absorber únicamente la ventana de arranque/registro Eureka.
 
 set SCRIPT_DIR (cd (dirname (status --current-filename)); and pwd)
 set ATM_TOKEN (fish "$SCRIPT_DIR/oauth2_obtener_token.fish" atm)
-if test -z "$ATM_TOKEN"
+if test $status -ne 0; or test -z "$ATM_TOKEN"
     echo 'ERROR: no pude obtener token OAuth2 para atm.'
     exit 1
 end
+
 set DB_CONTAINER (set -q DB_CONTAINER; and echo $DB_CONTAINER; or echo 'bancoxyz-postgres')
 set DB_USER (set -q DB_USER; and echo $DB_USER; or echo 'bancoxyz')
 set DB_NAME (set -q DB_NAME; and echo $DB_NAME; or echo 'bancoxyz')
@@ -25,13 +26,10 @@ function limpiar_cuenta_temporal
         >/dev/null 2>&1
 end
 
-# Aunque la prueba falle a mitad de camino, intento eliminar siempre
-# la cuenta temporal para no dejar residuos en la base de datos.
 function cleanup --on-event fish_exit
     limpiar_cuenta_temporal
 end
 
-# Verifico las herramientas que necesito antes de modificar la base.
 for comando in docker curl jq
     if not command -q $comando
         echo "ERROR: falta el comando requerido: $comando"
@@ -44,8 +42,6 @@ if not docker ps --format '{{.Names}}' | string match -q -- $DB_CONTAINER
     exit 1
 end
 
-# Elimino un fixture previo por seguridad, en caso de que alguna ejecución
-# anterior se haya interrumpido de forma inesperada.
 limpiar_cuenta_temporal
 
 set sql "INSERT INTO cuentas_intereses \
@@ -67,14 +63,27 @@ if not docker exec -i $DB_CONTAINER \
     exit 1
 end
 
-# Consulto el saldo inicial utilizando exclusivamente el BFF ATM.
 set antes_file /tmp/atm_saldo_antes.json
+set antes_code 000
 
-set antes_code (curl -ksS \
-    -H "Authorization: Bearer $ATM_TOKEN" \
-    -o $antes_file \
-    -w '%{http_code}' \
-    https://localhost:8083/api/atm/cuentas/$TEST_ID/saldo)
+for intento in (seq 1 15)
+    set antes_code (curl -ksS \
+        -H "Authorization: Bearer $ATM_TOKEN" \
+        -o $antes_file \
+        -w '%{http_code}' \
+        https://localhost:8083/api/atm/cuentas/$TEST_ID/saldo)
+
+    if test "$antes_code" = '200'
+        break
+    end
+
+    # Sólo reintento estados transitorios de disponibilidad/resiliencia.
+    if string match -qr '^(429|502|503|504)$' -- "$antes_code"
+        sleep 2
+    else
+        break
+    end
+end
 
 if test "$antes_code" != '200'
     echo "ERROR: la consulta inicial devolvió HTTP $antes_code."
@@ -83,12 +92,9 @@ if test "$antes_code" != '200'
 end
 
 set saldo_antes (jq -r '.saldoDisponible' $antes_file)
-
 echo "Saldo antes: $saldo_antes"
 
-# Ejecuto un retiro real de $1 sobre la cuenta temporal.
 set retiro_file /tmp/atm_retiro_controlado.json
-
 set retiro_metricas (curl -ksS \
     -H "Authorization: Bearer $ATM_TOKEN" \
     -H 'Content-Type: application/json' \
@@ -101,7 +107,6 @@ set partes (string split '|' $retiro_metricas)
 set retiro_code $partes[1]
 
 echo "Retiro: HTTP $retiro_code | bytes $partes[2] | tiempo $partes[3]s"
-
 jq . $retiro_file
 
 if test "$retiro_code" != '200'
@@ -109,27 +114,35 @@ if test "$retiro_code" != '200'
     exit 1
 end
 
-# Consulto nuevamente el saldo para demostrar que la operación
-# realmente fue persistida por el Bank Backend.
 set despues_file /tmp/atm_saldo_despues.json
+set despues_code 000
 
-set despues_code (curl -ksS \
-    -H "Authorization: Bearer $ATM_TOKEN" \
-    -o $despues_file \
-    -w '%{http_code}' \
-    https://localhost:8083/api/atm/cuentas/$TEST_ID/saldo)
+for intento in (seq 1 10)
+    set despues_code (curl -ksS \
+        -H "Authorization: Bearer $ATM_TOKEN" \
+        -o $despues_file \
+        -w '%{http_code}' \
+        https://localhost:8083/api/atm/cuentas/$TEST_ID/saldo)
+
+    if test "$despues_code" = '200'
+        break
+    end
+
+    if string match -qr '^(429|502|503|504)$' -- "$despues_code"
+        sleep 1
+    else
+        break
+    end
+end
 
 if test "$despues_code" != '200'
     echo "ERROR: la consulta posterior devolvió HTTP $despues_code."
+    cat $despues_file
     exit 1
 end
 
 set saldo_despues (jq -r '.saldoDisponible' $despues_file)
 set diferencia (math --scale=2 "$saldo_antes - $saldo_despues")
-
-# Fish puede representar matemáticamente 1.00 simplemente como 1.
-# Para comparar importes monetarios sin depender de esa representación,
-# normalizo ambos valores explícitamente a dos decimales.
 set diferencia_formateada (printf '%.2f' $diferencia)
 set monto_formateado (printf '%.2f' $MONTO)
 
@@ -141,11 +154,8 @@ if test "$diferencia_formateada" != "$monto_formateado"
     exit 1
 end
 
-# Elimino explícitamente la cuenta temporal una vez terminada la prueba.
 limpiar_cuenta_temporal
 
-# Finalmente verifico mediante el propio BFF que la cuenta temporal
-# ya no se encuentre disponible.
 set cleanup_code (curl -ksS \
     -H "Authorization: Bearer $ATM_TOKEN" \
     -o /dev/null \
