@@ -1,6 +1,12 @@
 #!/usr/bin/env fish
 
-set -g PROJECT_ROOT "/home/natalia/Archivos/Desarrollo Backend III/Semana 8/bancoxyzbatch"
+set -g SCRIPT_FILE (status --current-filename)
+set -g SCRIPT_DIR (realpath (dirname "$SCRIPT_FILE"))
+set -g PROJECT_ROOT (git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null)
+
+if test -z "$PROJECT_ROOT"
+    set -g PROJECT_ROOT (realpath "$SCRIPT_DIR/../..")
+end
 set -g TOKEN_SCRIPT "$PROJECT_ROOT/Semana 8/scripts/oauth2_obtener_token.fish"
 
 set -g API_URL "https://127.0.0.1:8081/api/web/cuentas"

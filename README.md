@@ -1,131 +1,465 @@
-# 🏦 BancoXYZ — Microservicios resilientes y arquitectura orientada a eventos
+# 🏦 BancoXYZ — Microservicios resilientes, seguros y orientados a eventos
 
-> **Desarrollo Backend III (PBY2203) · Semana 8 · Grupo 13**  
-> Spring Cloud, Service Discovery, BFF por canal, Resilience4j, Apache Kafka y PostgreSQL.
+> **Desarrollo Backend III (PBY2203) · Semana 8 · Grupo 13**
+> Spring Boot · Spring Cloud · OAuth2 · Keycloak · Resilience4j · Apache Kafka · PostgreSQL · Docker Compose · AWS EC2
 
 ---
 
 ## ✨ Resumen
 
-BancoXYZ continúa la evolución de la solución bancaria hacia una arquitectura distribuida. La **Semana 8** parte desde la base estable construida en la semana anterior: microservicios, configuración centralizada, descubrimiento de servicios, **Resilience4j**, **Apache Kafka** y PostgreSQL. Sobre esta base se incorporará la seguridad requerida con **OAuth2.0** y se reforzará el despliegue mediante Docker y Docker Compose.
+BancoXYZ es una solución bancaria distribuida basada en microservicios. La **Semana 8** consolida la arquitectura construida en las entregas anteriores e integra los requerimientos finales de **seguridad OAuth2, resiliencia, mensajería asíncrona, contenerización, observabilidad y despliegue Cloud**.
 
-La solución incluye:
+La solución final está compuesta por **10 servicios orquestados mediante Docker Compose** y fue validada tanto en entorno local como en una instancia **AWS EC2**.
 
-- **Config Server** para configuración centralizada.
-- **Eureka Discovery Server** para registro y descubrimiento.
-- **Bank Backend** como servicio responsable de lógica bancaria y persistencia.
-- **BFF Web, Mobile y ATM** con contratos diferenciados por canal.
-- **PostgreSQL 17** para persistencia.
-- **Resilience4j** con Circuit Breaker, Retry y Rate Limiter.
-- **Apache Kafka** para publicar y consumir eventos de retiro.
-- **Docker Compose** para orquestar todos los componentes.
+| Área | Estado final |
+|---|---|
+| Docker Compose | ✅ válido |
+| Servicios | ✅ `10/10 healthy` |
+| OAuth2 / Keycloak | ✅ `200 / 401 / 403` |
+| Kafka entre microservicios | ✅ productor + consumidor + `lag 0` |
+| Resilience4j | ✅ `CLOSED → OPEN → HALF_OPEN → CLOSED` |
+| Acceso externo EC2 | ✅ Keycloak + BFF accesibles |
+| Secretos | ✅ externalizados y fuera de Git |
+| Evidencia | ✅ preparada en `Semana 8/docs/` |
+
+### ✅ Criterio de rúbrica — OAuth2 / Keycloak (implementado)
+
+El requisito de **OAuth2 no corresponde a una mejora futura**: está **implementado, integrado y validado** en la solución final. Los tres BFF funcionan como **Spring Resource Server JWT**, utilizan clientes y scopes independientes en Keycloak y fueron probados en AWS EC2 con los resultados esperados:
+
+```text
+bff-web-client     + bancoxyz.web     → HTTP 200
+bff-mobile-client  + bancoxyz.mobile  → HTTP 200
+bff-atm-client     + bancoxyz.atm     → HTTP 200
+
+Sin token / token inválido             → HTTP 401
+Token válido con scope incorrecto       → HTTP 403
+```
+
+La mejora futura mencionada en este documento se refiere únicamente al **endurecimiento productivo del transporte** —DNS, TLS válido, reverse proxy y `sslRequired`—, no a la implementación de OAuth2, que ya forma parte funcional de Semana 8.
 
 ---
 
-## 🧭 Arquitectura
+## 🧭 Arquitectura final
+
+```mermaid
+flowchart TB
+    EXT["🌐 Cliente externo"] --> KC["🔐 Keycloak<br/>host :8084"]
+    EXT --> WEB["🖥️ BFF Web<br/>HTTPS :8081"]
+    EXT --> MOB["📱 BFF Mobile<br/>HTTPS :8082"]
+    EXT --> ATM["🏧 BFF ATM<br/>HTTPS :8083"]
+
+    CFG["⚙️ Config Server<br/>:8888"] --> WEB
+    CFG --> MOB
+    CFG --> ATM
+
+    EUREKA["🧭 Eureka Server<br/>:8761"] <--> WEB
+    EUREKA <--> MOB
+    EUREKA <--> ATM
+    EUREKA <--> BACK["🏦 Bank Backend<br/>:8080"]
+    EUREKA <--> CONSUMER["📨 Retiros Event Consumer<br/>:8090"]
+
+    WEB --> BACK
+    MOB --> BACK
+    ATM --> BACK
+
+    BACK --> DB["💾 PostgreSQL 17<br/>:5432"]
+    BACK --> KAFKA["📬 Apache Kafka<br/>:29092 interno"]
+    KAFKA --> CONSUMER
+
+    KC -. JWT / scopes .-> WEB
+    KC -. JWT / scopes .-> MOB
+    KC -. JWT / scopes .-> ATM
+```
+
+### Flujo natural
 
 ```text
-                           +----------------------+
-                           |    Config Server     |
-                           |        :8888         |
-                           +----------+-----------+
-                                      |
-            +-------------------------+-------------------------+
-            |                         |                         |
-     +------v------+           +------v------+           +------v------+
-     |   BFF Web   |           | BFF Mobile  |           |   BFF ATM   |
-     | HTTPS :8081 |           | HTTPS :8082 |           | HTTPS :8083 |
-     +------+------+           +------+------+           +------+------+ 
-            |                         |                         |
-            +-------------------------+-------------------------+
-                                      |
-                              Eureka + LoadBalancer
-                                      |
-                             +--------v---------+
-                             |   Bank Backend   |
-                             |    HTTP :8080    |
-                             +---+----------+---+
-                                 |          |
-                    +------------+          +----------------+
-                    |                                        |
-           +--------v---------+                    +---------v---------+
-           |  PostgreSQL 17   |                    |   Apache Kafka    |
-           |      :5432       |                    |  :29092 / :9092  |
-           +------------------+                    +---------+---------+
-                                                             |
-                                                bancoxyz.retiros
-                                                             |
-                                                +------------v-----------+
-                                                | RetiroKafkaConsumer    |
-                                                +------------------------+
-
-                           +----------------------+
-                           |    Eureka Server     |
-                           |        :8761         |
-                           +----------------------+
+Cliente
+  │
+  ├── OAuth2 / Keycloak
+  │
+  ▼
+BFF Web / Mobile / ATM
+  │
+  ├── Config Server
+  ├── Eureka + LoadBalancer
+  ├── Resilience4j
+  │
+  ▼
+Bank Backend
+  │
+  ├── PostgreSQL
+  │
+  └── Kafka ──► Retiros Event Consumer
 ```
 
 ---
 
-## 📨 Flujo Kafka de retiro
+## 🧩 Servicios del stack
 
-Cuando el BFF-ATM solicita un retiro:
+| # | Servicio | Responsabilidad principal | Exposición |
+|---:|---|---|---|
+| 1 | PostgreSQL 17 | Persistencia bancaria | `127.0.0.1:5432` |
+| 2 | Apache Kafka | Transporte asíncrono de eventos | `127.0.0.1:9092` / `kafka:29092` |
+| 3 | Keycloak 26.8.0 | OAuth2 y emisión de JWT | `0.0.0.0:8084` |
+| 4 | Config Server | Configuración centralizada | `127.0.0.1:8888` |
+| 5 | Eureka Discovery Server | Registro y descubrimiento | `127.0.0.1:8761` |
+| 6 | Bank Backend | Lógica bancaria, persistencia y productor Kafka | `127.0.0.1:8080` |
+| 7 | BFF Web | Contrato Web | `0.0.0.0:8081` |
+| 8 | BFF Mobile | Contrato Mobile | `0.0.0.0:8082` |
+| 9 | BFF ATM | Contrato ATM | `0.0.0.0:8083` |
+| 10 | Retiros Event Consumer | Consumo independiente de retiros | sólo red Docker `:8090` |
 
-1. `BFF-ATM` envía la operación al `bank-backend`.
-2. El backend valida la cuenta y el saldo.
-3. PostgreSQL persiste el nuevo saldo.
-4. Se crea un `RetiroRealizadoEvent`.
-5. `RetiroKafkaProducer` publica el evento en `bancoxyz.retiros`.
-6. `RetiroKafkaConsumer` consume el mensaje de forma asíncrona.
+Los servicios internos se comunican mediante la red `bancoxyz-net`. La infraestructura sensible permanece ligada a loopback o exclusivamente a la red Docker.
 
-El evento transporta:
+---
+
+## 🔐 Seguridad con OAuth2 y Keycloak
+
+BancoXYZ utiliza **OAuth2.0 Client Credentials** mediante Keycloak.
+
+### Realm
 
 ```text
-cuentaId
-monto
-saldoFinal
-tipo = RETIRO
+bancoxyz
 ```
 
-Kafka usa `kafka:29092` dentro de la red Docker y `localhost:9092` desde el host.
-
----
-
-## 🛡️ Resiliencia
-
-Los BFF mantienen mecanismos de Resilience4j sobre la comunicación con `BANK-BACKEND`:
-
-- **Circuit Breaker** para aislar fallos repetidos.
-- **Retry** de hasta 3 intentos en operaciones seguras de lectura.
-- **Rate Limiter** para limitar ráfagas de solicitudes.
-- **Timeout** y traducción controlada de errores.
-- El retiro ATM **no utiliza reintentos automáticos**, evitando duplicar una operación no idempotente.
-
-Ante la indisponibilidad del backend, el BFF entrega una respuesta controlada `HTTP 503 Service Unavailable`.
-
----
-
-## 🔐 Seguridad — estado inicial de Semana 8
-
-La base heredada conserva temporalmente la autenticación académica por Bearer Token y roles por canal:
+### Clientes
 
 ```text
-ROLE_WEB
-ROLE_MOBILE
-ROLE_ATM
+bff-web-client
+bff-mobile-client
+bff-atm-client
 ```
 
-Los BFF funcionan sobre HTTPS con certificados PKCS12 académicos. **OAuth2.0 todavía no está implementado en esta base inicial de Semana 8**; será el primer cambio funcional de esta etapa.
+### Scopes
+
+```text
+bancoxyz.web
+bancoxyz.mobile
+bancoxyz.atm
+```
+
+Cada BFF funciona como **Spring Resource Server JWT** y exige el scope correspondiente a su canal.
+
+### Comportamiento validado
+
+```text
+Token correcto + scope correcto  → HTTP 200
+Sin token / token inválido       → HTTP 401
+Token válido + scope incorrecto  → HTTP 403
+```
+
+La validación en EC2 confirmó los tres clientes y los tres escenarios de seguridad.
 
 ---
 
-## 📁 Estructura
+## 🔄 Rutas OAuth2 en Cloud
+
+En AWS se separan explícitamente dos conceptos:
+
+```text
+Issuer público del JWT
+    └── http://<ELASTIC_IP>:8084/realms/bancoxyz
+
+Obtención local de token para scripts ejecutados dentro de EC2
+    └── http://127.0.0.1:8084/realms/bancoxyz/protocol/openid-connect/token
+```
+
+Variables relevantes:
+
+```text
+KEYCLOAK_PUBLIC_URL
+OAUTH2_ISSUER_URI
+OAUTH2_TOKEN_URL
+```
+
+Esta separación evita que los scripts de la propia instancia intenten volver a entrar por la Elastic IP cuando el Security Group está restringido.
+
+### SSL del realm en laboratorio
+
+Para el despliegue académico se utiliza:
+
+```json
+"sslRequired": "none"
+```
+
+Esto permite validar Keycloak mediante HTTP sobre la Elastic IP en un entorno de laboratorio.
+
+> ⚠️ **Producción:** `sslRequired: none` no debe utilizarse como configuración final. Un entorno productivo debe utilizar DNS, TLS válido y HTTPS real delante de Keycloak.
+
+---
+
+## 🔑 Variables de entorno y secretos
+
+El archivo real `.env` está excluido de Git. Los valores sensibles se generan o suministran externamente.
+
+Variables principales:
+
+```text
+POSTGRES_DB
+POSTGRES_USER
+POSTGRES_PASSWORD
+DB_URL
+
+KEYCLOAK_ADMIN_USERNAME
+KEYCLOAK_ADMIN_PASSWORD
+KEYCLOAK_PUBLIC_URL
+
+OAUTH2_ISSUER_URI
+OAUTH2_TOKEN_URL
+OAUTH2_WEB_CLIENT_SECRET
+OAUTH2_MOBILE_CLIENT_SECRET
+OAUTH2_ATM_CLIENT_SECRET
+
+SSL_KEYSTORE_PASSWORD
+```
+
+Preparación:
+
+```fish
+cp .env.example .env
+```
+
+Permisos recomendados:
+
+```bash
+chmod 600 .env
+```
+
+> **Buenas prácticas:** `.env`, claves privadas, contraseñas, certificados sensibles y client secrets nunca deben versionarse.
+
+---
+
+## 📨 Mensajería asíncrona con Kafka
+
+El retiro bancario genera un evento sólo después de completar la operación principal.
+
+```mermaid
+sequenceDiagram
+    participant ATM as BFF ATM
+    participant BE as Bank Backend
+    participant DB as PostgreSQL
+    participant K as Kafka
+    participant C as Retiros Event Consumer
+
+    ATM->>BE: POST /retiro
+    BE->>DB: validar cuenta y saldo
+    BE->>DB: persistir nuevo saldo
+    DB-->>BE: operación confirmada
+    BE->>K: RetiroRealizadoEvent
+    BE-->>ATM: HTTP 200
+    K-->>C: bancoxyz.retiros
+    C->>C: procesar evento
+```
+
+### Topic
+
+```text
+bancoxyz.retiros
+```
+
+### Consumer Group
+
+```text
+bancoxyz-retiros-group
+```
+
+### Evento
+
+```text
+RetiroRealizadoEvent
+├── cuentaId
+├── monto
+├── saldoFinal
+└── tipo = RETIRO
+```
+
+### Validación EC2
+
+```text
+Saldo antes .............. 5050.0
+Retiro ................... HTTP 200
+Saldo después ............ 5049.0
+Producer ................. EVENTO PUBLICADO
+Consumer ................. EVENTO CONSUMIDO
+Offset ................... 0 → 1
+Lag ...................... 0
+```
+
+El consumidor fue separado de `bank-backend` para demostrar mensajería real entre microservicios y permitir escalamiento independiente.
+
+---
+
+## 🛡️ Resiliencia con Resilience4j
+
+Los BFF protegen la comunicación con `BANK-BACKEND` mediante:
+
+- **Circuit Breaker**;
+- **Retry** para operaciones seguras;
+- **Rate Limiter**;
+- **Timeout**;
+- traducción controlada de errores.
+
+El retiro ATM **no utiliza Retry automático**, porque no es una operación idempotente y un reintento podría provocar doble débito.
+
+### Ciclo validado
+
+```mermaid
+stateDiagram-v2
+    [*] --> CLOSED
+    CLOSED --> OPEN: fallos repetidos
+    OPEN --> HALF_OPEN: ventana de recuperación
+    HALF_OPEN --> OPEN: probes fallidos
+    HALF_OPEN --> CLOSED: probes exitosos
+```
+
+### Evidencia EC2
+
+```text
+Operación normal ........ HTTP 200
+Fallo 1 ................. HTTP 504
+Fallo 2 ................. HTTP 504
+Circuit Breaker ......... OPEN
+Rechazo rápido .......... HTTP 503
+Eventos Retry ........... 6
+Backend restaurado ...... healthy
+Recuperación ............ HALF_OPEN
+Circuit Breaker final ... CLOSED
+```
+
+Resultado:
+
+```text
+CLOSED → OPEN → HALF_OPEN → CLOSED
+```
+
+---
+
+## ⚙️ Configuración centralizada y Service Discovery
+
+### Config Server
+
+Puerto:
+
+```text
+8888
+```
+
+Configuraciones principales:
+
+```text
+Semana 8/config-repo/
+├── bff-web.properties
+├── bff-mobile.properties
+└── bff-atm.properties
+```
+
+Centraliza parámetros de Eureka, nombre lógico del backend, timeouts, Circuit Breaker, Retry, Rate Limiter y Actuator.
+
+### Eureka
+
+Puerto:
+
+```text
+8761
+```
+
+Los BFF resuelven el backend mediante:
+
+```text
+BANK-BACKEND
+```
+
+con Spring Cloud LoadBalancer, evitando depender de direcciones IP rígidas.
+
+---
+
+## 🌐 Backend for Frontend
+
+### Web — `HTTPS :8081`
+
+```text
+GET /api/web/cuentas
+GET /api/web/cuentas/{id}
+GET /api/web/cuentas/{id}/detalle
+```
+
+### Mobile — `HTTPS :8082`
+
+```text
+GET /api/mobile/cuentas
+GET /api/mobile/cuentas/{id}/resumen
+```
+
+### ATM — `HTTPS :8083`
+
+```text
+GET  /api/atm/cuentas/{id}/saldo
+POST /api/atm/cuentas/{id}/retiro
+```
+
+Los BFF utilizan certificados PKCS12 académicos y exigen `SSL_KEYSTORE_PASSWORD` mediante variable de entorno.
+
+---
+
+## 💾 Persistencia
+
+PostgreSQL 17 mantiene el estado bancario.
+
+Archivos:
+
+```text
+Semana 8/database/
+```
+
+Hostname interno:
+
+```text
+postgres:5432
+```
+
+El volumen persistente conserva los datos con:
+
+```fish
+docker compose down
+```
+
+Para reinicializar completamente:
+
+```fish
+docker compose down -v
+```
+
+> Usar `-v` sólo cuando se quiera eliminar deliberadamente la persistencia.
+
+---
+
+## 🔎 Observabilidad
+
+Los servicios utilizan Spring Boot Actuator.
+
+Endpoints relevantes:
+
+```text
+/actuator/health
+/actuator/info
+/actuator/circuitbreakers
+/actuator/circuitbreakerevents
+/actuator/retries
+/actuator/retryevents
+/actuator/ratelimiters
+/actuator/ratelimiterevents
+```
+
+Los healthchecks de Docker Compose controlan el orden de arranque de las dependencias.
+
+---
+
+## 📁 Estructura del proyecto
 
 ```text
 bancoxyzbatch/
-├── .mvn/
-│   └── wrapper/
-│       └── maven-wrapper.properties
 ├── .env.example
 ├── .gitignore
 ├── docker-compose.yml
@@ -142,57 +476,32 @@ bancoxyzbatch/
     │   └── bff-web/
     ├── config-repo/
     ├── config-server/
-    ├── data/legacy/
+    ├── data/
+    │   └── legacy/
     ├── database/
     ├── discovery-server/
+    ├── docs/
+    │   └── Documentacion_Capturas.pdf
+    ├── keycloak/
+    ├── retiros-event-consumer/
     └── scripts/
 ```
 
-Los artefactos `target/` no forman parte del repositorio y están excluidos mediante `.gitignore`.
+No se versionan:
 
----
-
-## 🐳 Ejecución con Docker Compose
-
-Desde la raíz:
-
-```fish
-cp .env.example .env
-
-docker compose config
-docker compose up --build -d
-```
-
-Estado de los contenedores:
-
-```fish
-docker compose ps
-```
-
-Logs principales:
-
-```fish
-docker compose logs -f bank-backend
-docker compose logs -f kafka
-```
-
-Detener el entorno:
-
-```fish
-docker compose down
-```
-
-Para eliminar también el volumen de PostgreSQL:
-
-```fish
-docker compose down -v
+```text
+.env
+*.pem
+target/
+backups operacionales
+archivos temporales
 ```
 
 ---
 
 ## 🧱 Build Maven
 
-El proyecto raíz agrega los seis módulos principales.
+Compilación:
 
 ```fish
 ./mvnw clean compile -DskipTests
@@ -204,90 +513,302 @@ Empaquetado:
 ./mvnw clean package -DskipTests
 ```
 
----
-
-## 🔌 Puertos
-
-| Componente | Puerto |
-|---|---:|
-| PostgreSQL | 5432 |
-| Kafka host | 9092 |
-| Config Server | 8888 |
-| Eureka | 8761 |
-| Bank Backend | 8080 |
-| BFF Web | 8081 |
-| BFF Mobile | 8082 |
-| BFF ATM | 8083 |
+El `pom.xml` raíz agrega los módulos Java de la solución, incluido `retiros-event-consumer`.
 
 ---
 
-## 🧪 Endpoints principales
+## 🐳 Ejecución local con Docker Compose
 
-### Web — `https://localhost:8081`
-
-```text
-GET /api/web/cuentas
-GET /api/web/cuentas/{id}
-GET /api/web/cuentas/{id}/detalle
-```
-
-### Mobile — `https://localhost:8082`
-
-```text
-GET /api/mobile/cuentas
-GET /api/mobile/cuentas/{id}/resumen
-```
-
-### ATM — `https://localhost:8083`
-
-```text
-GET  /api/atm/cuentas/{id}/saldo
-POST /api/atm/cuentas/{id}/retiro
-```
-
-Ejemplo de retiro:
+Validar:
 
 ```fish
-curl -k -X POST 'https://localhost:8083/api/atm/cuentas/145/retiro'   -H 'Authorization: Bearer bancoxyz-atm-demo-token-2026'   -H 'Content-Type: application/json'   -d '{"monto":1}'
+docker compose config
 ```
 
----
-
-## 🔎 Actuator
-
-Los servicios exponen endpoints de salud y los BFF exponen métricas de resiliencia según su configuración centralizada.
-
-Ejemplos:
-
-```text
-/actuator/health
-/actuator/info
-/actuator/circuitbreakers
-/actuator/circuitbreakerevents
-/actuator/retries
-/actuator/retryevents
-/actuator/ratelimiters
-/actuator/ratelimiterevents
-```
-
----
-
-## 🧰 Scripts de apoyo
-
-Desde la raíz:
+Levantar:
 
 ```fish
-fish "Semana 8/scripts/inicializar_bd.fish"
+docker compose up --build -d
+```
+
+Estado:
+
+```fish
+docker compose ps
+```
+
+Detener sin eliminar datos:
+
+```fish
+docker compose down
+```
+
+La validación local final alcanzó:
+
+```text
+10/10 servicios healthy
+OAuth2 3/3 clientes funcionales
+Kafka productor + consumidor + lag 0
+Resilience4j fallo + recuperación verificados
+```
+
+---
+
+## ☁️ Despliegue validado en AWS EC2
+
+La solución fue desplegada y comprobada funcionalmente sobre AWS.
+
+### Entorno utilizado
+
+```text
+AWS EC2
+Ubuntu Server 26.04.1 LTS x86_64
+t3.large
+2 vCPU
+8 GiB RAM
+50 GiB gp3
+Elastic IP
+Docker Engine
+Docker Compose Plugin
+```
+
+### Security Group
+
+Acceso exterior controlado:
+
+```text
+22    SSH
+8081  BFF Web
+8082  BFF Mobile
+8083  BFF ATM
+8084  Keycloak
+```
+
+Infraestructura no publicada a Internet:
+
+```text
+8080  Bank Backend
+8888  Config Server
+8761  Eureka
+9092  Kafka
+5432  PostgreSQL
+8090  Retiros Event Consumer
+```
+
+### Clonado
+
+```bash
+git clone --filter=blob:none --no-checkout \
+  https://github.com/LadyRed145/bancoxyzbatch.git \
+  bancoxyzbatch
+
+cd bancoxyzbatch
+
+git sparse-checkout init --cone
+git sparse-checkout set "Semana 8"
+git checkout main
+```
+
+### Variables Cloud
+
+```text
+KEYCLOAK_PUBLIC_URL=http://<ELASTIC_IP>:8084
+OAUTH2_ISSUER_URI=http://<ELASTIC_IP>:8084/realms/bancoxyz
+OAUTH2_TOKEN_URL=http://127.0.0.1:8084/realms/bancoxyz/protocol/openid-connect/token
+```
+
+### Inicio
+
+```bash
+docker compose config >/dev/null
+docker compose up --build -d
+docker compose ps
+```
+
+> **Nota operativa:** el primer arranque de Keycloak puede tardar más debido a la inicialización e importación del realm. Una vez `healthy`, los BFF pueden iniciarse nuevamente sin reconstruir imágenes.
+
+---
+
+## 🌍 Validación externa desde un equipo distinto a EC2
+
+Desde el notebook local se comprobó el acceso atravesando:
+
+```text
+Notebook
+   ↓
+Internet
+   ↓
+Security Group
+   ↓
+Elastic IP
+   ↓
+EC2
+   ↓
+Docker
+   ↓
+Keycloak / BFF
+```
+
+Resultados:
+
+```text
+Keycloak OIDC .............. HTTP 200
+BFF Web health ............. HTTP 200
+BFF Mobile health .......... HTTP 200
+BFF ATM health ............. HTTP 200
+
+WEB sin token .............. HTTP 401
+MOBILE sin token ........... HTTP 401
+ATM sin token .............. HTTP 401
+```
+
+Esto demuestra que los servicios públicos responden desde fuera de la instancia y que los endpoints protegidos continúan rechazando solicitudes no autenticadas.
+
+---
+
+## 🧰 Scripts de validación
+
+Ubicación:
+
+```text
+Semana 8/scripts/
+```
+
+Principales scripts:
+
+```fish
 fish "Semana 8/scripts/verificar_bff.fish"
+fish "Semana 8/scripts/verificar_oauth2.fish"
 fish "Semana 8/scripts/verificar_actuator_resilience.fish"
-fish "Semana 8/scripts/verificar_retiro_controlado.fish"
+fish "Semana 8/scripts/verificar_resilience4j_fallo_recuperacion.fish"
+fish "Semana 8/scripts/verificar_kafka_microservicios.fish"
+fish "Semana 8/scripts/auditar_kafka_huerfanos.fish"
 ```
+
+Helper OAuth2:
+
+```fish
+fish "Semana 8/scripts/oauth2_obtener_token.fish" web
+fish "Semana 8/scripts/oauth2_obtener_token.fish" mobile
+fish "Semana 8/scripts/oauth2_obtener_token.fish" atm
+```
+
+Buenas prácticas incorporadas al cierre Cloud:
+
+- resolución dinámica de `PROJECT_ROOT`;
+- ausencia de rutas absolutas de usuario;
+- timeouts de red para evitar bloqueos indefinidos;
+- separación entre issuer público y token endpoint local;
+- scripts reutilizables tanto en local como en EC2.
 
 ---
 
-## ✅ Alcance inicial de Semana 8
+## ✅ Validación final
 
-La base de Semana 8 parte con la arquitectura distribuida, Resilience4j, Kafka, Docker Compose y los BFF funcionando desde la entrega anterior. En esta etapa se implementará **OAuth2.0**, se validarán las imágenes Docker de todos los microservicios y se consolidará la orquestación Cloud sin alterar el histórico de las semanas anteriores.
+| Validación | Local | AWS EC2 |
+|---|:---:|:---:|
+| Docker Compose válido | ✅ | ✅ |
+| `10/10` servicios healthy | ✅ | ✅ |
+| BFF Web / Mobile / ATM | ✅ | ✅ |
+| OAuth2 credenciales válidas `200` | ✅ | ✅ |
+| OAuth2 sin token / inválido `401` | ✅ | ✅ |
+| OAuth2 scope incorrecto `403` | ✅ | ✅ |
+| Circuit Breaker | ✅ | ✅ |
+| Retry | ✅ | ✅ |
+| Rate Limiter | ✅ | ✅ |
+| `CLOSED → OPEN → HALF_OPEN → CLOSED` | ✅ | ✅ |
+| Kafka Producer | ✅ | ✅ |
+| Kafka Consumer independiente | ✅ | ✅ |
+| Consumer Group `lag 0` | ✅ | ✅ |
+| Secretos fuera del código | ✅ | ✅ |
+| `.env` fuera de Git | ✅ | ✅ |
+| Acceso externo por Elastic IP | — | ✅ |
+
+---
+
+## 📸 Evidencia de despliegue Cloud
+
+La documentación final se concentra en:
+
+```text
+Semana 8/docs/Documentacion_Capturas.pdf
+```
+
+Capturas principales:
+
+```text
+08_BANCOXYZ - HEALTHCHECK FINAL_EC2.png
+09_PRUEBA_OAUT2_EC2_FINALIZADA.png
+10_KAFKA_ENTRE_MICROSERVICIOS_EC2.png
+11A_RESILIENCE4J_EC2_FINALIZADA.png
+11B_RESILIENCE4J_EC2_FINALIZADA.png
+12B_ACCESO_EXTERNO_ELASTIC_IP_EC2.png
+```
+
+Las evidencias cubren salud del stack, OAuth2, Kafka entre microservicios, Resilience4j y acceso externo desde Internet.
+
+---
+
+## 🧹 Buenas prácticas aplicadas
+
+- separación clara de responsabilidades;
+- BFF por canal consumidor;
+- configuración centralizada;
+- Service Discovery;
+- mensajería asíncrona desacoplada;
+- consumer Kafka independiente;
+- healthchecks y dependencias controladas;
+- secretos externalizados;
+- `.env` fuera del repositorio;
+- puertos internos ligados a loopback;
+- scripts reproducibles;
+- rutas portables entre local y Cloud;
+- backups fuera del repositorio;
+- evidencia técnica organizada;
+- checkpoints estables antes del despliegue.
+
+---
+
+## 🚀 Consideraciones de producción
+
+El proyecto corresponde a un entorno académico. **OAuth2 + Keycloak ya están implementados y funcionales**; las siguientes medidas corresponden únicamente a su endurecimiento para un entorno productivo:
+
+- DNS propio;
+- reverse proxy;
+- TLS público válido;
+- restaurar `sslRequired` para exigir HTTPS externo en Keycloak;
+- gestión centralizada de secretos;
+- CI/CD;
+- monitoreo y alertas;
+- Kafka con alta disponibilidad;
+- PostgreSQL administrado o replicado;
+- backups automáticos;
+- rotación de credenciales;
+- reglas de red aún más restrictivas.
+
+---
+
+## 🎯 Resultado
+
+BancoXYZ Semana 8 finaliza como una arquitectura distribuida con **OAuth2 funcional, resiliencia verificable, mensajería asíncrona entre microservicios, persistencia, observabilidad, contenerización y despliegue Cloud real**.
+
+La solución fue validada de extremo a extremo:
+
+```text
+Seguridad
+   +
+Resiliencia
+   +
+Persistencia
+   +
+Mensajería
+   +
+Docker
+   +
+AWS EC2
+   =
+BancoXYZ Semana 8 ✅
+```
 
 ---
 

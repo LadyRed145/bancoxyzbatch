@@ -102,6 +102,8 @@ else
 end
 
 set -l RESPONSE (curl -fsS \
+    --connect-timeout 5 \
+    --max-time 15 \
     -X POST "$TOKEN_URL" \
     -H 'Content-Type: application/x-www-form-urlencoded' \
     --data-urlencode 'grant_type=client_credentials' \

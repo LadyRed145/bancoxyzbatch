@@ -2,7 +2,7 @@
   "realm": "bancoxyz",
   "displayName": "BancoXYZ",
   "enabled": true,
-  "sslRequired": "external",
+  "sslRequired": "none",
   "registrationAllowed": false,
   "resetPasswordAllowed": false,
   "rememberMe": false,
