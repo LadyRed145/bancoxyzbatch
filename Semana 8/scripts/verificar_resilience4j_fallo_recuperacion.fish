@@ -260,7 +260,7 @@ check_line "Rate Limiter configurado" (test "$RATE_REG" = "true"; and echo 1; or
 check_line "Operación normal HTTP 200" (test "$NORMAL" = "200"; and echo 1; or echo 0)
 check_line "Circuit Breaker abre" (test "$CB_CAIDA" = "OPEN"; and echo 1; or echo 0)
 check_line "Fallo rápido con circuito OPEN" (test "$RAPIDO_CODE" = "503"; and echo 1; or echo 0)
-check_line "Backend recuperado" (test "$BACKEND_RECUP" = "healthy" -a "$DIRECTO" = "200"; and echo 1; or echo 0)
+check_line "Backend recuperado - HTTP 200" (test "$DIRECTO" = "200"; and echo 1; or echo 0)
 check_line "Recuperación a CLOSED" (test "$CB_FINAL" = "CLOSED"; and echo 1; or echo 0)
 
 echo

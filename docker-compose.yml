@@ -154,7 +154,7 @@ services:
     image: provectuslabs/kafka-ui:v0.7.2
     container_name: bancoxyz-kafka-ui
     restart: unless-stopped
-    mem_limit: ${KAFKA_UI_MEM_LIMIT:-256m}
+    mem_limit: ${KAFKA_UI_MEM_LIMIT:-512m}
     environment:
       KAFKA_CLUSTERS_0_NAME: bancoxyz-cluster
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-1:19092,kafka-2:19092,kafka-3:19092
