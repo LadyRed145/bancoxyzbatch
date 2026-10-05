@@ -10,7 +10,7 @@
 
 BancoXYZ evoluciona el trabajo de semanas anteriores hacia una solución distribuida preparada para ejecutarse en un entorno Cloud. La propuesta busca resolver cinco necesidades técnicas centrales: **seguridad de acceso**, **portabilidad**, **orquestación**, **tolerancia a fallos** y **comunicación asíncrona entre microservicios**.
 
-La solución fue validada localmente con la arquitectura Kafka 3×3 y se redepliega en AWS EC2 desde el mismo commit antes de cerrar la evidencia. El objetivo no es únicamente iniciar servicios, sino demostrar cada mecanismo exigido mediante comportamiento observable.
+La solución fue validada localmente con la arquitectura Kafka 3×3 y posteriormente redeplegada y revalidada en AWS EC2 desde la misma versión funcional antes de cerrar la evidencia. El objetivo no es únicamente iniciar servicios, sino demostrar cada mecanismo exigido mediante comportamiento observable.
 
 ---
 
@@ -122,7 +122,7 @@ bff-atm-client     → bancoxyz.atm
 
 Cada BFF funciona como **Spring Resource Server JWT** y exige el scope correspondiente a su canal. La decisión evita que un token válido para un consumidor pueda utilizarse indistintamente sobre otro.
 
-El flujo está validado localmente y se repite en EC2 después del redeploy final:
+El flujo quedó validado tanto localmente como en AWS EC2:
 
 ```text
 Token + scope correctos   → HTTP 200
@@ -189,7 +189,7 @@ sequenceDiagram
 
 El evento se publica después de persistir el nuevo saldo dentro del método transaccional. La validación demostró publicación, consumo, avance de offset y **lag final igual a 0** en el consumer group `bancoxyz-retiros-group`. Para producción, la atomicidad entre base de datos y broker se reforzaría con un patrón Transactional Outbox.
 
-La separación productor/consumidor permite escalar el procesamiento asíncrono sin acoplarlo al ciclo de respuesta del retiro. El topic usa **3 particiones, factor de replicación 3 y `min.insync.replicas=2`** sobre tres brokers KRaft. El listener `retirosListener` puede pausarse, reanudarse y resumirse mediante una API protegida por OAuth2; la prueba local confirmó `lag 1` durante la pausa y retorno a `lag 0` al reanudar. Los tres brokers comparten el mismo host Docker en el entorno académico: esto demuestra replicación y tolerancia a fallo de broker, pero no elimina el punto único de fallo del host.
+La separación productor/consumidor permite escalar el procesamiento asíncrono sin acoplarlo al ciclo de respuesta del retiro. El topic usa **3 particiones, factor de replicación 3 y `min.insync.replicas=2`** sobre tres brokers KRaft. El listener `retirosListener` puede pausarse, reanudarse y resumirse mediante una API protegida por OAuth2; la prueba final, repetida en AWS EC2, confirmó `lag 1` durante la pausa y retorno a `lag 0` al reanudar. Los tres brokers comparten el mismo host Docker en el entorno académico: esto demuestra replicación y tolerancia a fallo de broker, pero no elimina el punto único de fallo del host.
 
 ### 4.6 Docker y Docker Compose
 
@@ -197,7 +197,7 @@ Cada uno de los siete microservicios Java ejecutables dispone de Dockerfile. Doc
 
 La composición utiliza healthchecks, dependencias condicionadas por salud, variables de entorno y volúmenes persistentes para PostgreSQL y los tres brokers Kafka. Con esto se obtiene una unidad reproducible de despliegue local y Cloud.
 
-Como medida de estabilidad y portabilidad, la infraestructura más intensiva en memoria tiene límites explícitos y configurables: cada broker Kafka dispone de `768 MiB` con heap `256–384 MiB`, Keycloak de `1 GiB` con heap relativo controlado y Kafka UI de `256 MiB`. Los valores por defecto están dimensionados para el entorno académico de **8 GiB** utilizado tanto en Docker Desktop como en la instancia EC2 `t3.large`, evitando reinicios por presión de memoria sin sobredimensionar el laboratorio.
+Como medida de estabilidad y portabilidad, la infraestructura más intensiva en memoria tiene límites explícitos y configurables: cada broker Kafka dispone de `768 MiB` con heap `256–384 MiB`, Keycloak de `1 GiB` con heap relativo controlado y Kafka UI de `512 MiB`. Los valores por defecto están dimensionados para el entorno académico de **8 GiB** utilizado tanto en Docker Desktop como en la instancia EC2 `t3.large`, evitando reinicios por presión de memoria sin sobredimensionar el laboratorio.
 
 ---
 
@@ -242,6 +242,12 @@ Para demostrar OAuth2 sobre una Elastic IP sin infraestructura TLS adicional, el
 
 Esta decisión no se propone como configuración productiva. Un despliegue real debe utilizar DNS, HTTPS válido y requerimiento SSL en Keycloak.
 
+### Ajuste de memoria de Kafka UI en EC2
+
+Durante el despliegue final en la instancia `t3.large`, el límite inicial de `256 MiB` para Kafka UI resultó insuficiente durante los picos de arranque de su JVM y provocó eventos OOM restringidos al cgroup de ese contenedor. Los brokers Kafka, Keycloak y los microservicios permanecieron fuera de ese fallo.
+
+El límite de Kafka UI se ajustó a **512 MiB** mediante `KAFKA_UI_MEM_LIMIT` y se convirtió en el valor por defecto del proyecto. Tras recrear el contenedor, la validación final mostró `Restart=0`, `OOMKilled=false` y operación estable, sin modificar los límites de los tres brokers ni de Keycloak.
+
 ---
 
 ## 7. Validación de la propuesta
@@ -250,15 +256,15 @@ La aceptación técnica se realiza contra comportamientos observables, no sólo 
 
 | Área | Resultado local validado | AWS EC2 final |
 |---|---|---|
-| Salud del stack | 13 servicios operativos (`12 healthy` + Kafka UI `running`) | Pendiente revalidación del commit final |
-| OAuth2 | `200` válido, `401` sin token, `403` scope incorrecto | Pendiente revalidación |
-| Docker | 7 microservicios Java con imagen construible | Pendiente redeploy |
-| Docker Compose | 13 servicios orquestados | Pendiente redeploy |
-| Resilience4j | `CLOSED → OPEN → HALF_OPEN → CLOSED` | Se repite tras redeploy |
-| Kafka cluster | 3 brokers, 3 particiones, RF=3, min ISR=2 | Pendiente revalidación |
-| Kafka eventos | Producer + consumer independientes, offset avanza, lag `0` | Pendiente revalidación |
-| Listener seguro | `401/403/200`, pausa, lag `1`, reanudación, lag `0` | Pendiente revalidación |
-| Build | Reactor Maven con `BUILD SUCCESS` | Se construye desde el mismo commit |
+| Salud del stack | 13 servicios operativos (`12 healthy` + Kafka UI `running`) | ✅ 13 servicios operativos |
+| OAuth2 | `200` válido, `401` sin token, `403` scope incorrecto | ✅ `200/401/403` |
+| Docker | 7 microservicios Java con imagen construible | ✅ imágenes construidas |
+| Docker Compose | 13 servicios orquestados | ✅ orquestación validada |
+| Resilience4j | `CLOSED → OPEN → HALF_OPEN → CLOSED` | ✅ ciclo completo validado |
+| Kafka cluster | 3 brokers, 3 particiones, RF=3, min ISR=2 | ✅ cluster 3×3 validado |
+| Kafka eventos | Producer + consumer independientes, offset avanza, lag `0` | ✅ producer/consumer + lag `0` |
+| Listener seguro | `401/403/200`, pausa, lag `1`, reanudación, lag `0` | ✅ control seguro validado |
+| Build | Reactor Maven con `BUILD SUCCESS` | ✅ imágenes construidas desde la versión final |
 
 Las capturas definitivas se consolidan en `Semana 8/docs/Documentacion_Capturas.pdf` sólo después de que GitHub y EC2 correspondan a la misma versión.
 
@@ -301,7 +307,7 @@ El principal trade-off del entorno actual es aceptar componentes de laboratorio 
 
 BancoXYZ Semana 8 entrega una arquitectura distribuida que integra seguridad OAuth2, BFF especializados, descubrimiento de servicios, configuración centralizada, resiliencia, persistencia, mensajería asíncrona y despliegue Cloud.
 
-La arquitectura final queda primero validada localmente y luego se redepliega desde el mismo commit en AWS EC2 para producir la evidencia Cloud definitiva y reproducible.
+La arquitectura final quedó validada localmente y luego redeplegada y revalidada en AWS EC2, dejando una base técnica reproducible para la evidencia Cloud definitiva.
 
 ---
 

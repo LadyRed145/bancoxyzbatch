@@ -10,7 +10,7 @@
 
 BancoXYZ es una solución bancaria distribuida basada en microservicios. La **Semana 8** consolida la arquitectura construida en las entregas anteriores e integra los requerimientos finales de **seguridad OAuth2, resiliencia, mensajería asíncrona, contenerización, observabilidad y despliegue Cloud**.
 
-La arquitectura final está compuesta por **13 servicios orquestados mediante Docker Compose**. La versión Kafka 3×3 ya fue validada localmente; el mismo commit se redepliega y revalida en **AWS EC2** antes de generar la evidencia definitiva.
+La arquitectura final está compuesta por **13 servicios orquestados mediante Docker Compose**. La versión Kafka 3×3 fue validada localmente y posteriormente redeplegada y revalidada en **AWS EC2** con la misma versión funcional. La evidencia definitiva se genera sobre esta arquitectura ya validada.
 
 | Área | Estado final |
 |---|---|
@@ -19,9 +19,9 @@ La arquitectura final está compuesta por **13 servicios orquestados mediante Do
 | OAuth2 / Keycloak | ✅ `200 / 401 / 403` |
 | Kafka entre microservicios | ✅ 3 brokers + 3 particiones + RF=3 + productor/consumidor + `lag 0` |
 | Resilience4j | ✅ `CLOSED → OPEN → HALF_OPEN → CLOSED` |
-| Acceso externo EC2 | ⏳ revalidación final después del redeploy |
+| AWS EC2 final | ✅ 13 servicios operativos y batería funcional validada |
 | Secretos | ✅ externalizados y fuera de Git |
-| Evidencia definitiva | ⏳ se regenera después de validar EC2 final |
+| Evidencia definitiva | ⏳ pendiente de regenerar sobre la versión final validada |
 
 ### ✅ Criterio de rúbrica — OAuth2 / Keycloak (implementado)
 
@@ -161,7 +161,7 @@ Sin token / token inválido       → HTTP 401
 Token válido + scope incorrecto  → HTTP 403
 ```
 
-La validación local confirma los tres clientes y los tres escenarios de seguridad. La misma batería se ejecuta nuevamente en EC2 después del redeploy final.
+La validación final confirma los tres clientes y los tres escenarios de seguridad tanto localmente como en AWS EC2.
 
 ---
 
@@ -314,7 +314,7 @@ POST /api/kafka/consumer/pausar
 POST /api/kafka/consumer/reanudar
 ```
 
-La API funciona como **OAuth2 Resource Server JWT** y exige `SCOPE_bancoxyz.web`. La validación local final demostró:
+La API funciona como **OAuth2 Resource Server JWT** y exige `SCOPE_bancoxyz.web`. La validación final, tanto local como en AWS EC2, demostró:
 
 ```text
 Sin token ................ HTTP 401
@@ -360,7 +360,7 @@ Fallo 1 ................. HTTP 504
 Fallo 2 ................. HTTP 504
 Circuit Breaker ......... OPEN
 Rechazo rápido .......... HTTP 503
-Eventos Retry ........... 6
+Eventos Retry ........... 8
 Backend restaurado ...... healthy
 Recuperación ............ HALF_OPEN
 Circuit Breaker final ... CLOSED
@@ -598,16 +598,18 @@ La arquitectura final se validó con **8 GiB asignados al runtime Docker**, valo
 ```text
 Kafka broker x3  -> 768 MiB por broker | heap -Xms256m -Xmx384m
 Keycloak         -> 1 GiB              | heap 25% inicial / 60% máximo
-Kafka UI         -> 256 MiB
+Kafka UI         -> 512 MiB
 ```
 
 Los valores pueden sobrescribirse desde `.env` mediante `KAFKA_MEM_LIMIT`, `KAFKA_HEAP_OPTS`, `KAFKA_UI_MEM_LIMIT`, `KEYCLOAK_MEM_LIMIT` y `KEYCLOAK_JAVA_OPTS_KC_HEAP`. En Docker Desktop se recomienda asignar **al menos 8 GiB** al motor antes de levantar los 13 servicios.
+
+Durante la validación final en EC2 se comprobó que `256 MiB` era insuficiente para los picos de arranque de la JVM de Kafka UI y provocaba eventos OOM a nivel de cgroup. El límite se ajustó a **512 MiB**, quedando el contenedor estable con `Restart=0` y `OOMKilled=false`; por ello `512 MiB` pasa a ser el valor por defecto del proyecto.
 
 ---
 
 ## ☁️ Despliegue final en AWS EC2
 
-La solución ya fue comprobada en AWS durante la iteración anterior. Tras incorporar Kafka 3×3, Kafka UI y la administración segura del listener, el **mismo commit final** debe redeplegarse y revalidarse antes de cerrar las evidencias.
+La solución fue redeplegada y revalidada en AWS EC2 después de incorporar Kafka 3×3, Kafka UI, la administración segura del listener y el ajuste final de memoria. La misma versión funcional quedó sincronizada entre el entorno local, GitHub y EC2 antes de cerrar las evidencias.
 
 ### Entorno utilizado
 
@@ -764,30 +766,30 @@ Buenas prácticas incorporadas al cierre Cloud:
 
 | Validación | Local | AWS EC2 |
 |---|:---:|:---:|
-| Docker Compose válido | ✅ | ⏳ revalidar tras redeploy |
-| 13 servicios operativos | ✅ | ⏳ revalidar tras redeploy |
-| BFF Web / Mobile / ATM | ✅ | ⏳ revalidar tras redeploy |
-| OAuth2 credenciales válidas `200` | ✅ | ⏳ revalidar tras redeploy |
-| OAuth2 sin token / inválido `401` | ✅ | ⏳ revalidar tras redeploy |
-| OAuth2 scope incorrecto `403` | ✅ | ⏳ revalidar tras redeploy |
-| Circuit Breaker | ✅ | ⏳ revalidar tras redeploy |
-| Retry | ✅ | ⏳ revalidar tras redeploy |
-| Rate Limiter | ✅ | ⏳ revalidar tras redeploy |
-| `CLOSED → OPEN → HALF_OPEN → CLOSED` | ✅ | ⏳ revalidar tras redeploy |
-| Kafka 3 brokers / 3 particiones / RF=3 | ✅ | ⏳ revalidar tras redeploy |
-| Kafka Producer | ✅ | ⏳ revalidar tras redeploy |
-| Kafka Consumer independiente | ✅ | ⏳ revalidar tras redeploy |
-| Listener pause/resume + resumen protegido | ✅ | ⏳ revalidar tras redeploy |
-| Consumer Group `lag 0` | ✅ | ⏳ revalidar tras redeploy |
-| Secretos fuera del código | ✅ | ✅ diseño |
-| `.env` fuera de Git | ✅ | ✅ diseño |
-| Acceso externo por Elastic IP | — | ⏳ revalidar tras redeploy |
+| Docker Compose válido | ✅ | ✅ |
+| 13 servicios operativos | ✅ | ✅ |
+| BFF Web / Mobile / ATM | ✅ | ✅ |
+| OAuth2 credenciales válidas `200` | ✅ | ✅ |
+| OAuth2 sin token / inválido `401` | ✅ | ✅ |
+| OAuth2 scope incorrecto `403` | ✅ | ✅ |
+| Circuit Breaker | ✅ | ✅ |
+| Retry | ✅ | ✅ |
+| Rate Limiter | ✅ | ✅ |
+| `CLOSED → OPEN → HALF_OPEN → CLOSED` | ✅ | ✅ |
+| Kafka 3 brokers / 3 particiones / RF=3 | ✅ | ✅ |
+| Kafka Producer | ✅ | ✅ |
+| Kafka Consumer independiente | ✅ | ✅ |
+| Listener pause/resume + resumen protegido | ✅ | ✅ |
+| Consumer Group `lag 0` | ✅ | ✅ |
+| Secretos fuera del código | ✅ | ✅ |
+| `.env` fuera de Git | ✅ | ✅ |
+| Acceso externo por Elastic IP | — | ✅ |
 
 ---
 
 ## 📸 Evidencia de despliegue Cloud
 
-La evidencia definitiva se genera **después del redeploy del commit final en EC2**, para evitar mezclar capturas de arquitecturas distintas. Debe cubrir como mínimo:
+La evidencia definitiva se regenera sobre la **versión final ya validada en EC2**, para evitar mezclar capturas de arquitecturas o estados anteriores. Debe cubrir como mínimo:
 
 ```text
 Docker Compose final con 13 servicios
