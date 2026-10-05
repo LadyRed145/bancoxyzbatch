@@ -6,9 +6,9 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-bancoxyz}
       POSTGRES_USER: ${POSTGRES_USER:-bancoxyz}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bancoxyz123}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD requerido}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - bancoxyz_postgres_data:/var/lib/postgresql/data
       - "./Semana 8/database/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro"
@@ -40,7 +40,7 @@ services:
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_NUM_PARTITIONS: 1
     ports:
-      - "9092:9092"
+      - "127.0.0.1:9092:9092"
     healthcheck:
       test:
         [
@@ -62,14 +62,14 @@ services:
     restart: unless-stopped
     command: ["start-dev", "--import-realm"]
     environment:
-      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-admin}
-      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin-change-me}
-      KC_HOSTNAME: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8084}
+      KC_BOOTSTRAP_ADMIN_USERNAME: "${KEYCLOAK_ADMIN_USERNAME:?KEYCLOAK_ADMIN_USERNAME requerido}"
+      KC_BOOTSTRAP_ADMIN_PASSWORD: "${KEYCLOAK_ADMIN_PASSWORD:?KEYCLOAK_ADMIN_PASSWORD requerido}"
+      KC_HOSTNAME: "${KEYCLOAK_PUBLIC_URL:?KEYCLOAK_PUBLIC_URL requerido}"
       KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
       KC_HEALTH_ENABLED: "true"
-      OAUTH2_WEB_CLIENT_SECRET: ${OAUTH2_WEB_CLIENT_SECRET:-bancoxyz-web-oauth2-secret-S8-2026}
-      OAUTH2_MOBILE_CLIENT_SECRET: ${OAUTH2_MOBILE_CLIENT_SECRET:-bancoxyz-mobile-oauth2-secret-S8-2026}
-      OAUTH2_ATM_CLIENT_SECRET: ${OAUTH2_ATM_CLIENT_SECRET:-bancoxyz-atm-oauth2-secret-S8-2026}
+      OAUTH2_WEB_CLIENT_SECRET: "${OAUTH2_WEB_CLIENT_SECRET:?OAUTH2_WEB_CLIENT_SECRET requerido}"
+      OAUTH2_MOBILE_CLIENT_SECRET: "${OAUTH2_MOBILE_CLIENT_SECRET:?OAUTH2_MOBILE_CLIENT_SECRET requerido}"
+      OAUTH2_ATM_CLIENT_SECRET: "${OAUTH2_ATM_CLIENT_SECRET:?OAUTH2_ATM_CLIENT_SECRET requerido}"
     ports:
       - "8084:8080"
     volumes:
@@ -98,7 +98,7 @@ services:
     volumes:
       - "./Semana 8/config-repo:/config-repo:ro"
     ports:
-      - "8888:8888"
+      - "127.0.0.1:8888:8888"
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:8888/actuator/health >/dev/null"]
       interval: 5s
@@ -115,7 +115,7 @@ services:
     container_name: bancoxyz-discovery-server
     restart: unless-stopped
     ports:
-      - "8761:8761"
+      - "127.0.0.1:8761:8761"
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:8761/actuator/health >/dev/null"]
       interval: 5s
@@ -133,7 +133,7 @@ services:
     environment:
       DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-bancoxyz}
       DB_USER: ${POSTGRES_USER:-bancoxyz}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-bancoxyz123}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD requerido}
       EUREKA_SERVER_URL: http://discovery-server:8761/eureka/
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
       EUREKA_INSTANCE_HOSTNAME: bank-backend
@@ -146,9 +146,34 @@ services:
       kafka:
         condition: service_healthy
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    networks:
+      - bancoxyz-net
+
+  retiros-event-consumer:
+    build:
+      context: "./Semana 8/retiros-event-consumer"
+    container_name: bancoxyz-retiros-event-consumer
+    restart: unless-stopped
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      EUREKA_SERVER_URL: http://discovery-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+      EUREKA_INSTANCE_HOSTNAME: retiros-event-consumer
+    depends_on:
+      kafka:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    # Puerto 8090 sólo interno en bancoxyz-net; no se publica al host.
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8090/actuator/health >/dev/null"]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -168,9 +193,9 @@ services:
       EUREKA_INSTANCE_HOSTNAME: bff-web
       BACKEND_BASE_URL: http://bank-backend
       BACKEND_TIMEOUT: ${BACKEND_TIMEOUT:-3s}
-      OAUTH2_ISSUER_URI: ${OAUTH2_ISSUER_URI:-http://localhost:8084/realms/bancoxyz}
+      OAUTH2_ISSUER_URI: ${OAUTH2_ISSUER_URI:?OAUTH2_ISSUER_URI requerido}
       OAUTH2_JWK_SET_URI: http://keycloak:8080/realms/bancoxyz/protocol/openid-connect/certs
-      SSL_KEYSTORE_PASSWORD: ${SSL_KEYSTORE_PASSWORD:-changeit}
+      SSL_KEYSTORE_PASSWORD: ${SSL_KEYSTORE_PASSWORD:?SSL_KEYSTORE_PASSWORD requerido}
       RETRY_MAX_ATTEMPTS: ${RETRY_MAX_ATTEMPTS:-3}
       RETRY_WAIT_DURATION: ${RETRY_WAIT_DURATION:-200ms}
       RATE_LIMIT_FOR_PERIOD: ${RATE_LIMIT_FOR_PERIOD:-10}
@@ -208,9 +233,9 @@ services:
       EUREKA_INSTANCE_HOSTNAME: bff-mobile
       BACKEND_BASE_URL: http://bank-backend
       BACKEND_TIMEOUT: ${BACKEND_TIMEOUT:-3s}
-      OAUTH2_ISSUER_URI: ${OAUTH2_ISSUER_URI:-http://localhost:8084/realms/bancoxyz}
+      OAUTH2_ISSUER_URI: ${OAUTH2_ISSUER_URI:?OAUTH2_ISSUER_URI requerido}
       OAUTH2_JWK_SET_URI: http://keycloak:8080/realms/bancoxyz/protocol/openid-connect/certs
-      SSL_KEYSTORE_PASSWORD: ${SSL_KEYSTORE_PASSWORD:-changeit}
+      SSL_KEYSTORE_PASSWORD: ${SSL_KEYSTORE_PASSWORD:?SSL_KEYSTORE_PASSWORD requerido}
       RETRY_MAX_ATTEMPTS: ${RETRY_MAX_ATTEMPTS:-3}
       RETRY_WAIT_DURATION: ${RETRY_WAIT_DURATION:-200ms}
       RATE_LIMIT_FOR_PERIOD: ${RATE_LIMIT_FOR_PERIOD:-10}
@@ -248,9 +273,9 @@ services:
       EUREKA_INSTANCE_HOSTNAME: bff-atm
       BACKEND_BASE_URL: http://bank-backend
       BACKEND_TIMEOUT: ${BACKEND_TIMEOUT:-3s}
-      OAUTH2_ISSUER_URI: ${OAUTH2_ISSUER_URI:-http://localhost:8084/realms/bancoxyz}
+      OAUTH2_ISSUER_URI: ${OAUTH2_ISSUER_URI:?OAUTH2_ISSUER_URI requerido}
       OAUTH2_JWK_SET_URI: http://keycloak:8080/realms/bancoxyz/protocol/openid-connect/certs
-      SSL_KEYSTORE_PASSWORD: ${SSL_KEYSTORE_PASSWORD:-changeit}
+      SSL_KEYSTORE_PASSWORD: ${SSL_KEYSTORE_PASSWORD:?SSL_KEYSTORE_PASSWORD requerido}
       RETRY_MAX_ATTEMPTS: ${RETRY_MAX_ATTEMPTS:-3}
       RETRY_WAIT_DURATION: ${RETRY_WAIT_DURATION:-200ms}
       RATE_LIMIT_FOR_PERIOD: ${RATE_LIMIT_FOR_PERIOD:-10}

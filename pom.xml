@@ -30,6 +30,7 @@
 
         <!-- API bancaria -->
         <module>Semana 8/bank-backend</module>
+        <module>Semana 8/retiros-event-consumer</module>
 
         <!-- Backend for Frontend -->
         <module>Semana 8/bff/bff-web</module>
