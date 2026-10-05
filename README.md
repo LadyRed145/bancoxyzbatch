@@ -1,6 +1,7 @@
 # 🏦 BancoXYZ — Microservicios resilientes, seguros y orientados a eventos
 
-> **Desarrollo Backend III (PBY2203) · Semana 8 · Grupo 13**
+> **Desarrollo Backend III (PBY2203) · Semana 8 · Entrega individual**
+> **Autora: Natalia Alvarado**
 > Spring Boot · Spring Cloud · OAuth2 · Keycloak · Resilience4j · Apache Kafka · PostgreSQL · Docker Compose · AWS EC2
 
 ---
@@ -227,7 +228,9 @@ Permisos recomendados:
 chmod 600 .env
 ```
 
-> **Buenas prácticas:** `.env`, claves privadas, contraseñas, certificados sensibles y client secrets nunca deben versionarse.
+> **Certificados académicos:** el repositorio incluye certificados PKCS12 (`.p12`) únicamente para reproducir HTTPS en el entorno de laboratorio. Estos certificados de práctica utilizan `SSL_KEYSTORE_PASSWORD=changeit`; por eso, después de copiar `.env.example` a `.env`, debe reemplazarse el placeholder `CHANGE_ME` por `changeit` para ejecutar los BFF incluidos. No son certificados ni credenciales de producción.
+>
+> **Buenas prácticas:** `.env`, claves privadas reales, contraseñas, client secrets y certificados de producción no deben versionarse. En un entorno real, los certificados deben emitirse y administrarse fuera del repositorio.
 
 ---
 
@@ -812,4 +815,4 @@ BancoXYZ Semana 8 ✅
 
 ---
 
-**BancoXYZ · Grupo 13 · Desarrollo Backend III (PBY2203) · Semana 8**
+**BancoXYZ · Natalia Alvarado · Desarrollo Backend III (PBY2203) · Semana 8**
