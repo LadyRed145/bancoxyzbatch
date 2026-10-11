@@ -1,0 +1,20 @@
+# Docker construye 5 servicios desde la raíz, con COPY explícitos por módulo.
+.git
+**/.git
+**/target
+**/node_modules
+**/.env
+**/.env.*
+**/*.p12
+**/*.pfx
+**/*.pem
+**/*.key
+**/*.jks
+**/*.keystore
+**/wallet
+**/*.zip
+**/*.jar
+**/*.log
+**/__pycache__
+**/*.pdf
+**/entorno-de-pruebas

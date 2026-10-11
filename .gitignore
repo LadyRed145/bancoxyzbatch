@@ -41,6 +41,8 @@ Thumbs.db
 # ============================================
 .env
 .env.local
+.env.ec2.example
+.env.example
 .env.*.local
 
 # Se conserva como plantilla
@@ -49,7 +51,10 @@ Thumbs.db
 # ============================================
 # Evidencias locales
 # ============================================
-Semana 8/capturas/
+Semana 9/capturas/
+Semana 9/docs/historico/
+Semana 9/docs/PLAN_PDF_SEMANA9.md
+/AUDITORIA_FINAL.md
 
 # ============================================
 # Backups
@@ -60,3 +65,25 @@ backup_*/
 # ============================================
 # Otros
 # ============================================
+entorno-de-pruebas/
+.batch-e2e-local/
+*.env
+*.bak_*
+*.p12
+*.pfx
+*.jks
+*.key
+**/target/
+
+# Excepción académica: certificados autofirmados de laboratorio requeridos
+# por Docker Compose. No contienen una identidad de producción.
+!Semana 9/bff/bff-web/src/main/resources/certs/bff-web.p12
+!Semana 9/bff/bff-mobile/src/main/resources/certs/bff-mobile.p12
+!Semana 9/bff/bff-atm/src/main/resources/certs/bff-atm.p12
+
+# Artefactos de auditoría y respaldos locales
+.respaldo*/
+**/.respaldo*/
+*.dump
+**/*.bak_*
+**/*_respaldo

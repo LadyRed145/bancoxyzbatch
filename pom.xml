@@ -1,10 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="
-             http://maven.apache.org/POM/4.0.0
-             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version='1.0' encoding='utf-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="              http://maven.apache.org/POM/4.0.0              https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -14,7 +9,7 @@
 
     <packaging>pom</packaging>
 
-    <name>BancoXYZ - Semana 8</name>
+    <name>BancoXYZ - Semana 9</name>
 
     <description>
         Proyecto agregador Maven de BancoXYZ para la implementación
@@ -23,20 +18,28 @@
     </description>
 
     <modules>
+        <module>Semana 9/shared-resilience</module>
+        <module>Semana 9/shared-contracts</module>
 
-        <!-- Infraestructura Spring Cloud -->
-        <module>Semana 8/config-server</module>
-        <module>Semana 8/discovery-server</module>
 
-        <!-- API bancaria -->
-        <module>Semana 8/bank-backend</module>
-        <module>Semana 8/retiros-event-consumer</module>
+        <module>Semana 9/config-server</module>
+        <module>Semana 9/discovery-server</module>
 
-        <!-- Backend for Frontend -->
-        <module>Semana 8/bff/bff-web</module>
-        <module>Semana 8/bff/bff-mobile</module>
-        <module>Semana 8/bff/bff-atm</module>
 
+        <module>Semana 9/bank-backend</module>
+        <module>Semana 9/retiros-event-consumer</module>
+
+
+        <module>Semana 9/bff/bff-web</module>
+        <module>Semana 9/bff/bff-mobile</module>
+        <module>Semana 9/bff/bff-atm</module>
+
+
+        <module>Semana 9/batch-service</module>
+
+        <module>Semana 9/cuentas-service</module>
+        <module>Semana 9/clientes-service</module>
+        <module>Semana 9/pagos-service</module>
     </modules>
 
 </project>

@@ -1,4 +1,45 @@
 services:
+
+  cuentas-service:
+    build:
+      context: .
+      dockerfile: "Semana 9/cuentas-service/Dockerfile"
+    restart: unless-stopped
+    environment:
+      SPRING_APPLICATION_NAME: cuentas-service
+      SERVER_PORT: "8080"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/${POSTGRES_DB:-bancoxyz}"
+      SPRING_DATASOURCE_USERNAME: "${POSTGRES_USER:-bancoxyz}"
+      SPRING_DATASOURCE_PASSWORD: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD requerido}"
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://discovery-server:8761/eureka/"
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "${OAUTH2_ISSUER_URI:?OAUTH2_ISSUER_URI requerido}"
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak:8080/realms/bancoxyz/protocol/openid-connect/certs"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: "none"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    expose: ["8080"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    deploy:
+      replicas: ${CUENTAS_REPLICAS:-1}
+      resources:
+        limits:
+          memory: 512M
+    networks:
+      - bancoxyz-net
+
   postgres:
     image: postgres:17
     container_name: bancoxyz-postgres
@@ -11,8 +52,13 @@ services:
       - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - bancoxyz_postgres_data:/var/lib/postgresql/data
-      - "./Semana 8/database/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro"
-      - "./Semana 8/database/02_seed_processed_snapshot.sql:/docker-entrypoint-initdb.d/02_seed_processed_snapshot.sql:ro"
+      - "./Semana 9/database/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro"
+      - "./Semana 9/data/db/03_retiros_idempotencia.sql:/docker-entrypoint-initdb.d/03_retiros_idempotencia.sql:ro"
+      - "./Semana 9/batch-service/src/main/resources/db/schema-spring-batch-postgresql.sql:/docker-entrypoint-initdb.d/04_batch_schema.sql:ro"
+      - "./Semana 9/batch-service/src/main/resources/db/schema-registros-rechazados.sql:/docker-entrypoint-initdb.d/05_rechazados.sql:ro"
+      - "./Semana 9/cuentas-service/src/main/resources/db/migration/V2__cuentas_gestion.sql:/docker-entrypoint-initdb.d/06_cuentas.sql:ro"
+      - "./Semana 9/clientes-service/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/07_clientes.sql:ro"
+      - "./Semana 9/pagos-service/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/08_pagos.sql:ro"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bancoxyz} -d ${POSTGRES_DB:-bancoxyz}"]
       interval: 5s
@@ -177,21 +223,31 @@ services:
     container_name: bancoxyz-keycloak
     restart: unless-stopped
     mem_limit: ${KEYCLOAK_MEM_LIMIT:-1g}
-    command: ["start-dev", "--import-realm"]
+    command: ["${KEYCLOAK_START_COMMAND:-start-dev}", "--import-realm"]
     environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-bancoxyz}
+      KC_DB_SCHEMA: ${KEYCLOAK_DB_SCHEMA:-public}
+      KC_DB_USERNAME: ${POSTGRES_USER:-bancoxyz}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD requerido}
       KC_BOOTSTRAP_ADMIN_USERNAME: "${KEYCLOAK_ADMIN_USERNAME:?KEYCLOAK_ADMIN_USERNAME requerido}"
       KC_BOOTSTRAP_ADMIN_PASSWORD: "${KEYCLOAK_ADMIN_PASSWORD:?KEYCLOAK_ADMIN_PASSWORD requerido}"
       KC_HOSTNAME: "${KEYCLOAK_PUBLIC_URL:?KEYCLOAK_PUBLIC_URL requerido}"
       KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY_HEADERS: xforwarded
       KC_HEALTH_ENABLED: "true"
       JAVA_OPTS_KC_HEAP: "${KEYCLOAK_JAVA_OPTS_KC_HEAP:--XX:InitialRAMPercentage=25 -XX:MaxRAMPercentage=60}"
       OAUTH2_WEB_CLIENT_SECRET: "${OAUTH2_WEB_CLIENT_SECRET:?OAUTH2_WEB_CLIENT_SECRET requerido}"
       OAUTH2_MOBILE_CLIENT_SECRET: "${OAUTH2_MOBILE_CLIENT_SECRET:?OAUTH2_MOBILE_CLIENT_SECRET requerido}"
       OAUTH2_ATM_CLIENT_SECRET: "${OAUTH2_ATM_CLIENT_SECRET:?OAUTH2_ATM_CLIENT_SECRET requerido}"
     ports:
-      - "8084:8080"
+      - "127.0.0.1:${KEYCLOAK_PORT:-8084}:8080"
     volumes:
-      - "./Semana 8/keycloak/bancoxyz-realm.json:/opt/keycloak/data/import/bancoxyz-realm.json:ro"
+      - "./Semana 9/keycloak/bancoxyz-realm.json:/opt/keycloak/data/import/bancoxyz-realm.json:ro"
+    depends_on:
+      postgres:
+        condition: service_healthy
     healthcheck:
       test:
         [
@@ -205,16 +261,47 @@ services:
     networks:
       - bancoxyz-net
 
+  # El perfil ec2 agrega el proxy TLS publico sin mantener un Compose paralelo.
+  # Local: docker compose up -d --build
+  # EC2:   docker compose --profile ec2 up -d --build
+  caddy:
+    profiles: ["ec2"]
+    image: caddy:2.10.2-alpine
+    container_name: bancoxyz-caddy
+    restart: unless-stopped
+    environment:
+      KEYCLOAK_DOMAIN: ${KEYCLOAK_DOMAIN:-localhost}
+      TLS_EMAIL: ${TLS_EMAIL:-admin@example.com}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - "./Semana 9/caddy/Caddyfile:/etc/caddy/Caddyfile:ro"
+      - bancoxyz_caddy_data:/data
+      - bancoxyz_caddy_config:/config
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:2019/config/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    networks:
+      - bancoxyz-net
+
 
   config-server:
     build:
-      context: "./Semana 8/config-server"
+      context: "./Semana 9/config-server"
     container_name: bancoxyz-config-server
     restart: unless-stopped
     environment:
       CONFIG_REPO_PATH: file:/config-repo
     volumes:
-      - "./Semana 8/config-repo:/config-repo:ro"
+      - "./Semana 9/config-repo:/config-repo:ro"
     ports:
       - "127.0.0.1:8888:8888"
     healthcheck:
@@ -229,7 +316,7 @@ services:
 
   discovery-server:
     build:
-      context: "./Semana 8/discovery-server"
+      context: "./Semana 9/discovery-server"
     container_name: bancoxyz-discovery-server
     restart: unless-stopped
     ports:
@@ -245,7 +332,8 @@ services:
 
   bank-backend:
     build:
-      context: "./Semana 8/bank-backend"
+      context: "."
+      dockerfile: "./Semana 9/bank-backend/Dockerfile"
     container_name: bancoxyz-bank-backend
     restart: unless-stopped
     environment:
@@ -255,17 +343,16 @@ services:
       EUREKA_SERVER_URL: http://discovery-server:8761/eureka/
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
       EUREKA_INSTANCE_HOSTNAME: bank-backend
-      KAFKA_BOOTSTRAP_SERVERS: kafka-1:19092,kafka-2:19092,kafka-3:19092
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka-1:19092,kafka-2:19092,kafka-3:19092}
+      KAFKA_SECURITY_PROTOCOL: ${KAFKA_SECURITY_PROTOCOL:-PLAINTEXT}
+      OAUTH2_ISSUER_URI: ${OAUTH2_ISSUER_URI:?OAUTH2_ISSUER_URI requerido}
+      OAUTH2_JWK_SET_URI: http://keycloak:8080/realms/bancoxyz/protocol/openid-connect/certs
     depends_on:
       postgres:
         condition: service_healthy
       discovery-server:
         condition: service_healthy
-      kafka-1:
-        condition: service_healthy
-      kafka-2:
-        condition: service_healthy
-      kafka-3:
+      keycloak:
         condition: service_healthy
     ports:
       - "127.0.0.1:8080:8080"
@@ -280,23 +367,19 @@ services:
 
   retiros-event-consumer:
     build:
-      context: "./Semana 8/retiros-event-consumer"
+      context: "."
+      dockerfile: "./Semana 9/retiros-event-consumer/Dockerfile"
     container_name: bancoxyz-retiros-event-consumer
     restart: unless-stopped
     environment:
-      KAFKA_BOOTSTRAP_SERVERS: kafka-1:19092,kafka-2:19092,kafka-3:19092
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka-1:19092,kafka-2:19092,kafka-3:19092}
+      KAFKA_SECURITY_PROTOCOL: ${KAFKA_SECURITY_PROTOCOL:-PLAINTEXT}
       EUREKA_SERVER_URL: http://discovery-server:8761/eureka/
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
       EUREKA_INSTANCE_HOSTNAME: retiros-event-consumer
       OAUTH2_ISSUER_URI: ${OAUTH2_ISSUER_URI:?OAUTH2_ISSUER_URI requerido}
       OAUTH2_JWK_SET_URI: http://keycloak:8080/realms/bancoxyz/protocol/openid-connect/certs
     depends_on:
-      kafka-1:
-        condition: service_healthy
-      kafka-2:
-        condition: service_healthy
-      kafka-3:
-        condition: service_healthy
       discovery-server:
         condition: service_healthy
       keycloak:
@@ -316,7 +399,8 @@ services:
 
   bff-web:
     build:
-      context: "./Semana 8/bff/bff-web"
+      context: "."
+      dockerfile: "./Semana 9/bff/bff-web/Dockerfile"
     container_name: bancoxyz-bff-web
     restart: unless-stopped
     environment:
@@ -329,6 +413,7 @@ services:
       OAUTH2_ISSUER_URI: ${OAUTH2_ISSUER_URI:?OAUTH2_ISSUER_URI requerido}
       OAUTH2_JWK_SET_URI: http://keycloak:8080/realms/bancoxyz/protocol/openid-connect/certs
       SSL_KEYSTORE_PASSWORD: ${SSL_KEYSTORE_PASSWORD:?SSL_KEYSTORE_PASSWORD requerido}
+      SERVER_SSL_KEY_STORE: "file:/run/certs/bff-web.p12"
       RETRY_MAX_ATTEMPTS: ${RETRY_MAX_ATTEMPTS:-3}
       RETRY_WAIT_DURATION: ${RETRY_WAIT_DURATION:-200ms}
       RATE_LIMIT_FOR_PERIOD: ${RATE_LIMIT_FOR_PERIOD:-10}
@@ -343,6 +428,15 @@ services:
         condition: service_healthy
       bank-backend:
         condition: service_healthy
+      cuentas-service:
+        condition: service_healthy
+    volumes:
+      - type: bind
+        source: "./Semana 9/bff/bff-web/src/main/resources/certs/bff-web.p12"
+        target: "/run/certs/bff-web.p12"
+        read_only: true
+        bind:
+          create_host_path: false
     ports:
       - "8081:8081"
     healthcheck:
@@ -356,7 +450,8 @@ services:
 
   bff-mobile:
     build:
-      context: "./Semana 8/bff/bff-mobile"
+      context: "."
+      dockerfile: "./Semana 9/bff/bff-mobile/Dockerfile"
     container_name: bancoxyz-bff-mobile
     restart: unless-stopped
     environment:
@@ -369,6 +464,7 @@ services:
       OAUTH2_ISSUER_URI: ${OAUTH2_ISSUER_URI:?OAUTH2_ISSUER_URI requerido}
       OAUTH2_JWK_SET_URI: http://keycloak:8080/realms/bancoxyz/protocol/openid-connect/certs
       SSL_KEYSTORE_PASSWORD: ${SSL_KEYSTORE_PASSWORD:?SSL_KEYSTORE_PASSWORD requerido}
+      SERVER_SSL_KEY_STORE: "file:/run/certs/bff-mobile.p12"
       RETRY_MAX_ATTEMPTS: ${RETRY_MAX_ATTEMPTS:-3}
       RETRY_WAIT_DURATION: ${RETRY_WAIT_DURATION:-200ms}
       RATE_LIMIT_FOR_PERIOD: ${RATE_LIMIT_FOR_PERIOD:-10}
@@ -383,6 +479,15 @@ services:
         condition: service_healthy
       bank-backend:
         condition: service_healthy
+      cuentas-service:
+        condition: service_healthy
+    volumes:
+      - type: bind
+        source: "./Semana 9/bff/bff-mobile/src/main/resources/certs/bff-mobile.p12"
+        target: "/run/certs/bff-mobile.p12"
+        read_only: true
+        bind:
+          create_host_path: false
     ports:
       - "8082:8082"
     healthcheck:
@@ -396,7 +501,8 @@ services:
 
   bff-atm:
     build:
-      context: "./Semana 8/bff/bff-atm"
+      context: "."
+      dockerfile: "./Semana 9/bff/bff-atm/Dockerfile"
     container_name: bancoxyz-bff-atm
     restart: unless-stopped
     environment:
@@ -409,6 +515,7 @@ services:
       OAUTH2_ISSUER_URI: ${OAUTH2_ISSUER_URI:?OAUTH2_ISSUER_URI requerido}
       OAUTH2_JWK_SET_URI: http://keycloak:8080/realms/bancoxyz/protocol/openid-connect/certs
       SSL_KEYSTORE_PASSWORD: ${SSL_KEYSTORE_PASSWORD:?SSL_KEYSTORE_PASSWORD requerido}
+      SERVER_SSL_KEY_STORE: "file:/run/certs/bff-atm.p12"
       RETRY_MAX_ATTEMPTS: ${RETRY_MAX_ATTEMPTS:-3}
       RETRY_WAIT_DURATION: ${RETRY_WAIT_DURATION:-200ms}
       RATE_LIMIT_FOR_PERIOD: ${RATE_LIMIT_FOR_PERIOD:-10}
@@ -423,6 +530,15 @@ services:
         condition: service_healthy
       bank-backend:
         condition: service_healthy
+      cuentas-service:
+        condition: service_healthy
+    volumes:
+      - type: bind
+        source: "./Semana 9/bff/bff-atm/src/main/resources/certs/bff-atm.p12"
+        target: "/run/certs/bff-atm.p12"
+        read_only: true
+        bind:
+          create_host_path: false
     ports:
       - "8083:8083"
     healthcheck:
@@ -434,12 +550,81 @@ services:
     networks:
       - bancoxyz-net
 
+  # Microservicios de dominio S9. Usan tablas propias de laboratorio;
+  # pagos-service registra solicitudes y no modifica saldos bancarios.
+  clientes-service:
+    build:
+      context: "./Semana 9/clientes-service"
+    restart: unless-stopped
+    environment:
+      CLIENTES_SERVICE_PORT: "8080"
+      CLIENTES_SERVICE_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-bancoxyz}
+      CLIENTES_SERVICE_DB_USER: ${POSTGRES_USER:-bancoxyz}
+      CLIENTES_SERVICE_DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD requerido}
+      CLIENTES_SERVICE_JWT_ISSUER_URI: ${OAUTH2_ISSUER_URI:?OAUTH2_ISSUER_URI requerido}
+      CLIENTES_SERVICE_JWK_SET_URI: http://keycloak:8080/realms/bancoxyz/protocol/openid-connect/certs
+      EUREKA_URL: http://discovery-server:8761/eureka/
+    depends_on:
+      postgres:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    expose: ["8080"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    deploy:
+      replicas: ${CLIENTES_REPLICAS:-1}
+      resources:
+        limits:
+          memory: 512M
+    networks: [bancoxyz-net]
+
+  pagos-service:
+    build:
+      context: "./Semana 9/pagos-service"
+    restart: unless-stopped
+    environment:
+      PAGOS_SERVICE_PORT: "8080"
+      PAGOS_SERVICE_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-bancoxyz}
+      PAGOS_SERVICE_DB_USER: ${POSTGRES_USER:-bancoxyz}
+      PAGOS_SERVICE_DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD requerido}
+      PAGOS_SERVICE_JWT_ISSUER_URI: ${OAUTH2_ISSUER_URI:?OAUTH2_ISSUER_URI requerido}
+      PAGOS_SERVICE_JWK_SET_URI: http://keycloak:8080/realms/bancoxyz/protocol/openid-connect/certs
+      EUREKA_URL: http://discovery-server:8761/eureka/
+    depends_on:
+      postgres:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    expose: ["8080"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    deploy:
+      replicas: ${PAGOS_REPLICAS:-1}
+      resources:
+        limits:
+          memory: 512M
+    networks: [bancoxyz-net]
+
 volumes:
   bancoxyz_postgres_data:
-
   bancoxyz_kafka_1_data:
   bancoxyz_kafka_2_data:
   bancoxyz_kafka_3_data:
+  bancoxyz_caddy_data:
+  bancoxyz_caddy_config:
 networks:
   bancoxyz-net:
     driver: bridge

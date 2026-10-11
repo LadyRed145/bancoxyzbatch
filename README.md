@@ -1,42 +1,35 @@
 # 🏦 BancoXYZ — Microservicios resilientes, seguros y orientados a eventos
 
-> **Desarrollo Backend III (PBY2203) · Semana 8 · Entrega individual**
+> **Desarrollo Backend III (PBY2203) · Semana 9 · Evaluación Final Transversal**
 > **Autora: Natalia Alvarado**
-> Spring Boot · Spring Cloud · OAuth2 · Keycloak · Resilience4j · Apache Kafka · PostgreSQL · Docker Compose · AWS EC2
+> Spring Batch · Spring Boot 4.1.1 · Java 21 · Spring Cloud · OAuth2 · Keycloak · Resilience4j · Apache Kafka · PostgreSQL 17 · Docker Compose · AWS EC2
 
 ---
 
 ## ✨ Resumen
 
-BancoXYZ es una solución bancaria distribuida basada en microservicios. La **Semana 8** consolida la arquitectura construida en las entregas anteriores e integra los requerimientos finales de **seguridad OAuth2, resiliencia, mensajería asíncrona, contenerización, observabilidad y despliegue Cloud**.
+BancoXYZ moderniza procesos bancarios legacy hacia una arquitectura distribuida. La **Semana 9** reúne los tres procesos de Spring Batch, tres Backend for Frontend, microservicios independientes de **Cuentas, Clientes y Pagos**, OAuth2 con Keycloak, tolerancia a fallos, mensajería Kafka y despliegue reproducible en contenedores.
 
-La arquitectura final está compuesta por **13 servicios orquestados mediante Docker Compose**. La versión Kafka 3×3 fue validada localmente y posteriormente redeplegada y revalidada en **AWS EC2** con la misma versión funcional. La evidencia definitiva se genera sobre esta arquitectura ya validada.
+**Repositorio GitHub:** https://github.com/LadyRed145/bancoxyzbatch
 
-| Área | Estado final |
-|---|---|
-| Docker Compose | ✅ válido |
-| Servicios locales | ✅ `13/13 operativos` (`12 healthy` + Kafka UI `running`) |
-| OAuth2 / Keycloak | ✅ `200 / 401 / 403` |
-| Kafka entre microservicios | ✅ 3 brokers + 3 particiones + RF=3 + productor/consumidor + `lag 0` |
-| Resilience4j | ✅ `CLOSED → OPEN → HALF_OPEN → CLOSED` |
-| AWS EC2 final | ✅ 13 servicios operativos y batería funcional validada |
-| Secretos | ✅ externalizados y fuera de Git |
-| Evidencia definitiva | ⏳ pendiente de regenerar sobre la versión final validada |
+> 📌 **Publicación:** el repositorio público existe, pero debe sincronizarse con los archivos de Semana 9 antes de entregar. No confundir la validación local con la publicación de la versión final ni con su ejecución actual en AWS.
 
-### ✅ Criterio de rúbrica — OAuth2 / Keycloak (implementado)
+La composición define **16 servicios locales** y un servicio adicional **Caddy** bajo el perfil opcional `ec2`. `batch-service` se ejecuta como proceso Maven independiente, utilizando **una sola base de datos de aplicación `bancoxyz`** junto con los microservicios.
 
-El requisito de **OAuth2 no corresponde a una mejora futura**: está **implementado, integrado y validado** en la solución final. Los tres BFF funcionan como **Spring Resource Server JWT**, utilizan clientes y scopes independientes en Keycloak y fueron probados en AWS EC2 con los resultados esperados:
-
-```text
-bff-web-client     + bancoxyz.web     → HTTP 200
-bff-mobile-client  + bancoxyz.mobile  → HTTP 200
-bff-atm-client     + bancoxyz.atm     → HTTP 200
-
-Sin token / token inválido             → HTTP 401
-Token válido con scope incorrecto       → HTTP 403
-```
-
-La mejora futura mencionada en este documento se refiere únicamente al **endurecimiento productivo del transporte** —DNS, TLS válido, reverse proxy y `sslRequired`—, no a la implementación de OAuth2, que ya forma parte funcional de Semana 8.
+| Área | Evidencia de Semana 9 | Estado |
+|---|---|---|
+| Procesos Batch | Tres Jobs; ejecuciones 34, 35 y 36 registradas `COMPLETED` | ✅ Validado en PostgreSQL |
+| CSV originales | Tres archivos; 1.000 filas cada uno; SHA-256 sin cambios | ✅ Íntegros |
+| Reejecución Batch | Cuatro tablas derivadas con mismo conteo y huella de negocio | ✅ Idempotencia verificada |
+| BFF Web, Mobile y ATM | Canales independientes, JWT/scopes, HTTPS TLS 1.3 | ✅ Probado localmente |
+| Cuentas y Clientes | Servicios separados y esquema compartido | ✅ Implementados |
+| Pagos | Pago, transferencia y depósito; JWT, idempotencia, concurrencia y persistencia tras reinicio | ✅ Pruebas de laboratorio |
+| Kafka | Tres brokers KRaft, tres particiones, RF=3, min ISR=2 y consumidor independiente | ✅ Laboratorio local |
+| Resilience4j | Circuit Breaker, Retry y Rate Limiter | ✅ Evidencia técnica previa |
+| Docker Compose | Una instancia PostgreSQL compartida; configuración validada | ✅ Configurado |
+| TLS público y Kafka multi-AZ | Requieren dominio/certificados públicos y despliegue distribuido | 🟡 No certificados |
+| AWS EC2 Semana 9 | Automatización preparada; evidencia actual de despliegue pendiente | 🟡 Por verificar |
+| Entrega EFT | README, propuesta, instrucciones y despliegue; PDF con plantilla AVA y video | 🟡 Completar evidencia final |
 
 ---
 
@@ -44,209 +37,208 @@ La mejora futura mencionada en este documento se refiere únicamente al **endure
 
 ```mermaid
 flowchart TB
-    EXT["🌐 Cliente externo"] --> KC["🔐 Keycloak<br/>host :8084"]
-    EXT --> WEB["🖥️ BFF Web<br/>HTTPS :8081"]
-    EXT --> MOB["📱 BFF Mobile<br/>HTTPS :8082"]
-    EXT --> ATM["🏧 BFF ATM<br/>HTTPS :8083"]
+    EXT["🌐 Consumidores Web / Móvil / ATM"]
+    KC["🔐 Keycloak OAuth2 / JWT"]
+    WEB["🖥️ BFF Web HTTPS"]
+    MOB["📱 BFF Mobile HTTPS"]
+    ATM["🏧 BFF ATM HTTPS"]
+    CFG["⚙️ Config Server"]
+    EUREKA["🧭 Eureka / LoadBalancer"]
+    BACK["🏦 Bank Backend"]
+    CU["💳 Cuentas Service"]
+    CL["👥 Clientes Service"]
+    PA["💸 Pagos Service"]
+    DB["💾 PostgreSQL 17 · bancoxyz"]
+    BATCH["📦 Spring Batch · 3 Jobs"]
+    CSV["📄 3 CSV oficiales S9"]
+    K["📬 Kafka KRaft · 3 brokers"]
+    C["📨 Retiros Event Consumer"]
+    UI["🔎 Kafka UI"]
 
-    CFG["⚙️ Config Server<br/>:8888"] --> WEB
-    CFG --> MOB
-    CFG --> ATM
-
-    EUREKA["🧭 Eureka Server<br/>:8761"] <--> WEB
-    EUREKA <--> MOB
-    EUREKA <--> ATM
-    EUREKA <--> BACK["🏦 Bank Backend<br/>:8080"]
-    EUREKA <--> CONSUMER["📨 Retiros Event Consumer<br/>interno :8090 / admin host :8091"]
-
-    WEB --> BACK
-    MOB --> BACK
-    ATM --> BACK
-
-    BACK --> DB["💾 PostgreSQL 17<br/>:5432"]
-    BACK --> K1["📬 Kafka Broker 1<br/>kafka-1:19092"]
-    BACK --> K2["📬 Kafka Broker 2<br/>kafka-2:19092"]
-    BACK --> K3["📬 Kafka Broker 3<br/>kafka-3:19092"]
-    K1 --> CONSUMER
-    K2 --> CONSUMER
-    K3 --> CONSUMER
-    KUI["🖥️ Kafka UI<br/>host :8090"] -. observa .-> K1
-    KUI -. observa .-> K2
-    KUI -. observa .-> K3
-
+    EXT --> WEB
+    EXT --> MOB
+    EXT --> ATM
     KC -. JWT / scopes .-> WEB
     KC -. JWT / scopes .-> MOB
     KC -. JWT / scopes .-> ATM
+    CFG -. propiedades .-> WEB
+    CFG -. propiedades .-> MOB
+    CFG -. propiedades .-> ATM
+    EUREKA -. descubrimiento .-> WEB
+    EUREKA -. descubrimiento .-> MOB
+    EUREKA -. descubrimiento .-> ATM
+    WEB --> BACK
+    MOB --> BACK
+    ATM --> BACK
+    ATM --> CU
+    BACK --> DB
+    CU --> DB
+    CL --> DB
+    PA --> DB
+    CSV --> BATCH --> DB
+    BACK --> K --> C
+    UI -. observación .-> K
 ```
+
+> El dibujo muestra responsabilidades; **no afirma que los tres servicios de dominio se invoquen desde todos los BFF**. Estos servicios pueden exponerse mediante sus propias API protegidas dentro de la red Docker.
 
 ### Flujo natural
 
 ```text
-Cliente
-  │
-  ├── OAuth2 / Keycloak
-  │
-  ▼
-BFF Web / Mobile / ATM
-  │
-  ├── Config Server
-  ├── Eureka + LoadBalancer
-  ├── Resilience4j
-  │
-  ▼
-Bank Backend
-  │
-  ├── PostgreSQL
-  │
-  └── Kafka 3 brokers / 3 particiones / RF=3 ──► Retiros Event Consumer
+CSV oficiales Semana 9
+  └─► Spring Batch (leer → procesar → escribir → auditar)
+         └─► PostgreSQL 17 / bancoxyz
+
+Cliente → Keycloak / OAuth2 → BFF específico
+                          → Spring Cloud Config + Eureka + Resilience4j
+                          → Bank Backend / Cuentas
+                          → PostgreSQL
+                          └─► Kafka → Retiros Event Consumer
+
+Cuentas de gestión → Pagos Service → pagos_saldos + pagos_movimientos (PostgreSQL)
 ```
 
 ---
 
 ## 🧩 Servicios del stack
 
-| # | Servicio | Responsabilidad principal | Exposición |
+| # | Componente | Responsabilidad | Publicación/local |
 |---:|---|---|---|
-| 1 | PostgreSQL 17 | Persistencia bancaria | `127.0.0.1:5432` |
-| 2 | Kafka Broker 1 | Broker/controller KRaft | `127.0.0.1:9092` / `kafka-1:19092` |
-| 3 | Kafka Broker 2 | Broker/controller KRaft | `127.0.0.1:9094` / `kafka-2:19092` |
-| 4 | Kafka Broker 3 | Broker/controller KRaft | `127.0.0.1:9096` / `kafka-3:19092` |
-| 5 | Kafka UI 0.7.2 | Observación del cluster, topic y consumer groups | `127.0.0.1:8090` |
-| 6 | Keycloak 26.8.0 | OAuth2 y emisión de JWT | `0.0.0.0:8084` |
-| 7 | Config Server | Configuración centralizada | `127.0.0.1:8888` |
-| 8 | Eureka Discovery Server | Registro y descubrimiento | `127.0.0.1:8761` |
-| 9 | Bank Backend | Lógica bancaria, persistencia y productor Kafka | `127.0.0.1:8080` |
-| 10 | Retiros Event Consumer | Consumo independiente + administración segura del listener | interno `:8090`, host `127.0.0.1:8091` |
-| 11 | BFF Web | Contrato Web | `0.0.0.0:8081` |
-| 12 | BFF Mobile | Contrato Mobile | `0.0.0.0:8082` |
-| 13 | BFF ATM | Contrato ATM | `0.0.0.0:8083` |
+| 1 | PostgreSQL 17 | Una base `bancoxyz`, persistencia Batch y servicios | `127.0.0.1:5432` |
+| 2 | Kafka Broker 1 | Broker/controller KRaft | `127.0.0.1:9092` |
+| 3 | Kafka Broker 2 | Broker/controller KRaft | `127.0.0.1:9094` |
+| 4 | Kafka Broker 3 | Broker/controller KRaft | `127.0.0.1:9096` |
+| 5 | Kafka UI | Exploración de tópicos, particiones y lag | `127.0.0.1:8090` |
+| 6 | Keycloak | Autenticación OAuth2 y emisión de JWT | `127.0.0.1:8084` |
+| 7 | Config Server | Configuración compartida | `127.0.0.1:8888` |
+| 8 | Eureka | Registro y descubrimiento | `127.0.0.1:8761` |
+| 9 | Bank Backend | Cuentas legacy, retiros y productor Kafka | `127.0.0.1:8080` |
+| 10 | Retiros Event Consumer | Consumidor y administración del listener | `127.0.0.1:8091` |
+| 11 | BFF Web | Contrato para navegadores | HTTPS `:8081` |
+| 12 | BFF Mobile | Respuesta ligera para móviles | HTTPS `:8082` |
+| 13 | BFF ATM | Saldos y retiros | HTTPS `:8083` |
+| 14 | Cuentas Service | Gestión de apertura, actualización y cierre | Solo red Docker |
+| 15 | Clientes Service | Perfiles y datos de clientes | Solo red Docker |
+| 16 | Pagos Service | Pagos, transferencias y depósitos | Solo red Docker |
+| 17 | Caddy (perfil `ec2`) | Proxy HTTPS público de **Keycloak** | `:80` y `:443` |
 
-Los tres brokers trabajan en **KRaft**, con listeners `INTERNAL`, `EXTERNAL` y `CONTROLLER`. El topic `bancoxyz.retiros` usa **3 particiones, factor de replicación 3 y `min.insync.replicas=2`**. Kafka UI y la API administrativa del consumer permanecen ligadas a loopback; en EC2 se consultan mediante túnel SSH en vez de abrir puertos públicos. La replicación tolera la caída de un broker/contenedor dentro del laboratorio, pero al ejecutarse los tres brokers sobre el mismo host **no sustituye alta disponibilidad multi-host o multi-AZ**.
+`batch-service` es el ejecutable Batch adicional, **no un servicio permanente de Compose**. El proyecto raíz agrega 13 módulos Maven: 11 aplicaciones y 2 bibliotecas compartidas.
+
+---
+
+## 📦 Migración legacy y Spring Batch
+
+### Cinco procesos críticos de modernización
+
+1. Sustituir el procesamiento legacy de transacciones, intereses y estados anuales por **Spring Batch**.
+2. Separar el monolito en microservicios de **Cuentas, Clientes y Pagos**.
+3. Implementar **tres BFF** con datos y permisos propios para Web, Mobile y ATM.
+4. Distribuir la seguridad con **Spring Security, OAuth2/Keycloak, Eureka y Config Server**.
+5. Incorporar **mensajería asíncrona con Kafka**, desacoplando eventos de retiro y consumidor.
+
+### Los tres archivos oficiales de Semana 9
+
+```text
+Semana 9/batch-service/src/main/resources/data/
+├── movimientos_financieros_diarios.csv
+├── intereses_trimestrales.csv
+└── estados_financieros_anuales.csv
+```
+
+| Job | Fuente CSV | Resultado | Estrategia |
+|---|---|---|---|
+| `transaccionJob` | `movimientos_financieros_diarios.csv` | Transacciones procesadas y resumen diario | Paralelo, 3 hilos |
+| `cuentaInteresJob` | `intereses_trimestrales.csv` | Intereses trimestrales de la fuente y saldos calculados | Secuencial por cuenta |
+| `estadoCuentaAnualJob` | `estados_financieros_anuales.csv` | Estados de cuenta consolidados | Paralelo, 3 hilos |
+
+Los procesos combinan readers CSV, processors, writers, chunks, manejo de registros rechazados, skip/retry controlado, metadatos de ejecución y políticas de reejecución. **Los CSV originales no se normalizan ni editan; toda transformación sucede en código o datos derivados.**
+
+### Evidencia real: última ejecución controlada
+
+```text
+transaccionJob        → JobExecution 34 → COMPLETED
+cuentaInteresJob      → JobExecution 35 → COMPLETED
+estadoCuentaAnualJob  → JobExecution 36 → COMPLETED
+
+cuentas_intereses ................. 50
+transacciones_procesadas ......... 474
+estados_cuenta_anuales ........... 20
+resumen_transacciones_diarias .... 261
+```
+
+La reejecución comparó **conteo y huella de contenido de negocio** antes/después en las cuatro tablas: coincidieron. Los tres archivos CSV conservaron su SHA-256. Que cada CSV tenga 1.000 filas no significa que las tablas deban tener 1.000 registros; hay normalización, descarte y agregaciones según las reglas de cada Job.
+
+> La prueba demuestra idempotencia observada en este caso y persistencia de resultados, no una garantía absoluta frente a fallos no ensayados o infraestructura distribuida de producción.
 
 ---
 
 ## 🔐 Seguridad con OAuth2 y Keycloak
 
-BancoXYZ utiliza **OAuth2.0 Client Credentials** mediante Keycloak.
-
-### Realm
+### Realm, clientes y scopes
 
 ```text
-bancoxyz
+Realm: bancoxyz
+
+bff-web-client     → bancoxyz.web
+bff-mobile-client  → bancoxyz.mobile
+bff-atm-client     → bancoxyz.atm
 ```
 
-### Clientes
+Los BFF son Resource Servers JWT y exigen su scope. Los tres servicios bancarios también validan JWT; Pagos acepta scopes de los canales configurados.
 
 ```text
-bff-web-client
-bff-mobile-client
-bff-atm-client
-```
-
-### Scopes
-
-```text
-bancoxyz.web
-bancoxyz.mobile
-bancoxyz.atm
-```
-
-Cada BFF funciona como **Spring Resource Server JWT** y exige el scope correspondiente a su canal.
-
-### Comportamiento validado
-
-```text
-Token correcto + scope correcto  → HTTP 200
+Token válido + scope autorizado  → HTTP 200
 Sin token / token inválido       → HTTP 401
-Token válido + scope incorrecto  → HTTP 403
+Scope de otro canal              → HTTP 403
+Misma Idempotency-Key y otro payload en Pagos → HTTP 409
 ```
 
-La validación final confirma los tres clientes y los tres escenarios de seguridad tanto localmente como en AWS EC2.
+Los BFF realizaron handshake **TLS 1.3** con cifrado `TLS_AES_256_GCM_SHA384` en laboratorio. Los keystores PKCS12 académicos **no prueban confianza pública**. Caddy configura TLS de Keycloak en el perfil `ec2`, pero **su certificado público no se ha certificado en la evidencia actual de Semana 9**.
 
 ---
 
 ## 🔄 Rutas OAuth2 en Cloud
 
-En AWS se separan explícitamente dos conceptos:
+Con DNS y Caddy operativos, las variables de Cloud deben ser coherentes:
 
 ```text
-Issuer público del JWT
-    └── http://<ELASTIC_IP>:8084/realms/bancoxyz
-
-Obtención local de token para scripts ejecutados dentro de EC2
-    └── http://127.0.0.1:8084/realms/bancoxyz/protocol/openid-connect/token
+KEYCLOAK_DOMAIN=auth.tu-dominio-real.cl
+KEYCLOAK_PUBLIC_URL=https://auth.tu-dominio-real.cl
+OAUTH2_ISSUER_URI=https://auth.tu-dominio-real.cl/realms/bancoxyz
+OAUTH2_TOKEN_URL=http://127.0.0.1:8084/realms/bancoxyz/protocol/openid-connect/token
 ```
 
-Variables relevantes:
+> Son ejemplos, **no un dominio ya configurado**. El issuer público debe coincidir con el `iss` del JWT. Validar el HTTPS público sin `curl -k` antes de afirmar TLS público válido.
 
-```text
-KEYCLOAK_PUBLIC_URL
-OAUTH2_ISSUER_URI
-OAUTH2_TOKEN_URL
-```
-
-Esta separación evita que los scripts de la propia instancia intenten volver a entrar por la Elastic IP cuando el Security Group está restringido.
-
-### SSL del realm en laboratorio
-
-Para el despliegue académico se utiliza:
-
-```json
-"sslRequired": "none"
-```
-
-Esto permite validar Keycloak mediante HTTP sobre la Elastic IP en un entorno de laboratorio.
-
-> ⚠️ **Producción:** `sslRequired: none` no debe utilizarse como configuración final. Un entorno productivo debe utilizar DNS, TLS válido y HTTPS real delante de Keycloak.
+En local pueden utilizarse URLs diferentes, siempre que Keycloak, el issuer del token y los validadores estén alineados.
 
 ---
 
 ## 🔑 Variables de entorno y secretos
 
-El archivo real `.env` está excluido de Git. Los valores sensibles se generan o suministran externamente.
-
-Variables principales:
+Se utilizan `.env.example` y `.env.ec2.example` como plantillas; `.env` contiene valores locales y está ignorado por Git.
 
 ```text
-POSTGRES_DB
-POSTGRES_USER
-POSTGRES_PASSWORD
-DB_URL
-
-KEYCLOAK_ADMIN_USERNAME
-KEYCLOAK_ADMIN_PASSWORD
-KEYCLOAK_PUBLIC_URL
-
-OAUTH2_ISSUER_URI
-OAUTH2_TOKEN_URL
-OAUTH2_WEB_CLIENT_SECRET
-OAUTH2_MOBILE_CLIENT_SECRET
-OAUTH2_ATM_CLIENT_SECRET
-
+POSTGRES_DB / POSTGRES_USER / POSTGRES_PASSWORD
+KEYCLOAK_ADMIN_USERNAME / KEYCLOAK_ADMIN_PASSWORD
+KEYCLOAK_PUBLIC_URL / OAUTH2_ISSUER_URI / OAUTH2_TOKEN_URL
+OAUTH2_WEB_CLIENT_SECRET / OAUTH2_MOBILE_CLIENT_SECRET / OAUTH2_ATM_CLIENT_SECRET
 SSL_KEYSTORE_PASSWORD
+KAFKA_MODE / KAFKA_BOOTSTRAP_SERVERS / KAFKA_SECURITY_PROTOCOL
+KEYCLOAK_DOMAIN / TLS_EMAIL (en EC2)
 ```
-
-Preparación:
 
 ```fish
 cp .env.example .env
-```
-
-Permisos recomendados:
-
-```bash
 chmod 600 .env
+# Edita .env localmente, sin publicar credenciales.
 ```
 
-> **Certificados académicos:** el repositorio incluye certificados PKCS12 (`.p12`) únicamente para reproducir HTTPS en el entorno de laboratorio. Estos certificados de práctica utilizan `SSL_KEYSTORE_PASSWORD=changeit`; por eso, después de copiar `.env.example` a `.env`, debe reemplazarse el placeholder `CHANGE_ME` por `changeit` para ejecutar los BFF incluidos. No son certificados ni credenciales de producción.
->
-> **Buenas prácticas:** `.env`, claves privadas reales, contraseñas, client secrets y certificados de producción no deben versionarse. En un entorno real, los certificados deben emitirse y administrarse fuera del repositorio.
+**Importante:** `.gitignore` evita versionar `.env`, pero **no evita que entre en un ZIP creado desde la carpeta completa**. Excluir explícitamente `.env`, `.git`, credenciales y temporales del paquete de entrega. No guardar secretos de producción en el repositorio.
 
 ---
 
 ## 📨 Mensajería asíncrona con Kafka
-
-El retiro bancario genera un evento sólo después de completar la operación principal.
 
 ```mermaid
 sequenceDiagram
@@ -254,58 +246,31 @@ sequenceDiagram
     participant BE as Bank Backend
     participant DB as PostgreSQL
     participant K as Kafka
-    participant C as Retiros Event Consumer
+    participant C as Retiros Consumer
 
-    ATM->>BE: POST /retiro
-    BE->>DB: validar cuenta y saldo
-    BE->>DB: persistir nuevo saldo
-    DB-->>BE: operación confirmada
-    BE->>K: RetiroRealizadoEvent
-    BE-->>ATM: HTTP 200
-    K-->>C: bancoxyz.retiros
-    C->>C: procesar evento
+    ATM->>BE: Retiro con Idempotency-Key
+    BE->>DB: Validar saldo y persistir retiro
+    DB-->>BE: Commit confirmado
+    BE->>K: Publicación programada afterCommit
+    K-->>C: RetiroRealizadoEvent
+    C->>C: Consumir / actualizar monitor
+    BE-->>ATM: Respuesta del retiro
 ```
 
-### Topic
-
 ```text
-bancoxyz.retiros
-```
-
-### Consumer Group
-
-```text
-bancoxyz-retiros-group
-```
-
-### Evento
-
-```text
-RetiroRealizadoEvent
-├── cuentaId
-├── monto
-├── saldoFinal
-└── tipo = RETIRO
-```
-
-### Validación funcional
-
-```text
-Brokers .................. 3
+Topic .................... bancoxyz.retiros
+Consumer group ........... bancoxyz-retiros-group
+Brokers KRaft ............ 3
 Particiones .............. 3
 Replication Factor ....... 3
 min.insync.replicas ...... 2
-Producer ................. EVENTO PUBLICADO
-Consumer ................. EVENTO CONSUMIDO
-Consumer Group ........... bancoxyz-retiros-group
-Lag final ................ 0
 ```
 
-El consumidor fue separado de `bank-backend` para demostrar mensajería real entre microservicios y permitir escalamiento independiente.
+La prueba del listener verificó JWT `401/403/200`, pausa, lag creciente y reanudación con lag final `0`. La publicación **se programa después del commit de BD** para no emitir eventos de transacciones revertidas. Sigue existiendo una ventana de fallo entre la confirmación de BD y la entrega a Kafka: no se declara garantía *exactly-once* entre ambos sistemas.
+
+**Alcance real:** Kafka opera en tres contenedores del mismo host con `PLAINTEXT`; **no** cuenta con TLS/SASL ni con despliegue multi-AZ. Kafka UI permite inspección operativa, pero no reemplaza un sistema de métricas/alertas centralizado.
 
 ### Administración segura del listener
-
-El listener tiene id explícito `retirosListener` y se administra mediante `KafkaListenerEndpointRegistry`:
 
 ```text
 GET  /api/kafka/consumer/estado
@@ -314,102 +279,39 @@ POST /api/kafka/consumer/pausar
 POST /api/kafka/consumer/reanudar
 ```
 
-La API funciona como **OAuth2 Resource Server JWT** y exige `SCOPE_bancoxyz.web`. La validación final, tanto local como en AWS EC2, demostró:
-
-```text
-Sin token ................ HTTP 401
-Scope ATM ................ HTTP 403
-Scope WEB ................ HTTP 200
-Listener pausado ......... true
-Lag durante pausa ........ 1
-Reanudación .............. ACTIVO
-Lag final ................ 0
-Resumen .................. 3 brokers / 3 particiones / RF=3
-```
+Estas rutas requieren JWT y scope administrativo del canal Web. Evitar las pruebas de pausa/retirada en producción sin aislamiento.
 
 ---
 
 ## 🛡️ Resiliencia con Resilience4j
 
-Los BFF protegen la comunicación con `BANK-BACKEND` mediante:
-
-- **Circuit Breaker**;
-- **Retry** para operaciones seguras;
-- **Rate Limiter**;
-- **Timeout**;
-- traducción controlada de errores.
-
-El retiro ATM **no utiliza Retry automático**, porque no es una operación idempotente y un reintento podría provocar doble débito.
-
-### Ciclo validado
+Los clientes BFF usan **Circuit Breaker, Retry controlado, Rate Limiter y timeout**. Las operaciones monetarias se distinguen de las lecturas: no se habilita un reintento automático a ciegas para un retiro.
 
 ```mermaid
 stateDiagram-v2
     [*] --> CLOSED
     CLOSED --> OPEN: fallos repetidos
     OPEN --> HALF_OPEN: ventana de recuperación
-    HALF_OPEN --> OPEN: probes fallidos
-    HALF_OPEN --> CLOSED: probes exitosos
+    HALF_OPEN --> OPEN: nueva falla
+    HALF_OPEN --> CLOSED: backend recuperado
 ```
 
-### Evidencia EC2
-
-```text
-Operación normal ........ HTTP 200
-Fallo 1 ................. HTTP 504
-Fallo 2 ................. HTTP 504
-Circuit Breaker ......... OPEN
-Rechazo rápido .......... HTTP 503
-Eventos Retry ........... 8
-Backend restaurado ...... healthy
-Recuperación ............ HALF_OPEN
-Circuit Breaker final ... CLOSED
-```
-
-Resultado:
-
-```text
-CLOSED → OPEN → HALF_OPEN → CLOSED
-```
+Las evidencias anteriores de Resilience4j y del listener sirven de antecedente, pero si el informe final afirma validación Cloud de **esta versión de Semana 9**, debe adjuntar pruebas hechas sobre el despliegue de Semana 9.
 
 ---
 
 ## ⚙️ Configuración centralizada y Service Discovery
 
-### Config Server
-
-Puerto:
+**Config Server `:8888`** sirve propiedades desde `Semana 9/config-repo/`; **Eureka `:8761`** registra los servicios. Los BFF resuelven `BANK-BACKEND` con Spring Cloud LoadBalancer, evitando direcciones IP fijas.
 
 ```text
-8888
-```
-
-Configuraciones principales:
-
-```text
-Semana 8/config-repo/
+Semana 9/config-repo/
 ├── bff-web.properties
 ├── bff-mobile.properties
 └── bff-atm.properties
 ```
 
-Centraliza parámetros de Eureka, nombre lógico del backend, timeouts, Circuit Breaker, Retry, Rate Limiter y Actuator.
-
-### Eureka
-
-Puerto:
-
-```text
-8761
-```
-
-Los BFF resuelven el backend mediante:
-
-```text
-BANK-BACKEND
-```
-
-con Spring Cloud LoadBalancer, evitando depender de direcciones IP rígidas.
+La configuración central contiene límites de tiempo, Circuit Breaker, Retry, Rate Limiter, compresión, Eureka y Actuator.
 
 ---
 
@@ -418,7 +320,6 @@ con Spring Cloud LoadBalancer, evitando depender de direcciones IP rígidas.
 ### Web — `HTTPS :8081`
 
 ```text
-GET /api/web/cuentas
 GET /api/web/cuentas/{id}
 GET /api/web/cuentas/{id}/detalle
 ```
@@ -426,7 +327,6 @@ GET /api/web/cuentas/{id}/detalle
 ### Mobile — `HTTPS :8082`
 
 ```text
-GET /api/mobile/cuentas
 GET /api/mobile/cuentas/{id}/resumen
 ```
 
@@ -434,50 +334,60 @@ GET /api/mobile/cuentas/{id}/resumen
 
 ```text
 GET  /api/atm/cuentas/{id}/saldo
-POST /api/atm/cuentas/{id}/retiro
+POST /api/atm/cuentas/{id}/retiro  (Idempotency-Key)
 ```
 
-Los BFF utilizan certificados PKCS12 académicos y exigen `SSL_KEYSTORE_PASSWORD` mediante variable de entorno.
+Web entrega representaciones más completas; Mobile prioriza payload reducido y ATM operaciones concretas de cajero. Los certificados locales permiten transporte cifrado HTTPS en los tres canales.
+
+---
+
+## 💳 Microservicios de negocio
+
+| Servicio | Responsabilidad principal | Persistencia |
+|---|---|---|
+| `cuentas-service` | Crear, consultar, mantener y cerrar cuentas de gestión | `cuentas_gestion` |
+| `clientes-service` | Gestionar perfiles y datos de clientes | `clientes_perfil` |
+| `pagos-service` | Ejecutar pagos, transferencias y depósitos bajo JWT | `pagos_solicitudes`, `pagos_saldos`, `pagos_movimientos` |
+
+### 💸 Pagos: idempotencia y persistencia reales
+
+```text
+POST /api/pagos/solicitudes       → Idempotency-Key: UUID
+GET  /api/pagos/solicitudes/{id}
+GET  /api/pagos/cuentas/{id}/saldo
+```
+
+En laboratorio se comprobaron las tres operaciones con `HTTP 200/APLICADO`; el mismo UUID devuelve el mismo recibo sin doble movimiento; un UUID reutilizado con datos diferentes produce `HTTP 409`; dos solicitudes simultáneas con el mismo UUID generan una liquidación. Después de reiniciar **solo** `pagos-service`, las cuentas y operaciones conservaron sus datos en PostgreSQL.
+
+```text
+4 solicitudes aplicadas · 7 movimientos únicos
+Saldo QA origen: 997,25 · Saldo QA destino: 522,75
+```
+
+**Separación importante:** Pagos liquida contra `cuentas_gestion`; los retiros legacy usan `cuentas_intereses` y su propio endpoint. No son un único libro mayor ni debe representarse esta prueba como integración bancaria productiva completa.
 
 ---
 
 ## 💾 Persistencia
 
-PostgreSQL 17 mantiene el estado bancario.
-
-Archivos:
+El proyecto declara **una instancia PostgreSQL 17** y trabaja con la base `bancoxyz`. Las tablas de Spring Batch, Cuentas, Clientes, Pagos, retiros idempotentes y metadatos de Keycloak conviven en esta instancia con sus respectivos esquemas/tablas.
 
 ```text
-Semana 8/database/
+PostgreSQL interno: postgres:5432
+PostgreSQL host:    127.0.0.1:5432 (valor por defecto)
+Base:               bancoxyz
+Volumen:            bancoxyz_postgres_data
 ```
 
-Hostname interno:
+Los archivos `Semana 9/data/db/` contienen migraciones controladas. `Semana 9/database/01_schema.sql` sigue enlazado a Compose para inicializar un volumen **nuevo**; el archivo histórico `02_seed_processed_snapshot.sql` **no se monta** y no es la fuente actual de Batch.
 
-```text
-postgres:5432
-```
-
-El volumen persistente conserva los datos con:
-
-```fish
-docker compose down
-```
-
-Para reinicializar completamente:
-
-```fish
-docker compose down -v
-```
-
-> Usar `-v` sólo cuando se quiera eliminar deliberadamente la persistencia.
+**No** usar `docker compose down -v`, `TRUNCATE`, `DROP DATABASE` ni volver a cargar el snapshot anterior. `docker compose stop` conserva volúmenes y servicios para reiniciar después.
 
 ---
 
 ## 🔎 Observabilidad
 
-Los servicios utilizan Spring Boot Actuator.
-
-Endpoints relevantes:
+Spring Boot Actuator publica salud y eventos de resiliencia según servicio. Kafka UI permite revisar brokers, particiones y offsets. PostgreSQL contiene el histórico de ejecuciones Spring Batch.
 
 ```text
 /actuator/health
@@ -487,10 +397,9 @@ Endpoints relevantes:
 /actuator/retries
 /actuator/retryevents
 /actuator/ratelimiters
-/actuator/ratelimiterevents
 ```
 
-Los healthchecks de Docker Compose controlan el orden de arranque de las dependencias.
+Para observabilidad de producción faltarían alertas, correlación de trazas y monitoreo centralizado.
 
 ---
 
@@ -499,376 +408,206 @@ Los healthchecks de Docker Compose controlan el orden de arranque de las depende
 ```text
 bancoxyzbatch/
 ├── .env.example
-├── .gitignore
+├── .env.ec2.example
 ├── docker-compose.yml
-├── mvnw
-├── mvnw.cmd
-├── pom.xml
+├── pom.xml                       # reactor Maven (13 módulos)
 ├── README.md
 ├── Propuesta_Tecnica.md
-└── Semana 8/
+├── instrucciones.md
+├── despliegue.md
+└── Semana 9/
+    ├── batch-service/
+    │   └── src/main/resources/data/   # tres CSV inalterables
     ├── bank-backend/
-    ├── bff/
-    │   ├── bff-atm/
-    │   ├── bff-mobile/
-    │   └── bff-web/
+    ├── bff/{bff-web,bff-mobile,bff-atm}/
+    ├── cuentas-service/
+    ├── clientes-service/
+    ├── pagos-service/
     ├── config-repo/
     ├── config-server/
-    ├── data/
-    │   └── legacy/
-    ├── database/
     ├── discovery-server/
-    ├── docs/
-    │   └── Documentacion_Capturas.pdf
-    ├── keycloak/
     ├── retiros-event-consumer/
+    ├── shared-contracts/
+    ├── shared-resilience/
+    ├── data/db/                    # migraciones adicionales
+    ├── database/                   # esquema inicial aún referenciado
+    ├── caddy/
+    ├── keycloak/
     └── scripts/
 ```
 
-No se versionan:
-
-```text
-.env
-*.pem
-target/
-backups operacionales
-archivos temporales
-```
+> El árbol representa los archivos **que deben quedar al instalar este paquete documental**. El informe PDF y el MP4 se incorporan a la carpeta final del AVA una vez completados.
 
 ---
 
 ## 🧱 Build Maven
 
-Compilación:
+Desde la raíz del repositorio, en **Fish**:
 
 ```fish
-./mvnw clean compile -DskipTests
+./mvnw clean verify
 ```
 
-Empaquetado:
+Para compilar sin tests:
 
 ```fish
 ./mvnw clean package -DskipTests
 ```
 
-El `pom.xml` raíz agrega los módulos Java de la solución, incluido `retiros-event-consumer`.
+**No usar `-DskipTests` para certificar el estado de pruebas**. El reactor incluye servicios y bibliotecas compartidas. En la auditoría anterior del código disponible, el reactor terminó `BUILD SUCCESS` y las pruebas de Pagos finalizaron `7/7`.
 
 ---
 
 ## 🐳 Ejecución local con Docker Compose
 
-Validar:
-
 ```fish
-docker compose config
-```
-
-Levantar:
-
-```fish
-docker compose up --build -d
-```
-
-Estado:
-
-```fish
+docker compose config --quiet
+docker compose up -d --build
 docker compose ps
 ```
 
-Detener sin eliminar datos:
+Para detener sin borrar datos:
 
 ```fish
-docker compose down
+docker compose stop
 ```
 
-La validación local final alcanzó:
-
-```text
-13/13 servicios operativos (12 healthy + Kafka UI running)
-OAuth2 3/3 clientes funcionales
-Kafka 3 brokers + 3 particiones + RF=3 + producer/consumer + lag 0
-Listener seguro: 401/403/200 + pausa/reanudación + lag 1 → 0
-Resilience4j fallo + recuperación verificados
-```
+**Nota:** Compose levanta el stack, pero **no ejecuta automáticamente** los Jobs Batch de los CSV. Para ello se utiliza el verificador controlado descrito en [`instrucciones.md`](instrucciones.md).
 
 ### Recursos del runtime
 
-La arquitectura final se validó con **8 GiB asignados al runtime Docker**, valor alineado con la instancia `t3.large` usada en EC2. Para evitar que la infraestructura JVM monopolice la memoria del host, Compose aplica límites parametrizables a los componentes más pesados:
-
-```text
-Kafka broker x3  -> 768 MiB por broker | heap -Xms256m -Xmx384m
-Keycloak         -> 1 GiB              | heap 25% inicial / 60% máximo
-Kafka UI         -> 512 MiB
-```
-
-Los valores pueden sobrescribirse desde `.env` mediante `KAFKA_MEM_LIMIT`, `KAFKA_HEAP_OPTS`, `KAFKA_UI_MEM_LIMIT`, `KEYCLOAK_MEM_LIMIT` y `KEYCLOAK_JAVA_OPTS_KC_HEAP`. En Docker Desktop se recomienda asignar **al menos 8 GiB** al motor antes de levantar los 13 servicios.
-
-Durante la validación final en EC2 se comprobó que `256 MiB` era insuficiente para los picos de arranque de la JVM de Kafka UI y provocaba eventos OOM a nivel de cgroup. El límite se ajustó a **512 MiB**, quedando el contenedor estable con `Restart=0` y `OOMKilled=false`; por ello `512 MiB` pasa a ser el valor por defecto del proyecto.
+Kafka, Keycloak y Kafka UI tienen límites de memoria configurables. La arquitectura completa requiere recursos suficientes; no se promete disponibilidad de nube por el solo hecho de tener un `docker-compose.yml`.
 
 ---
 
-## ☁️ Despliegue final en AWS EC2
+## ☁️ Despliegue en AWS EC2
 
-La solución fue redeplegada y revalidada en AWS EC2 después de incorporar Kafka 3×3, Kafka UI, la administración segura del listener y el ajuste final de memoria. La misma versión funcional quedó sincronizada entre el entorno local, GitHub y EC2 antes de cerrar las evidencias.
+La versión actual permite levantar Caddy delante de Keycloak mediante perfil `ec2` y automatiza comprobaciones iniciales:
 
-### Entorno utilizado
-
-```text
-AWS EC2
-Ubuntu Server 26.04.1 LTS x86_64
-t3.large
-2 vCPU
-8 GiB RAM
-50 GiB gp3
-Elastic IP
-Docker Engine
-Docker Compose Plugin
+```fish
+bash "Semana 9/scripts/desplegar_ec2_final.sh"
 ```
 
-### Security Group
+**Precondiciones:** instancia Linux con Docker, Compose y Git; `.env` específico de EC2; DNS real apuntando a IP pública; puertos 80/443 habilitados; rama publicada y checkout Git limpio. El script verifica esos requisitos y usa `docker compose --profile ec2`.
 
-Acceso exterior controlado:
-
-```text
-22    SSH
-8081  BFF Web
-8082  BFF Mobile
-8083  BFF ATM
-8084  Keycloak
-```
-
-Infraestructura no publicada a Internet:
-
-```text
-8080  Bank Backend
-8888  Config Server
-8761  Eureka
-9092  Kafka
-5432  PostgreSQL
-8090  Kafka UI (loopback)
-8091  API administrativa del consumer (loopback)
-```
-
-### Clonado
-
-```bash
-git clone --filter=blob:none --no-checkout \
-  https://github.com/LadyRed145/bancoxyzbatch.git \
-  bancoxyzbatch
-
-cd bancoxyzbatch
-
-git sparse-checkout init --cone
-git sparse-checkout set "Semana 8"
-git checkout main
-```
-
-### Variables Cloud
-
-```text
-KEYCLOAK_PUBLIC_URL=http://<ELASTIC_IP>:8084
-OAUTH2_ISSUER_URI=http://<ELASTIC_IP>:8084/realms/bancoxyz
-OAUTH2_TOKEN_URL=http://127.0.0.1:8084/realms/bancoxyz/protocol/openid-connect/token
-```
-
-### Inicio
-
-```bash
-docker compose config >/dev/null
-docker compose up --build -d
-docker compose ps
-```
-
-> **Nota operativa:** el primer arranque de Keycloak puede tardar más debido a la inicialización e importación del realm. Una vez `healthy`, los BFF pueden iniciarse nuevamente sin reconstruir imágenes.
+El despliegue antiguo sirve de referencia operativa, pero no se declara que **la versión final de Semana 9** esté validada en AWS sin la nueva ejecución y sus capturas. Consulta [`despliegue.md`](despliegue.md).
 
 ---
 
-## 🌍 Validación externa desde un equipo distinto a EC2
+## 🌍 Validación externa y TLS
 
-Desde el notebook local se comprobó el acceso atravesando:
+Los tres BFF han realizado handshake **TLS 1.3** en el laboratorio. La validez pública de certificados exige hostname real, autoridad de certificación confiable, certificado vigente y comprobación desde un cliente externo.
 
-```text
-Notebook
-   ↓
-Internet
-   ↓
-Security Group
-   ↓
-Elastic IP
-   ↓
-EC2
-   ↓
-Docker
-   ↓
-Keycloak / BFF
+```fish
+# Sustituye el dominio de ejemplo por el DNS realmente registrado.
+curl --fail --show-error https://auth.tu-dominio-real.cl/realms/bancoxyz/.well-known/openid-configuration
 ```
 
-Resultados:
-
-```text
-Keycloak OIDC .............. HTTP 200
-BFF Web health ............. HTTP 200
-BFF Mobile health .......... HTTP 200
-BFF ATM health ............. HTTP 200
-
-WEB sin token .............. HTTP 401
-MOBILE sin token ........... HTTP 401
-ATM sin token .............. HTTP 401
-```
-
-Esto demuestra que los servicios públicos responden desde fuera de la instancia y que los endpoints protegidos continúan rechazando solicitudes no autenticadas.
+El fichero `Semana 9/caddy/Caddyfile` publica **Keycloak**, no los tres BFF. Esto distingue HTTPS local de certificados públicos y evita afirmar que Kafka tiene TLS/SASL: sus listeners actuales son `PLAINTEXT`.
 
 ---
 
 ## 🧰 Scripts de validación
 
-Ubicación:
-
-```text
-Semana 8/scripts/
-```
-
-Principales scripts:
-
 ```fish
-fish "Semana 8/scripts/verificar_bff.fish"
-fish "Semana 8/scripts/verificar_oauth2.fish"
-fish "Semana 8/scripts/verificar_actuator_resilience.fish"
-fish "Semana 8/scripts/verificar_resilience4j_fallo_recuperacion.fish"
-fish "Semana 8/scripts/verificar_kafka_cluster.fish"
-fish "Semana 8/scripts/verificar_kafka_microservicios.fish"
-fish "Semana 8/scripts/verificar_control_kafka_listener.fish"
-fish "Semana 8/scripts/auditar_kafka_huerfanos.fish"
+# Auditoría general, compilación y Batch (altera solo resultados derivados/metadatos):
+bash "Semana 9/scripts/cierre_total_bancoxyz_s9.sh" --todo
 
-# Sólo EC2 / Bash
-bash "Semana 8/scripts/desplegar_ec2_final.sh"
+# Pruebas HTTP monetarias con cuentas de laboratorio (crean datos QA):
+bash "Semana 9/scripts/verificar_pagos_tls_kafka_s9.sh" --laboratorio
+
+# Cierre controlado: Pagos + Batch + CSV (modifica metadatos y movimientos QA):
+bash "Semana 9/scripts/cierre_final_qa_pagos_csv_s9.sh"
+
+# Estado Kafka y autenticación (sin pruebas destructivas):
+fish "Semana 9/scripts/verificar_kafka_cluster.fish"
+fish "Semana 9/scripts/verificar_oauth2.fish"
+
+# Limpieza de targets de Maven antes de ZIP:
+bash "Semana 9/scripts/limpiar_targets_bancoxyz.sh" --dry-run
+bash "Semana 9/scripts/limpiar_targets_bancoxyz.sh"
 ```
 
-Helper OAuth2:
-
-```fish
-fish "Semana 8/scripts/oauth2_obtener_token.fish" web
-fish "Semana 8/scripts/oauth2_obtener_token.fish" mobile
-fish "Semana 8/scripts/oauth2_obtener_token.fish" atm
-```
-
-Buenas prácticas incorporadas al cierre Cloud:
-
-- resolución dinámica de `PROJECT_ROOT`;
-- ausencia de rutas absolutas de usuario;
-- timeouts de red para evitar bloqueos indefinidos;
-- separación entre issuer público y token endpoint local;
-- scripts reutilizables tanto en local como en EC2.
+El verificador histórico `verificar_entrega_completa.fish` mantiene comprobaciones desactualizadas y **no es la ruta de aceptación actual**. No ejecutarlo para certificar esta entrega.
 
 ---
 
 ## ✅ Validación final
 
-| Validación | Local | AWS EC2 |
+| Verificación | Local Semana 9 | AWS EC2 Semana 9 |
 |---|:---:|:---:|
-| Docker Compose válido | ✅ | ✅ |
-| 13 servicios operativos | ✅ | ✅ |
-| BFF Web / Mobile / ATM | ✅ | ✅ |
-| OAuth2 credenciales válidas `200` | ✅ | ✅ |
-| OAuth2 sin token / inválido `401` | ✅ | ✅ |
-| OAuth2 scope incorrecto `403` | ✅ | ✅ |
-| Circuit Breaker | ✅ | ✅ |
-| Retry | ✅ | ✅ |
-| Rate Limiter | ✅ | ✅ |
-| `CLOSED → OPEN → HALF_OPEN → CLOSED` | ✅ | ✅ |
-| Kafka 3 brokers / 3 particiones / RF=3 | ✅ | ✅ |
-| Kafka Producer | ✅ | ✅ |
-| Kafka Consumer independiente | ✅ | ✅ |
-| Listener pause/resume + resumen protegido | ✅ | ✅ |
-| Consumer Group `lag 0` | ✅ | ✅ |
-| Secretos fuera del código | ✅ | ✅ |
-| `.env` fuera de Git | ✅ | ✅ |
-| Acceso externo por Elastic IP | — | ✅ |
+| Reactor Maven y JUnit | ✅ | Por comprobar |
+| Tres CSV originales íntegros | ✅ | Por comprobar |
+| Tres Jobs Batch `COMPLETED` | ✅ | Por comprobar |
+| Reejecución Batch sin cambios de negocio | ✅ | Por comprobar |
+| Pagos/transferencias/depósitos JWT | ✅ | Por comprobar |
+| Repetición y concurrencia idempotentes | ✅ | Por comprobar |
+| Persistencia de Pagos tras reinicio | ✅ | Por comprobar |
+| TLS 1.3 en los tres BFF | ✅ | Por comprobar |
+| Kafka 3 brokers, RF3 y consumidor | ✅ | Por comprobar |
+| TLS público Keycloak / Caddy | No certificado | Por comprobar |
+| Kafka TLS/SASL y multi-AZ | No implementado | No implementado |
+| Escalamiento horizontal de tres microservicios | Configurado; falta evidencia específica | Por comprobar |
 
 ---
 
-## 📸 Evidencia de despliegue Cloud
+## 📸 Evidencias y entregables EFT
 
-La evidencia definitiva se regenera sobre la **versión final ya validada en EC2**, para evitar mezclar capturas de arquitecturas o estados anteriores. Debe cubrir como mínimo:
+La rúbrica exige, en una misma carpeta para entrega:
 
-```text
-Docker Compose final con 13 servicios
-OAuth2 200 / 401 / 403
-Kafka UI: 3 brokers
-Topic bancoxyz.retiros: 3 particiones / RF=3 / ISR completo
-Consumer Group estable y lag 0
-Producer + Consumer entre microservicios
-Listener seguro: pausa → lag > 0 → reanudar → lag 0
-Resilience4j: CLOSED → OPEN → HALF_OPEN → CLOSED
-Acceso externo por Elastic IP a Keycloak y BFF
-Repositorio GitHub en el commit final
-```
+1. **`readme.md`** con enlace al código fuente completo en GitHub (se incluye copia minúscula para AVA; el repositorio usa `README.md`).
+2. **Informe técnico en PDF**, basado en la plantilla oficial `PBY2203_EFT_S9_plantilla_PDF` del AVA, con diagramas y evidencias.
+3. **`instrucciones.md`** con ejecución y pruebas de componentes.
+4. **`despliegue.md`** con pasos detallados en nube.
+5. **Video MP4 de 5–7 minutos con webcam** y los cuatro temas solicitados.
 
-El PDF final se consolida en `Semana 8/docs/Documentacion_Capturas.pdf` una vez que Local, GitHub y EC2 correspondan a la misma versión funcional.
+> El PDF histórico de etapas anteriores **no reemplaza** al informe final de Semana 9. El MP4 y las capturas de EC2/TLS de esta versión requieren preparación y comprobación aparte.
 
 ---
 
 ## 🧹 Buenas prácticas aplicadas
 
-- separación clara de responsabilidades;
-- BFF por canal consumidor;
-- configuración centralizada;
-- Service Discovery;
-- mensajería asíncrona desacoplada;
-- consumer Kafka independiente;
-- healthchecks y dependencias controladas;
-- secretos externalizados;
-- `.env` fuera del repositorio;
-- puertos internos ligados a loopback;
-- scripts reproducibles;
-- rutas portables entre local y Cloud;
-- backups fuera del repositorio;
-- evidencia técnica organizada;
-- checkpoints estables antes del despliegue.
+- responsabilidad única por servicio y contrato específico por canal;
+- JWT, scopes y TLS de laboratorio para los BFF;
+- persistencia transaccional en operaciones de Pagos;
+- UUID de idempotencia ante solicitudes repetidas y simultáneas;
+- Batch con logs de rechazo, retry, restart y procesamiento en paralelo donde es seguro;
+- tres CSV fuente inalterables, verificables por SHA-256;
+- Config Server, Eureka, LoadBalancer y Resilience4j;
+- Kafka producer/consumer desacoplados, con after-commit para eventos;
+- volúmenes persistentes y ausencia de limpieza destructiva automática;
+- `target/` fuera del ZIP y exclusión de `.env` y `.git`.
 
 ---
 
 ## 🚀 Consideraciones de producción
 
-El proyecto corresponde a un entorno académico. **OAuth2 + Keycloak ya están implementados y funcionales**; las siguientes medidas corresponden únicamente a su endurecimiento para un entorno productivo:
+La solución es **académica y funcional en laboratorio**. Para dinero real faltaría, entre otros: control de titularidad/autorización monetaria, conciliación y libro mayor formal, recuperación y auditoría regulatoria, gestión de secretos, pruebas de fallos completos, PostgreSQL altamente disponible, despliegue horizontal multi-host, certificados públicos para los accesos externos, Kafka con TLS/SASL y varias zonas de disponibilidad, observabilidad centralizada y pruebas operativas de recuperación.
 
-- DNS propio;
-- reverse proxy;
-- TLS público válido;
-- restaurar `sslRequired` para exigir HTTPS externo en Keycloak;
-- gestión centralizada de secretos;
-- CI/CD;
-- monitoreo y alertas;
-- Kafka administrado o distribuido entre múltiples zonas de disponibilidad, con TLS/SASL y monitoreo centralizado;
-- PostgreSQL administrado o replicado;
-- backups automáticos;
-- rotación de credenciales;
-- reglas de red aún más restrictivas.
+No son elementos ya certificados por este repositorio; son una **hoja de ruta**, distinta de los criterios probados en la evaluación.
 
 ---
 
 ## 🎯 Resultado
 
-BancoXYZ Semana 8 finaliza como una arquitectura distribuida con **OAuth2 funcional, resiliencia verificable, mensajería asíncrona entre microservicios, persistencia, observabilidad, contenerización y despliegue Cloud real**.
-
-La solución fue validada de extremo a extremo:
+BancoXYZ **Semana 9** reúne los tres procesos Spring Batch, tres canales BFF, microservicios de Cuentas/Clientes/Pagos, OAuth2, resiliencia, eventos Kafka y persistencia PostgreSQL. Las pruebas locales del **11 de octubre de 2026** validaron las operaciones de Pagos y la reejecución idempotente de los tres CSV oficiales.
 
 ```text
-Seguridad
+Spring Batch ✅
    +
-Resiliencia
+Seguridad y BFF ✅
    +
-Persistencia
+Microservicios de negocio ✅
    +
-Mensajería
+Persistencia e idempotencia local ✅
    +
-Docker
-   +
-AWS EC2
+Kafka replicado localmente ✅
    =
-BancoXYZ Semana 8 ✅
+BancoXYZ Semana 9 · Cierre técnico local aprobado
 ```
+
+> **Entrega académica:** la publicación del código final, las pruebas Cloud específicas y los archivos de evidencia pendientes deben completarse antes de declarar el 100 % de la rúbrica.
 
 ---
 
-**BancoXYZ · Natalia Alvarado · Desarrollo Backend III (PBY2203) · Semana 8**
+**BancoXYZ · Natalia Alvarado · Desarrollo Backend III (PBY2203) · Semana 9**
