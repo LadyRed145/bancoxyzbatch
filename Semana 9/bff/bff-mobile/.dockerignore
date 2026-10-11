@@ -1,0 +1,9 @@
+.git
+.gitignore
+.vscode
+.idea
+target
+*.log
+*.bak
+*.orig
+*~

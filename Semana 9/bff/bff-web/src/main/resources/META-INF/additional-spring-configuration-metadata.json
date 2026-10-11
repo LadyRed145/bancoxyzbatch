@@ -1,0 +1,14 @@
+{
+  "properties": [
+    {
+      "name": "backend.base-url",
+      "type": "java.lang.String",
+      "description": "URL base del Bank Backend consumido por este BFF."
+    },
+    {
+      "name": "backend.timeout",
+      "type": "java.time.Duration",
+      "description": "Tiempo máximo que este BFF espera una respuesta del Bank Backend."
+    }
+  ]
+}
