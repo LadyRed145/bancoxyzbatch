@@ -59,6 +59,7 @@ docker compose ps
 | Clientes Service | API perfiles y estado | `docker compose ps clientes-service` |
 | Pagos Service | JWT, liquidación y persistencia | ver §5 |
 | Keycloak EC2 S9 | realm, scopes, tres tokens Bearer emitidos por túnel SSH | ver §8 y `despliegue.md` |
+| Escalado EC2 S9 | Cuentas, Clientes y Pagos 2/2/2 `healthy`, seis registros Eureka `UP` | ver §8 |
 | Caddy EC2 | certificado Keycloak público (no configurado) | ver `despliegue.md` |
 
 Las comprobaciones de rutas protegidas requieren JWT. No se deben imprimir tokens o client secrets en documentación pública.
@@ -153,7 +154,17 @@ Los brokers actuales utilizan `PLAINTEXT` y están en un único host Docker. No 
 
 ## 8. TLS público y despliegue Cloud
 
-Los BFF tienen TLS 1.3 local mediante PKCS12 de laboratorio. En EC2 S9 se verificaron **solo PostgreSQL y Keycloak** con `docker-compose.s9.ec2.yml`, puertos restringidos a loopback, y acceso mediante túnel SSH. El realm `bancoxyz`, los tres scopes **Default** y la emisión de tokens Bearer **3/3** quedaron comprobados el 11-10-2026. **No es un despliegue HTTPS público**.
+Los BFF tienen TLS 1.3 local mediante PKCS12 de laboratorio. En EC2 S9, PostgreSQL y Keycloak quedaron aislados bajo `bancoxyz-s9`, con acceso administrativo por túnel SSH y emisión JWT **3/3**. Después se verificaron Config Server, Eureka y las seis réplicas de los servicios de dominio.
+
+**Evidencia AWS EC2 (11-10-2026):** en el proyecto independiente `bancoxyz-s9` se verificó el escalado horizontal de `cuentas-service`, `clientes-service` y `pagos-service` desde **1/1/1** hasta **2/2/2 réplicas**. Las **seis instancias** quedaron `healthy`; Eureka registró **dos instancias `UP` con identificadores distintos por servicio**. Config Server y Discovery Server también quedaron `healthy`. El host reportó **7,6 GiB de RAM total, 3,3 GiB utilizada y 4,3 GiB disponible**, sin swap. Se trata de seis réplicas sobre **una EC2**, no de alta disponibilidad multi-AZ; esta prueba no acredita por sí sola reparto efectivo de tráfico entre réplicas.
+
+```bash
+# En Ubuntu EC2, desde el checkout independiente de Semana 9:
+cd "$HOME/bancoxyzbatch-s9"
+bash "Semana 9/scripts/probar_escalado_horizontal_ec2_s9.sh"
+# Para volver a la cantidad de réplicas previa sin borrar volúmenes:
+bash "Semana 9/scripts/probar_escalado_horizontal_ec2_s9.sh" --restaurar
+```
 
 ```bash
 # En la consola SSH Ubuntu (Bash), dentro del checkout independiente S9:
@@ -168,7 +179,7 @@ ssh -N -L 18084:127.0.0.1:18084 -i /ruta/privada/clave.pem ubuntu@IP_PUBLICA
 # Abrir después http://localhost:18084/admin/ en el navegador.
 ```
 
-Los cinco secretos nuevos están en el `.env` privado de EC2 S9 con permisos `600` (no regenerarlos ni mostrarlos). En Ubuntu se validaron los tres clientes con flujo `client_credentials` sin imprimir los tokens. **La validación de los JWT por los BFF desplegados en EC2 permanece pendiente**, al igual que Batch, Kafka y Pagos de S9 en ese host.
+Los cinco secretos nuevos están en el `.env` privado de EC2 S9 con permisos `600` (no regenerarlos ni mostrarlos). En Ubuntu se validaron los tres clientes con flujo `client_credentials` sin imprimir los tokens. La emisión JWT se comprobó en EC2; la prueba de escalado no constituye una validación extremo a extremo de BFF, Batch, Kafka o transacciones de Pagos en ese host.
 
 Para TLS público se requiere DNS real, puertos 80/443 y certificado verificable. El script `Semana 9/scripts/desplegar_ec2_final.sh` corresponde a ese escenario futuro y **no se utilizó** en esta prueba privada. Consultar [`despliegue.md`](despliegue.md).
 
@@ -193,17 +204,14 @@ No utilizar como auditoría final el viejo `verificar_entrega_completa.fish`, qu
 
 ---
 
-## 10. Lista de entrega
+## 10. Referencia de evidencias técnicas
 
-| Entregable | Verificar |
+| Evidencia | Resultado observado |
 |---|---|
-| `readme.md` | Link GitHub con Semana 9 publicada |
-| PDF técnico | Plantilla oficial AVA y diagrama(s) |
-| `instrucciones.md` | Comandos reproducibles |
-| `despliegue.md` | Estado real EC2 S9, acceso SSH privado y alternativa DNS/TLS futuro |
-| MP4 5–7 min | Webcam, resumen, resultados, desafíos y mejoras |
-
-**Nunca incluir:** `.env` con credenciales, `.git`, carpetas Maven `target/` ni copias de datos privadas en el ZIP del AVA.
+| Spring Batch | Tres Jobs `COMPLETED`; reejecución sin cambios de huellas de negocio ni CSV |
+| Keycloak en EC2 | Tres clientes OAuth2 con JWT Bearer emitidos (3/3) |
+| Escalado horizontal en EC2 | Seis réplicas `healthy` y seis registros Eureka `UP`, con identificadores distintos |
+| Infraestructura | Una EC2, proyectos Compose independientes, sin prueba multi-AZ |
 
 ---
 

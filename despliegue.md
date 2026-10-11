@@ -214,12 +214,22 @@ bash "Semana 9/scripts/cierre_final_qa_pagos_csv_s9.sh"
 
 ## 8. Despliegue en AWS EC2 con TLS público de Keycloak
 
-**Estado real verificado el 11-10-2026:** la EC2 `184.193.6.63` recibió el checkout S9 en `/home/ubuntu/bancoxyzbatch-s9` (commit `cf4605f`). El proyecto Compose `bancoxyz-s9` inició **solo** PostgreSQL 17 y Keycloak 26.8.0; sus puertos son `127.0.0.1:15432` y `127.0.0.1:18084`. PostgreSQL figuró `healthy`; Keycloak abrió la consola, importó el realm `bancoxyz`, mostró los tres clientes habilitados y scopes **Default**, y emitió tokens Bearer para Web/Mobile/ATM (**3/3**). La Semana 8 mantuvo sus **13 contenedores independientes**. La EC2 tenía aproximadamente **2,6 GiB de RAM disponible** y **0 swap**; por eso **no se levantaron los 16 servicios de S9**. No hay dominio real ni HTTPS público: la prueba se efectuó con túnel SSH.
+**Estado real verificado el 11-10-2026:** en `/home/ubuntu/bancoxyzbatch-s9` se comprobó el proyecto independiente `bancoxyz-s9`, con PostgreSQL 17, Keycloak 26.8.0 y emisión JWT **3/3**. Después se iniciaron Config Server, Eureka y los servicios Cuentas, Clientes y Pagos para verificar el escalado horizontal **2/2/2**. Las seis réplicas quedaron `healthy` y Eureka reconoció dos instancias `UP` por servicio. Se midieron 7,6 GiB de RAM total, 3,3 GiB usada y 4,3 GiB disponible, sin swap. No se configuró HTTPS público ni se acreditó alta disponibilidad multi-AZ.
+
+**Evidencia AWS EC2 (11-10-2026):** en el proyecto independiente `bancoxyz-s9` se verificó el escalado horizontal de `cuentas-service`, `clientes-service` y `pagos-service` desde **1/1/1** hasta **2/2/2 réplicas**. Las **seis instancias** quedaron `healthy`; Eureka registró **dos instancias `UP` con identificadores distintos por servicio**. Config Server y Discovery Server también quedaron `healthy`. El host reportó **7,6 GiB de RAM total, 3,3 GiB utilizada y 4,3 GiB disponible**, sin swap. Se trata de seis réplicas sobre **una EC2**, no de alta disponibilidad multi-AZ; esta prueba no acredita por sí sola reparto efectivo de tráfico entre réplicas.
+
+```bash
+# En Ubuntu EC2, desde el checkout independiente de Semana 9:
+cd "$HOME/bancoxyzbatch-s9"
+bash "Semana 9/scripts/probar_escalado_horizontal_ec2_s9.sh"
+# Para volver a la cantidad de réplicas previa sin borrar volúmenes:
+bash "Semana 9/scripts/probar_escalado_horizontal_ec2_s9.sh" --restaurar
+```
 
 ```bash
 # En la EC2, siempre dentro del directorio exclusivo de S9 (Bash):
 cd "$HOME/bancoxyzbatch-s9"
-docker compose -f docker-compose.s9.ec2.yml ps postgres keycloak
+docker compose -f docker-compose.s9.ec2.yml ps postgres keycloak config-server discovery-server cuentas-service clientes-service pagos-service
 curl -fsS http://127.0.0.1:18084/realms/bancoxyz/.well-known/openid-configuration
 ```
 
@@ -279,7 +289,7 @@ docker compose --profile ec2 config --quiet
 and bash "Semana 9/scripts/desplegar_ec2_final.sh"
 ```
 
-El script de despliegue existente comprueba variables, DNS, Git, recursos, estado PostgreSQL/Kafka, compilación de imágenes, healthchecks y finalmente HTTPS público de Keycloak. Realiza `git pull --ff-only` antes de construir: **no usarlo con archivos locales sin subir**, porque el checkout debe reflejar el commit a presentar. **No se ejecutó este script** para el acceso privado probado; allí se utilizó `docker-compose.s9.ec2.yml` y únicamente los servicios `postgres` y `keycloak`.
+El script de despliegue existente comprueba variables, DNS, Git, recursos, estado PostgreSQL/Kafka, compilación de imágenes, healthchecks y finalmente HTTPS público de Keycloak. Realiza `git pull --ff-only` antes de construir: **no usarlo con archivos locales sin subir**, porque el checkout debe reflejar el commit a presentar. **No se ejecutó este script** para la prueba privada; se utilizó `docker-compose.s9.ec2.yml` para PostgreSQL, Keycloak, Config Server, Eureka y el escalado de los servicios de dominio.
 
 ### 8.5 Certificado realmente válido
 
@@ -295,6 +305,17 @@ Comprobar que la respuesta OIDC tenga el `issuer` esperado y que el navegador co
 ---
 
 ## 9. Escalabilidad horizontal de los microservicios
+
+**Evidencia AWS EC2 (11-10-2026):** en el proyecto independiente `bancoxyz-s9` se verificó el escalado horizontal de `cuentas-service`, `clientes-service` y `pagos-service` desde **1/1/1** hasta **2/2/2 réplicas**. Las **seis instancias** quedaron `healthy`; Eureka registró **dos instancias `UP` con identificadores distintos por servicio**. Config Server y Discovery Server también quedaron `healthy`. El host reportó **7,6 GiB de RAM total, 3,3 GiB utilizada y 4,3 GiB disponible**, sin swap. Se trata de seis réplicas sobre **una EC2**, no de alta disponibilidad multi-AZ; esta prueba no acredita por sí sola reparto efectivo de tráfico entre réplicas.
+
+```bash
+# En Ubuntu EC2, desde el checkout independiente de Semana 9:
+cd "$HOME/bancoxyzbatch-s9"
+bash "Semana 9/scripts/probar_escalado_horizontal_ec2_s9.sh"
+# Para volver a la cantidad de réplicas previa sin borrar volúmenes:
+bash "Semana 9/scripts/probar_escalado_horizontal_ec2_s9.sh" --restaurar
+```
+
 
 Compose permite réplicas para los tres servicios solicitados por la pauta:
 
@@ -363,7 +384,7 @@ Para inspeccionar el entorno privado comprobado de Semana 9, **en Ubuntu/Bash**:
 
 ```bash
 cd "$HOME/bancoxyzbatch-s9"
-docker compose -f docker-compose.s9.ec2.yml ps postgres keycloak
+docker compose -f docker-compose.s9.ec2.yml ps postgres keycloak config-server discovery-server cuentas-service clientes-service pagos-service
 docker compose -f docker-compose.s9.ec2.yml logs --tail=120 keycloak
 ```
 
@@ -373,17 +394,16 @@ No hacer `docker compose down -v`, no ejecutar SQL del snapshot histórico, ni s
 
 ---
 
-## 12. Evidencias obligatorias y cierre EFT
+## 12. Evidencias técnicas verificadas
 
-| Entregable | Contenido mínimo |
+| Área | Resultado |
 |---|---|
-| `readme.md` | Enlace al código completo **publicado** en GitHub |
-| Informe técnico PDF | Arquitectura, componentes, diagramas y resultados; plantilla oficial del AVA |
-| `instrucciones.md` | Instalación, inicio y pruebas funcionales por componente |
-| `despliegue.md` | Esta guía Cloud, variables, DNS, TLS, escalado y seguridad |
-| Video MP4 | 5–7 minutos, webcam, resumen, comparación legacy, desafíos, mejoras |
-
-Guardar capturas de la **misma versión/commit** que se publica. Ya se obtuvieron evidencias reales de la consola Keycloak S9 (`bancoxyz`, tres clientes, tres scopes **Default**) y de emisión JWT **3/3**. Faltan el PDF oficial y el MP4, además de las pruebas EC2 de los demás servicios de S9. No copiar resultados locales como si fueran ejecuciones Cloud, ni declarar TLS público por el simple uso del túnel SSH.
+| Spring Batch | Tres Jobs `COMPLETED`, cuatro tablas derivadas sin cambios en reejecución |
+| Keycloak S9 en EC2 | Realm `bancoxyz`, scopes de canal y emisión JWT 3/3 |
+| Config Server y Eureka | Ambos `healthy` en la EC2 |
+| Cuentas, Clientes y Pagos | Escalado horizontal 2/2/2, seis contenedores `healthy` |
+| Eureka | Dos instancias `UP` por servicio, IDs distintos |
+| Límite de la prueba | Una EC2; sin validación multi-AZ ni distribución de tráfico |
 
 ---
 

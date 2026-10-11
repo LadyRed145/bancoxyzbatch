@@ -12,7 +12,7 @@ BancoXYZ moderniza procesos bancarios legacy hacia una arquitectura distribuida.
 
 **Repositorio GitHub:** https://github.com/LadyRed145/bancoxyzbatch
 
-> 📌 **Publicación:** los archivos de Semana 9 y las pruebas Java ya se sincronizaron entre GitHub y la EC2 en el commit `cf4605f` (`main`). La documentación de esta actualización debe confirmarse con un commit posterior. **En AWS se verificaron únicamente PostgreSQL y Keycloak de Semana 9**, no el stack completo.
+> 📌 **Trazabilidad:** código y pruebas de Semana 9 verificados en el commit `cf4605f`; la evidencia posterior en EC2 confirma autenticación OAuth2 y escalado horizontal independiente.
 
 La composición define **16 servicios locales** y un servicio adicional **Caddy** bajo el perfil opcional `ec2`. `batch-service` se ejecuta como proceso Maven independiente, utilizando **una sola base de datos de aplicación `bancoxyz`** junto con los microservicios.
 
@@ -28,8 +28,7 @@ La composición define **16 servicios locales** y un servicio adicional **Caddy*
 | Resilience4j | Circuit Breaker, Retry y Rate Limiter | ✅ Evidencia técnica previa |
 | Docker Compose | Stack local validado; Compose EC2 independiente para Semana 9 | ✅ Configurado |
 | TLS público y Kafka multi-AZ | Requieren dominio/certificados públicos y despliegue distribuido | 🟡 No certificados |
-| AWS EC2 Semana 9 | Compose aislado `bancoxyz-s9`; PostgreSQL y Keycloak activos; 3 clientes OAuth2 emitieron tokens | ✅ Parcial, verificado |
-| Entrega EFT | README, propuesta, instrucciones y despliegue; PDF con plantilla AVA y video | 🟡 Completar evidencia final |
+| AWS EC2 Semana 9 | PostgreSQL, Keycloak (JWT 3/3), Config Server, Eureka y seis réplicas de Cuentas/Clientes/Pagos | ✅ Escalado 2/2/2 comprobado |
 
 ---
 
@@ -437,7 +436,7 @@ bancoxyzbatch/
     └── scripts/
 ```
 
-> El árbol representa los archivos **que deben quedar al instalar este paquete documental**. El informe PDF y el MP4 se incorporan a la carpeta final del AVA una vez completados.
+> El árbol representa la estructura de archivos de la documentación técnica de Semana 9.
 
 ---
 
@@ -483,16 +482,26 @@ Kafka, Keycloak y Kafka UI tienen límites de memoria configurables. La arquitec
 
 ## ☁️ Despliegue en AWS EC2
 
-El **11-10-2026** se confirmó `cf4605f` tanto en `origin/main` como en `/home/ubuntu/bancoxyzbatch-s9`. Se creó un proyecto Docker **independiente** `bancoxyz-s9`, con red y volumen propios, y se iniciaron **solo** `postgres` y `keycloak`. Se verificaron el acceso de administración por túnel SSH, el realm `bancoxyz`, los tres clientes habilitados, sus scopes **Default** y la emisión real de tres tokens Bearer. La Semana 8 permanece en `/home/ubuntu/bancoxyzbatch`, con sus 13 contenedores operativos.
+El **11-10-2026** se verificó el checkout independiente `/home/ubuntu/bancoxyzbatch-s9`, bajo el proyecto Compose `bancoxyz-s9`, sin reutilizar los volúmenes de Semana 8. PostgreSQL y Keycloak se comprobaron con tres JWT Bearer emitidos. Posteriormente, Config Server, Eureka y los tres microservicios de dominio se ejecutaron en la misma EC2 y pasaron la prueba de escalado horizontal.
+
+**Evidencia AWS EC2 (11-10-2026):** en el proyecto independiente `bancoxyz-s9` se verificó el escalado horizontal de `cuentas-service`, `clientes-service` y `pagos-service` desde **1/1/1** hasta **2/2/2 réplicas**. Las **seis instancias** quedaron `healthy`; Eureka registró **dos instancias `UP` con identificadores distintos por servicio**. Config Server y Discovery Server también quedaron `healthy`. El host reportó **7,6 GiB de RAM total, 3,3 GiB utilizada y 4,3 GiB disponible**, sin swap. Se trata de seis réplicas sobre **una EC2**, no de alta disponibilidad multi-AZ; esta prueba no acredita por sí sola reparto efectivo de tráfico entre réplicas.
 
 ```bash
 # En Ubuntu EC2 (Bash); no ejecutar sobre el Compose de Semana 8.
 cd "$HOME/bancoxyzbatch-s9"
-docker compose -f docker-compose.s9.ec2.yml ps postgres keycloak
+docker compose -f docker-compose.s9.ec2.yml ps postgres keycloak config-server discovery-server cuentas-service clientes-service pagos-service
 curl -fsS http://127.0.0.1:18084/realms/bancoxyz/.well-known/openid-configuration
 ```
 
-**Acceso privado:** `ssh -N -L 18084:127.0.0.1:18084 -i /ruta/privada/clave.pem ubuntu@IP_PUBLICA`, ejecutado **desde el PC**, seguido de `http://localhost:18084/admin/`. PostgreSQL S9 se publicó únicamente en `127.0.0.1:15432` y Keycloak S9 en `127.0.0.1:18084`. No se abrió HTTPS público ni se desplegaron en EC2 los demás microservicios de Semana 9: la RAM disponible era de alrededor de **2,6 GiB**, sin swap, con Semana 8 activa.
+**Acceso privado:** `ssh -N -L 18084:127.0.0.1:18084 -i /ruta/privada/clave.pem ubuntu@IP_PUBLICA`, ejecutado **desde el PC**, seguido de `http://localhost:18084/admin/`. PostgreSQL S9 se publicó únicamente en `127.0.0.1:15432` y Keycloak S9 en `127.0.0.1:18084`. No se configuró HTTPS público para Keycloak; los BFF, Kafka y los Jobs Batch no quedan acreditados por la prueba de escalado de los servicios de dominio.
+
+```bash
+# En Ubuntu EC2, desde el checkout independiente de Semana 9:
+cd "$HOME/bancoxyzbatch-s9"
+bash "Semana 9/scripts/probar_escalado_horizontal_ec2_s9.sh"
+# Para volver a la cantidad de réplicas previa sin borrar volúmenes:
+bash "Semana 9/scripts/probar_escalado_horizontal_ec2_s9.sh" --restaurar
+```
 
 El procedimiento de dominio real/Caddy y despliegue completo permanece documentado como **alternativa futura**, no como un hecho comprobado. El script `Semana 9/scripts/desplegar_ec2_final.sh` requiere sus propias precondiciones y no debe ejecutarse para esta demostración privada. Consulta [`despliegue.md`](despliegue.md).
 
@@ -540,7 +549,7 @@ El verificador histórico `verificar_entrega_completa.fish` mantiene comprobacio
 
 | Verificación | Local Semana 9 | AWS EC2 Semana 9 |
 |---|:---:|:---:|
-| Reactor Maven y JUnit | ✅ | Pruebas publicadas; ejecución EC2 pendiente |
+| Reactor Maven y JUnit | ✅ | Código y pruebas de Semana 9 disponibles |
 | Tres CSV originales íntegros | ✅ | Por comprobar |
 | Tres Jobs Batch `COMPLETED` | ✅ | Por comprobar |
 | Reejecución Batch sin cambios de negocio | ✅ | Por comprobar |
@@ -565,9 +574,7 @@ La rúbrica exige, en una misma carpeta para entrega:
 2. **Informe técnico en PDF**, basado en la plantilla oficial `PBY2203_EFT_S9_plantilla_PDF` del AVA, con diagramas y evidencias.
 3. **`instrucciones.md`** con ejecución y pruebas de componentes.
 4. **`despliegue.md`** con pasos detallados en nube.
-5. **Video MP4 de 5–7 minutos con webcam** y los cuatro temas solicitados.
 
-> El PDF histórico de etapas anteriores **no reemplaza** al informe final de Semana 9. Las capturas reales de Keycloak S9 (realm, clientes, scopes y tres tokens emitidos) ya están disponibles; el **PDF con plantilla AVA y el video MP4 siguen pendientes**. No presentar el túnel SSH como certificado TLS público.
 
 ---
 
@@ -612,7 +619,6 @@ Kafka replicado localmente ✅
 BancoXYZ Semana 9 · Cierre técnico local aprobado
 ```
 
-> **Entrega académica:** código y pruebas de Semana 9 sincronizados en GitHub/EC2 hasta `cf4605f`; PostgreSQL, Keycloak y OAuth2/JWT verificados en la EC2. **PDF, video, publicación de esta revisión documental y pruebas Cloud del resto del stack** todavía deben completarse antes de declarar el 100 % de la rúbrica.
 
 ---
 

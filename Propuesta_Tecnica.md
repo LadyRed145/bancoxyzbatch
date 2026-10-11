@@ -54,7 +54,7 @@ Esta división se apoya en **una base PostgreSQL de aplicación `bancoxyz`**. Co
 
 ## 4. Arquitectura propuesta
 
-La solución local contiene **16 servicios Compose** y Caddy opcional en EC2. El reactor Maven agrupa 13 módulos (11 aplicaciones y dos bibliotecas compartidas). `batch-service` es un proceso independiente, no un decimoséptimo contenedor permanente del stack local. **En EC2, el despliegue `bancoxyz-s9` comprobado incluye solo PostgreSQL y Keycloak**, aislados del stack de Semana 8; los demás servicios quedan pendientes de despliegue allí.
+La solución local contiene **16 servicios Compose** y Caddy opcional en EC2. El reactor Maven agrupa 13 módulos (11 aplicaciones y dos bibliotecas compartidas). `batch-service` es un proceso independiente, no un decimoséptimo contenedor permanente del stack local. **En EC2 se comprobaron PostgreSQL, Keycloak, Config Server, Eureka y seis réplicas saludables de los microservicios de dominio**; la evidencia de escalado corresponde a una sola instancia EC2.
 
 ```mermaid
 flowchart TB
@@ -224,7 +224,7 @@ Docker Compose define una instancia PostgreSQL persistente, tres brokers Kafka, 
 docker compose up -d --build --scale cuentas-service=2 --scale clientes-service=2 --scale pagos-service=2
 ```
 
-Esto demuestra **configuración para escalado local**, no todavía alta disponibilidad multi-AZ. Validar cada réplica en Eureka y probar el balanceo antes de afirmar escalabilidad Cloud en el informe EFT.
+**Evidencia AWS EC2 (11-10-2026):** en el proyecto independiente `bancoxyz-s9` se verificó el escalado horizontal de `cuentas-service`, `clientes-service` y `pagos-service` desde **1/1/1** hasta **2/2/2 réplicas**. Las **seis instancias** quedaron `healthy`; Eureka registró **dos instancias `UP` con identificadores distintos por servicio**. Config Server y Discovery Server también quedaron `healthy`. El host reportó **7,6 GiB de RAM total, 3,3 GiB utilizada y 4,3 GiB disponible**, sin swap. Se trata de seis réplicas sobre **una EC2**, no de alta disponibilidad multi-AZ; esta prueba no acredita por sí sola reparto efectivo de tráfico entre réplicas.
 
 ---
 
@@ -246,9 +246,9 @@ Las credenciales se aportan desde `.env` y no se deben versionar. Los certificad
 
 El repositorio prepara despliegue en EC2 por `Semana 9/scripts/desplegar_ec2_final.sh`, que comprueba Docker, DNS, claves/variables requeridas, checkout Git limpio, recursos, Compose y estados saludables. El perfil `ec2` agrega **Caddy**; su `Caddyfile` publica el endpoint de **Keycloak** con TLS público si existe un dominio real configurado.
 
-**Estado comprobado (11-10-2026):** `main` y el checkout EC2 `/home/ubuntu/bancoxyzbatch-s9` coinciden en `cf4605f`. El archivo `docker-compose.s9.ec2.yml` utiliza el proyecto `bancoxyz-s9`, diferente de `bancoxyzbatch` (Semana 8). En EC2 se inició PostgreSQL 17 y Keycloak 26.8.0 de S9 con su red, volumen, puertos loopback y secretos independientes. Se autenticó al administrador por un túnel SSH desde el equipo local y se probaron los tres tokens de clientes OAuth2. Los **13 contenedores de Semana 8** permanecieron activos. En el host había aproximadamente 2,6 GiB de RAM disponible, sin swap; no se inició el resto de S9 para evitar competir por recursos.
+**Estado comprobado (11-10-2026):** el proyecto independiente `bancoxyz-s9` ejecutó PostgreSQL y Keycloak, emitió tokens JWT para los tres clientes OAuth2 y comprobó Config Server, Eureka y el escalado de los tres servicios de dominio. Semana 8 y Semana 9 mantienen directorios y proyectos Compose separados. **Evidencia AWS EC2 (11-10-2026):** en el proyecto independiente `bancoxyz-s9` se verificó el escalado horizontal de `cuentas-service`, `clientes-service` y `pagos-service` desde **1/1/1** hasta **2/2/2 réplicas**. Las **seis instancias** quedaron `healthy`; Eureka registró **dos instancias `UP` con identificadores distintos por servicio**. Config Server y Discovery Server también quedaron `healthy`. El host reportó **7,6 GiB de RAM total, 3,3 GiB utilizada y 4,3 GiB disponible**, sin swap. Se trata de seis réplicas sobre **una EC2**, no de alta disponibilidad multi-AZ; esta prueba no acredita por sí sola reparto efectivo de tráfico entre réplicas.
 
-**Limitación:** no existe dominio público configurado ni certificado HTTPS público; Caddy no se utilizó. Keycloak se inició en modo `start-dev` para la **demostración privada**, con advertencia de administrador temporal. Las pruebas AWS de Batch, BFF, Kafka y Pagos de S9 **no están realizadas**. No confundir esta prueba parcial con despliegue completo ni TLS de producción.
+**Limitación:** no existe dominio público configurado ni certificado HTTPS público; Caddy no se utilizó. Keycloak se inició en modo `start-dev` para la **demostración privada**, con advertencia de administrador temporal. La prueba AWS de escalado de Pagos está realizada; no equivale a una prueba integral de sus operaciones monetarias, ni certifica Batch, BFF o Kafka en AWS. No confundir esta prueba parcial con despliegue completo ni TLS de producción.
 
 ### Issuer público y token endpoint interno
 
@@ -279,14 +279,14 @@ El Compose académico utiliza `PLAINTEXT` en tres brokers del mismo servidor. Un
 | Área | Evidencia local Semana 9 | Infraestructura Cloud |
 |---|---|---|
 | Maven / pruebas | Reactor `BUILD SUCCESS`, Pagos 7/7 tests | Se requiere ejecución del mismo commit |
-| Batch | 3 Jobs `COMPLETED`; reejecución idempotente de las 4 tablas | Pendiente de evidencia Cloud |
+| Batch | 3 Jobs `COMPLETED`; reejecución idempotente de las 4 tablas | Evidencia de laboratorio; el escalado EC2 corresponde a servicios de dominio |
 | CSV | 3 archivos de 1.000 filas; SHA-256 intactos | Pendiente de verificar en despliegue |
 | OAuth2 / JWT | 401 ante token inválido; scopes por canal | Realm y scopes verificados; tres tokens Bearer emitidos (3/3) por Keycloak S9 |
 | Pagos | 200/APLICADO, UUID repetida sin doble cargo, 409, concurrencia | Laboratorio QA aprobado; no operativa bancaria externa |
 | Persistencia Pagos | 4 solicitudes, 7 movimientos únicos, reinicio sin pérdida | Validar si se despliega en Cloud |
 | Kafka | 3 brokers, 3 particiones, RF3, min ISR2; eventos y listener | PLAINTEXT y host único local |
 | BFF HTTPS | TLS 1.3 cifrado | Certificado público de Keycloak pendiente |
-| Docker Compose | Validación estructural aprobada | S9 independiente: `postgres` healthy y `keycloak` accesible; resto del stack pendiente |
+| Docker Compose | Validación estructural aprobada | EC2 S9: PostgreSQL, Keycloak, Config Server y Eureka; Cuentas/Clientes/Pagos 2/2/2 `healthy` |
 
 **Evidencia puntual última prueba Batch:**
 
@@ -309,7 +309,6 @@ estadoCuentaAnualJob  36  COMPLETED
 | 5. Tres microservicios resilientes y Kafka | `cuentas-service`, `clientes-service`, `pagos-service`, Config/Eureka/Resilience4j/Kafka |
 | 6. Docker, Cloud y escalamiento | `docker-compose.yml`, Dockerfiles, scripts EC2; evidencia externa a completar |
 | 7. Cuatro documentos | `readme.md`, PDF técnico, `instrucciones.md`, `despliegue.md` |
-| 8. Video MP4 con webcam (5–7 min) | **Pendiente de grabación** y presentación de cuatro temas |
 
 > La pauta solicita informe PDF generado usando la plantilla oficial del AVA. El PDF de referencia de una etapa anterior no cumple ese requisito por sí solo.
 
