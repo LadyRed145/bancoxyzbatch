@@ -26,7 +26,7 @@ Esta guía sigue un flujo único y reproducible: **preparar → configurar → v
 | Sistema | Linux/Fish (o shell equivalente) | Ubuntu Server Linux |
 | PostgreSQL | Contenedor `postgres:17` | Mismo contenedor en laboratorio Cloud |
 | Kafka | Tres brokers KRaft locales | Tres brokers en la EC2, o clúster externo configurado |
-| DNS público | No necesario | Dominio real de Keycloak apuntando a la IP pública |
+| DNS público | No necesario | **Opcional para prueba privada SSH**; requerido para HTTPS público confiable |
 | Seguridad de red | Puertos de laboratorio restringidos | Security Group, TLS y puertos 80/443 |
 
 Para la arquitectura completa se recomienda disponer de memoria suficiente: los tres brokers, Keycloak, Kafka UI y las aplicaciones JVM arrancan simultáneamente.
@@ -52,7 +52,7 @@ git clone https://github.com/LadyRed145/bancoxyzbatch.git
 cd bancoxyzbatch
 ```
 
-**Antes de desplegar:** comprobar que la rama publicada incluya `Semana 9/`, `docker-compose.yml`, `pom.xml` y los documentos actualizados. El enlace público fue accesible al revisarlo, pero no se pudo confirmar que la rama publicada contuviera la Semana 9 final; debes subir esos cambios para reproducirla desde GitHub.
+**Publicación comprobada (11-10-2026):** la rama `main` publicada y el checkout de EC2 S9 se verificaron en el commit `cf4605f`, con los tests, el código de Semana 9 y `docker-compose.s9.ec2.yml`. Tras actualizar estos cuatro `.md`, publicar un nuevo commit y sincronizarlo en la carpeta S9 de EC2 con `git fetch` + `git merge --ff-only`, sin alterar Semana 8.
 
 ```fish
 git status --short
@@ -60,7 +60,7 @@ git branch --show-current
 ls "Semana 9/batch-service/src/main/resources/data/"
 ```
 
-Si una EC2 ya tiene el repositorio clonado, no sobrescribir cambios locales con `git reset --hard` o `git clean -fd`. El desplegador oficial exige checkout limpio y usa `git pull --ff-only`.
+Si una EC2 ya tiene el repositorio clonado, no sobrescribir cambios locales con `git reset --hard` o `git clean -fd`. Para Semana 9 se usa exclusivamente `/home/ubuntu/bancoxyzbatch-s9`; la Semana 8 sigue en `/home/ubuntu/bancoxyzbatch`. El desplegador oficial de TLS público exige checkout limpio y usa `git pull --ff-only`, pero **no forma parte de la prueba privada ya realizada**.
 
 ---
 
@@ -214,9 +214,28 @@ bash "Semana 9/scripts/cierre_final_qa_pagos_csv_s9.sh"
 
 ## 8. Despliegue en AWS EC2 con TLS público de Keycloak
 
+**Estado real verificado el 11-10-2026:** la EC2 `184.193.6.63` recibió el checkout S9 en `/home/ubuntu/bancoxyzbatch-s9` (commit `cf4605f`). El proyecto Compose `bancoxyz-s9` inició **solo** PostgreSQL 17 y Keycloak 26.8.0; sus puertos son `127.0.0.1:15432` y `127.0.0.1:18084`. PostgreSQL figuró `healthy`; Keycloak abrió la consola, importó el realm `bancoxyz`, mostró los tres clientes habilitados y scopes **Default**, y emitió tokens Bearer para Web/Mobile/ATM (**3/3**). La Semana 8 mantuvo sus **13 contenedores independientes**. La EC2 tenía aproximadamente **2,6 GiB de RAM disponible** y **0 swap**; por eso **no se levantaron los 16 servicios de S9**. No hay dominio real ni HTTPS público: la prueba se efectuó con túnel SSH.
+
+```bash
+# En la EC2, siempre dentro del directorio exclusivo de S9 (Bash):
+cd "$HOME/bancoxyzbatch-s9"
+docker compose -f docker-compose.s9.ec2.yml ps postgres keycloak
+curl -fsS http://127.0.0.1:18084/realms/bancoxyz/.well-known/openid-configuration
+```
+
+```fish
+# En el equipo local, NO dentro de Ubuntu (Fish):
+ssh -N -L 18084:127.0.0.1:18084 -i /ruta/privada/clave.pem ubuntu@184.193.6.63
+# Consola de administración: http://localhost:18084/admin/
+```
+
+**Seguridad del laboratorio:** los cinco secretos nuevos de S9 se guardaron en el `.env` privado con modo `600`, sin exponer su contenido. Se usó `KEYCLOAK_START_COMMAND=start-dev` para esta sesión privada. El banner indica administrador temporal; antes de un despliegue permanente, crear un administrador definitivo, revisar los secretos y habilitar TLS seguro. La emisión de JWT no certifica todavía que los BFF de S9 validen los tokens en EC2.
+
+Los apartados 8.1 a 8.5 describen la **alternativa futura con DNS real y HTTPS**, no el despliegue que ya se comprobó.
+
 ### 8.1 Infraestructura y red
 
-Crear una instancia EC2 Linux con CPU, RAM y disco suficientes, Elastic IP o IP pública estable, Docker Engine, Compose y Git. Restringir el Security Group: abrir `22/TCP` **solo desde la IP administradora** y `80/TCP` + `443/TCP` a los clientes externos autorizados. Los puertos internos de PostgreSQL, Kafka, Eureka, Config Server y Kafka UI **no** deben publicarse en Internet.
+Para una publicación HTTPS futura, crear o adaptar una instancia EC2 Linux con CPU, RAM y disco suficientes, IP pública estable, Docker Engine, Compose y Git. Restringir el Security Group: abrir `22/TCP` **solo desde la IP administradora** y `80/TCP` + `443/TCP` a los clientes externos autorizados. En la prueba privada actual **no fue necesario abrir 80/443**; los puertos internos de PostgreSQL, Keycloak, Kafka, Eureka, Config Server y Kafka UI **no** deben publicarse en Internet.
 
 Los BFF tienen puertos HTTPS de laboratorio `8081–8083`; si se exponen, limitar origen en el Security Group. **Caddy en este repositorio publica únicamente Keycloak**, no actúa como proxy público de los tres BFF.
 
@@ -260,7 +279,7 @@ docker compose --profile ec2 config --quiet
 and bash "Semana 9/scripts/desplegar_ec2_final.sh"
 ```
 
-El script de despliegue existente comprueba variables, DNS, Git, recursos, estado PostgreSQL/Kafka, compilación de imágenes, healthchecks y finalmente HTTPS público de Keycloak. Realiza `git pull --ff-only` antes de construir: **no usarlo con archivos locales sin subir**, porque el checkout debe reflejar el commit a presentar.
+El script de despliegue existente comprueba variables, DNS, Git, recursos, estado PostgreSQL/Kafka, compilación de imágenes, healthchecks y finalmente HTTPS público de Keycloak. Realiza `git pull --ff-only` antes de construir: **no usarlo con archivos locales sin subir**, porque el checkout debe reflejar el commit a presentar. **No se ejecutó este script** para el acceso privado probado; allí se utilizó `docker-compose.s9.ec2.yml` y únicamente los servicios `postgres` y `keycloak`.
 
 ### 8.5 Certificado realmente válido
 
@@ -340,12 +359,15 @@ docker compose stop
 docker compose start
 ```
 
-Si se aplica el perfil EC2:
+Para inspeccionar el entorno privado comprobado de Semana 9, **en Ubuntu/Bash**:
 
-```fish
-docker compose --profile ec2 ps
-docker compose --profile ec2 logs --tail=120 caddy keycloak pagos-service
+```bash
+cd "$HOME/bancoxyzbatch-s9"
+docker compose -f docker-compose.s9.ec2.yml ps postgres keycloak
+docker compose -f docker-compose.s9.ec2.yml logs --tail=120 keycloak
 ```
+
+Si en el futuro se configura el perfil EC2 completo con DNS/Caddy, emplear sus comandos de operación separados, comprobando antes los puertos, recursos y la independencia con Semana 8.
 
 No hacer `docker compose down -v`, no ejecutar SQL del snapshot histórico, ni sobrescribir CSV; las pruebas de laboratorio y la base actual se preservan.
 
@@ -361,13 +383,13 @@ No hacer `docker compose down -v`, no ejecutar SQL del snapshot histórico, ni s
 | `despliegue.md` | Esta guía Cloud, variables, DNS, TLS, escalado y seguridad |
 | Video MP4 | 5–7 minutos, webcam, resumen, comparación legacy, desafíos, mejoras |
 
-Guardar capturas de la **misma versión/commit** que se publica. Confirmar las pruebas Cloud **después** del despliegue y no copiar resultados antiguos como si procedieran de Semana 9.
+Guardar capturas de la **misma versión/commit** que se publica. Ya se obtuvieron evidencias reales de la consola Keycloak S9 (`bancoxyz`, tres clientes, tres scopes **Default**) y de emisión JWT **3/3**. Faltan el PDF oficial y el MP4, además de las pruebas EC2 de los demás servicios de S9. No copiar resultados locales como si fueran ejecuciones Cloud, ni declarar TLS público por el simple uso del túnel SSH.
 
 ---
 
 ## ✅ Conclusión
 
-El despliegue de BancoXYZ comienza con código coherente, variables protegidas y servicios saludables; continúa con verificación explícita de las tres fuentes CSV, JWT, microservicios y mensajería; y termina con TLS real, escalabilidad y evidencias documentadas. La verificación local del 11-10-2026 fue exitosa en Batch/Pagos, pero el despliegue Cloud de la versión final **requiere su propia demostración**.
+El despliegue de BancoXYZ comienza con código coherente, variables protegidas y servicios saludables; continúa con verificación explícita de las tres fuentes CSV, JWT, microservicios y mensajería; y termina con evidencias documentadas. La verificación local del 11-10-2026 fue exitosa en Batch/Pagos; en EC2 también se validaron **PostgreSQL y Keycloak de S9 de forma aislada**, con realm, scopes y tres tokens Bearer emitidos. **TLS público, resto del stack Cloud y escalabilidad efectiva siguen pendientes** y no se presentan como certificados.
 
 ---
 

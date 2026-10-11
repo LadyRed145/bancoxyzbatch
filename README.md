@@ -12,7 +12,7 @@ BancoXYZ moderniza procesos bancarios legacy hacia una arquitectura distribuida.
 
 **Repositorio GitHub:** https://github.com/LadyRed145/bancoxyzbatch
 
-> 📌 **Publicación:** el repositorio público existe, pero debe sincronizarse con los archivos de Semana 9 antes de entregar. No confundir la validación local con la publicación de la versión final ni con su ejecución actual en AWS.
+> 📌 **Publicación:** los archivos de Semana 9 y las pruebas Java ya se sincronizaron entre GitHub y la EC2 en el commit `cf4605f` (`main`). La documentación de esta actualización debe confirmarse con un commit posterior. **En AWS se verificaron únicamente PostgreSQL y Keycloak de Semana 9**, no el stack completo.
 
 La composición define **16 servicios locales** y un servicio adicional **Caddy** bajo el perfil opcional `ec2`. `batch-service` se ejecuta como proceso Maven independiente, utilizando **una sola base de datos de aplicación `bancoxyz`** junto con los microservicios.
 
@@ -26,9 +26,9 @@ La composición define **16 servicios locales** y un servicio adicional **Caddy*
 | Pagos | Pago, transferencia y depósito; JWT, idempotencia, concurrencia y persistencia tras reinicio | ✅ Pruebas de laboratorio |
 | Kafka | Tres brokers KRaft, tres particiones, RF=3, min ISR=2 y consumidor independiente | ✅ Laboratorio local |
 | Resilience4j | Circuit Breaker, Retry y Rate Limiter | ✅ Evidencia técnica previa |
-| Docker Compose | Una instancia PostgreSQL compartida; configuración validada | ✅ Configurado |
+| Docker Compose | Stack local validado; Compose EC2 independiente para Semana 9 | ✅ Configurado |
 | TLS público y Kafka multi-AZ | Requieren dominio/certificados públicos y despliegue distribuido | 🟡 No certificados |
-| AWS EC2 Semana 9 | Automatización preparada; evidencia actual de despliegue pendiente | 🟡 Por verificar |
+| AWS EC2 Semana 9 | Compose aislado `bancoxyz-s9`; PostgreSQL y Keycloak activos; 3 clientes OAuth2 emitieron tokens | ✅ Parcial, verificado |
 | Entrega EFT | README, propuesta, instrucciones y despliegue; PDF con plantilla AVA y video | 🟡 Completar evidencia final |
 
 ---
@@ -193,7 +193,7 @@ Scope de otro canal              → HTTP 403
 Misma Idempotency-Key y otro payload en Pagos → HTTP 409
 ```
 
-Los BFF realizaron handshake **TLS 1.3** con cifrado `TLS_AES_256_GCM_SHA384` en laboratorio. Los keystores PKCS12 académicos **no prueban confianza pública**. Caddy configura TLS de Keycloak en el perfil `ec2`, pero **su certificado público no se ha certificado en la evidencia actual de Semana 9**.
+Los BFF realizaron handshake **TLS 1.3** con cifrado `TLS_AES_256_GCM_SHA384` en laboratorio. Los keystores PKCS12 académicos **no prueban confianza pública**. En EC2 se accedió al Keycloak independiente mediante túnel SSH `localhost:18084` (sin dominio ni Caddy público); los tres clientes BFF obtuvieron `access_token` Bearer con `client_credentials`, **pero sus BFF de Semana 9 aún no se ejecutaron allí**. El certificado HTTPS público no está configurado.
 
 ---
 
@@ -210,13 +210,13 @@ OAUTH2_TOKEN_URL=http://127.0.0.1:8084/realms/bancoxyz/protocol/openid-connect/t
 
 > Son ejemplos, **no un dominio ya configurado**. El issuer público debe coincidir con el `iss` del JWT. Validar el HTTPS público sin `curl -k` antes de afirmar TLS público válido.
 
-En local pueden utilizarse URLs diferentes, siempre que Keycloak, el issuer del token y los validadores estén alineados.
+En local pueden utilizarse URLs diferentes, siempre que Keycloak, el issuer del token y los validadores estén alineados. **Prueba real EC2 (11-10-2026):** `KEYCLOAK_PUBLIC_URL=http://localhost:18084`, `OAUTH2_ISSUER_URI=http://localhost:18084/realms/bancoxyz` y endpoint de token por túnel SSH. Es una URL de laboratorio accesible desde el equipo administrador, **no un issuer público apto para otros equipos sin la misma configuración**.
 
 ---
 
 ## 🔑 Variables de entorno y secretos
 
-Se utilizan `.env.example` y `.env.ec2.example` como plantillas; `.env` contiene valores locales y está ignorado por Git.
+Se utilizan `.env.example` y `.env.ec2.example` como plantillas; `.env` contiene valores privados y está ignorado por Git. En la EC2 de Semana 9 se generaron cinco secretos independientes (PostgreSQL, administrador y los tres clientes OAuth2); permanecen solo en su `.env` con permisos `600`. No se publican sus valores ni se reutilizan los de Semana 8.
 
 ```text
 POSTGRES_DB / POSTGRES_USER / POSTGRES_PASSWORD
@@ -410,6 +410,7 @@ bancoxyzbatch/
 ├── .env.example
 ├── .env.ec2.example
 ├── docker-compose.yml
+├── docker-compose.s9.ec2.yml       # Compose independiente de Semana 9 en EC2
 ├── pom.xml                       # reactor Maven (13 módulos)
 ├── README.md
 ├── Propuesta_Tecnica.md
@@ -482,15 +483,18 @@ Kafka, Keycloak y Kafka UI tienen límites de memoria configurables. La arquitec
 
 ## ☁️ Despliegue en AWS EC2
 
-La versión actual permite levantar Caddy delante de Keycloak mediante perfil `ec2` y automatiza comprobaciones iniciales:
+El **11-10-2026** se confirmó `cf4605f` tanto en `origin/main` como en `/home/ubuntu/bancoxyzbatch-s9`. Se creó un proyecto Docker **independiente** `bancoxyz-s9`, con red y volumen propios, y se iniciaron **solo** `postgres` y `keycloak`. Se verificaron el acceso de administración por túnel SSH, el realm `bancoxyz`, los tres clientes habilitados, sus scopes **Default** y la emisión real de tres tokens Bearer. La Semana 8 permanece en `/home/ubuntu/bancoxyzbatch`, con sus 13 contenedores operativos.
 
-```fish
-bash "Semana 9/scripts/desplegar_ec2_final.sh"
+```bash
+# En Ubuntu EC2 (Bash); no ejecutar sobre el Compose de Semana 8.
+cd "$HOME/bancoxyzbatch-s9"
+docker compose -f docker-compose.s9.ec2.yml ps postgres keycloak
+curl -fsS http://127.0.0.1:18084/realms/bancoxyz/.well-known/openid-configuration
 ```
 
-**Precondiciones:** instancia Linux con Docker, Compose y Git; `.env` específico de EC2; DNS real apuntando a IP pública; puertos 80/443 habilitados; rama publicada y checkout Git limpio. El script verifica esos requisitos y usa `docker compose --profile ec2`.
+**Acceso privado:** `ssh -N -L 18084:127.0.0.1:18084 -i /ruta/privada/clave.pem ubuntu@IP_PUBLICA`, ejecutado **desde el PC**, seguido de `http://localhost:18084/admin/`. PostgreSQL S9 se publicó únicamente en `127.0.0.1:15432` y Keycloak S9 en `127.0.0.1:18084`. No se abrió HTTPS público ni se desplegaron en EC2 los demás microservicios de Semana 9: la RAM disponible era de alrededor de **2,6 GiB**, sin swap, con Semana 8 activa.
 
-El despliegue antiguo sirve de referencia operativa, pero no se declara que **la versión final de Semana 9** esté validada en AWS sin la nueva ejecución y sus capturas. Consulta [`despliegue.md`](despliegue.md).
+El procedimiento de dominio real/Caddy y despliegue completo permanece documentado como **alternativa futura**, no como un hecho comprobado. El script `Semana 9/scripts/desplegar_ec2_final.sh` requiere sus propias precondiciones y no debe ejecutarse para esta demostración privada. Consulta [`despliegue.md`](despliegue.md).
 
 ---
 
@@ -536,7 +540,7 @@ El verificador histórico `verificar_entrega_completa.fish` mantiene comprobacio
 
 | Verificación | Local Semana 9 | AWS EC2 Semana 9 |
 |---|:---:|:---:|
-| Reactor Maven y JUnit | ✅ | Por comprobar |
+| Reactor Maven y JUnit | ✅ | Pruebas publicadas; ejecución EC2 pendiente |
 | Tres CSV originales íntegros | ✅ | Por comprobar |
 | Tres Jobs Batch `COMPLETED` | ✅ | Por comprobar |
 | Reejecución Batch sin cambios de negocio | ✅ | Por comprobar |
@@ -545,7 +549,9 @@ El verificador histórico `verificar_entrega_completa.fish` mantiene comprobacio
 | Persistencia de Pagos tras reinicio | ✅ | Por comprobar |
 | TLS 1.3 en los tres BFF | ✅ | Por comprobar |
 | Kafka 3 brokers, RF3 y consumidor | ✅ | Por comprobar |
-| TLS público Keycloak / Caddy | No certificado | Por comprobar |
+| PostgreSQL S9 y Keycloak S9 aislados | ✅ | ✅ Verificados |
+| Realm, scopes y emisión JWT de tres clientes | ✅ | ✅ Verificados en Keycloak S9 |
+| TLS público Keycloak / Caddy | No certificado | No configurado (acceso SSH privado) |
 | Kafka TLS/SASL y multi-AZ | No implementado | No implementado |
 | Escalamiento horizontal de tres microservicios | Configurado; falta evidencia específica | Por comprobar |
 
@@ -561,7 +567,7 @@ La rúbrica exige, en una misma carpeta para entrega:
 4. **`despliegue.md`** con pasos detallados en nube.
 5. **Video MP4 de 5–7 minutos con webcam** y los cuatro temas solicitados.
 
-> El PDF histórico de etapas anteriores **no reemplaza** al informe final de Semana 9. El MP4 y las capturas de EC2/TLS de esta versión requieren preparación y comprobación aparte.
+> El PDF histórico de etapas anteriores **no reemplaza** al informe final de Semana 9. Las capturas reales de Keycloak S9 (realm, clientes, scopes y tres tokens emitidos) ya están disponibles; el **PDF con plantilla AVA y el video MP4 siguen pendientes**. No presentar el túnel SSH como certificado TLS público.
 
 ---
 
@@ -606,7 +612,7 @@ Kafka replicado localmente ✅
 BancoXYZ Semana 9 · Cierre técnico local aprobado
 ```
 
-> **Entrega académica:** la publicación del código final, las pruebas Cloud específicas y los archivos de evidencia pendientes deben completarse antes de declarar el 100 % de la rúbrica.
+> **Entrega académica:** código y pruebas de Semana 9 sincronizados en GitHub/EC2 hasta `cf4605f`; PostgreSQL, Keycloak y OAuth2/JWT verificados en la EC2. **PDF, video, publicación de esta revisión documental y pruebas Cloud del resto del stack** todavía deben completarse antes de declarar el 100 % de la rúbrica.
 
 ---
 

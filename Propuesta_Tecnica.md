@@ -54,7 +54,7 @@ Esta división se apoya en **una base PostgreSQL de aplicación `bancoxyz`**. Co
 
 ## 4. Arquitectura propuesta
 
-La solución local contiene **16 servicios Compose** y Caddy opcional en EC2. El reactor Maven agrupa 13 módulos (11 aplicaciones y dos bibliotecas compartidas). `batch-service` es un proceso independiente, no un decimoséptimo contenedor permanente del stack local.
+La solución local contiene **16 servicios Compose** y Caddy opcional en EC2. El reactor Maven agrupa 13 módulos (11 aplicaciones y dos bibliotecas compartidas). `batch-service` es un proceso independiente, no un decimoséptimo contenedor permanente del stack local. **En EC2, el despliegue `bancoxyz-s9` comprobado incluye solo PostgreSQL y Keycloak**, aislados del stack de Semana 8; los demás servicios quedan pendientes de despliegue allí.
 
 ```mermaid
 flowchart TB
@@ -175,6 +175,8 @@ bff-atm-client     → bancoxyz.atm
 
 Con Spring Security Resource Server se esperan respuestas `200` con autorización, `401` sin token válido y `403` sin el permiso requerido. En Pagos también se verificó `409` por clave idempotente reutilizada con un cuerpo distinto. Los BFF utilizaron TLS 1.3 local con certificados PKCS12 académicos.
 
+**Evidencia EC2 del 11-10-2026:** dentro del realm `bancoxyz` se observaron los tres clientes habilitados y sus scopes específicos con asignación **Default**. El endpoint de token aceptó `client_credentials` de `bff-web-client`, `bff-mobile-client` y `bff-atm-client`, y devolvió un `access_token` Bearer para cada uno (**3/3**), sin publicar los secretos. Esto verifica la emisión de tokens de Keycloak, **no** aún su validación extremo a extremo por los BFF de Semana 9 en EC2.
+
 ### 5.5 Config Server, Eureka y LoadBalancer
 
 Config Server expone propiedades desde `Semana 9/config-repo`, Eureka registra las instancias y Spring Cloud LoadBalancer permite localizar servicios por nombre en vez de IP física. Así las instancias pueden cambiar dentro de Docker sin alterar todos los consumidores.
@@ -233,7 +235,8 @@ Esto demuestra **configuración para escalado local**, no todavía alta disponib
 | Expuestos en host (laboratorio) | BFF `:8081/:8082/:8083` con TLS de práctica |
 | Loopback del host | PostgreSQL, Keycloak, Eureka, Config Server, Backend, Kafka y Kafka UI |
 | Red Docker | Cuentas, Clientes, Pagos, brokers, BFF/backend y dependencias |
-| Perfil EC2 | Caddy en `80/443`, HTTPS externo para Keycloak después de configurar DNS |
+| Perfil EC2 previsto | Caddy en `80/443`, HTTPS externo para Keycloak después de configurar DNS |
+| EC2 efectivamente comprobada (S9) | PostgreSQL `127.0.0.1:15432`, Keycloak `127.0.0.1:18084`; acceso privado vía SSH, sin dominio público |
 
 Las credenciales se aportan desde `.env` y no se deben versionar. Los certificados `.p12` académicos no confirman confianza pública. El ZIP de trabajo original incluía `.env` y `.git`; **deben excluirse de la entrega** aunque `.gitignore` impida subir `.env` mediante Git.
 
@@ -243,15 +246,27 @@ Las credenciales se aportan desde `.env` y no se deben versionar. Los certificad
 
 El repositorio prepara despliegue en EC2 por `Semana 9/scripts/desplegar_ec2_final.sh`, que comprueba Docker, DNS, claves/variables requeridas, checkout Git limpio, recursos, Compose y estados saludables. El perfil `ec2` agrega **Caddy**; su `Caddyfile` publica el endpoint de **Keycloak** con TLS público si existe un dominio real configurado.
 
-**No se certifica un despliegue actual de Semana 9 en AWS** por el hecho de tener scripts y haber desplegado una versión anterior. Se requiere revalidación de este commit, pruebas externas HTTPS sin desactivar verificación del certificado y capturas reales.
+**Estado comprobado (11-10-2026):** `main` y el checkout EC2 `/home/ubuntu/bancoxyzbatch-s9` coinciden en `cf4605f`. El archivo `docker-compose.s9.ec2.yml` utiliza el proyecto `bancoxyz-s9`, diferente de `bancoxyzbatch` (Semana 8). En EC2 se inició PostgreSQL 17 y Keycloak 26.8.0 de S9 con su red, volumen, puertos loopback y secretos independientes. Se autenticó al administrador por un túnel SSH desde el equipo local y se probaron los tres tokens de clientes OAuth2. Los **13 contenedores de Semana 8** permanecieron activos. En el host había aproximadamente 2,6 GiB de RAM disponible, sin swap; no se inició el resto de S9 para evitar competir por recursos.
+
+**Limitación:** no existe dominio público configurado ni certificado HTTPS público; Caddy no se utilizó. Keycloak se inició en modo `start-dev` para la **demostración privada**, con advertencia de administrador temporal. Las pruebas AWS de Batch, BFF, Kafka y Pagos de S9 **no están realizadas**. No confundir esta prueba parcial con despliegue completo ni TLS de producción.
 
 ### Issuer público y token endpoint interno
 
 ```text
 KEYCLOAK_PUBLIC_URL   → https://auth.DOMINIO_REAL
 OAUTH2_ISSUER_URI     → https://auth.DOMINIO_REAL/realms/bancoxyz
-OAUTH2_TOKEN_URL      → http://127.0.0.1:8084/.../token (helper dentro de EC2)
+OAUTH2_TOKEN_URL      → URL de token accesible desde cada consumidor (ejemplo para despliegue futuro)
 ```
+
+**Acceso privado realmente probado en EC2:**
+
+```text
+KEYCLOAK_PUBLIC_URL   → http://localhost:18084
+OAUTH2_ISSUER_URI     → http://localhost:18084/realms/bancoxyz
+OAUTH2_TOKEN_URL      → http://localhost:18084/realms/bancoxyz/protocol/openid-connect/token
+```
+
+Estas URLs funcionan para pruebas desde el equipo administrador a través de SSH y para consultas locales del host cuando corresponda. **No son automáticamente accesibles desde otros contenedores ni constituyen un issuer público.**
 
 ### Kafka local frente a Kafka multi-AZ
 
@@ -266,12 +281,12 @@ El Compose académico utiliza `PLAINTEXT` en tres brokers del mismo servidor. Un
 | Maven / pruebas | Reactor `BUILD SUCCESS`, Pagos 7/7 tests | Se requiere ejecución del mismo commit |
 | Batch | 3 Jobs `COMPLETED`; reejecución idempotente de las 4 tablas | Pendiente de evidencia Cloud |
 | CSV | 3 archivos de 1.000 filas; SHA-256 intactos | Pendiente de verificar en despliegue |
-| OAuth2 / JWT | 401 ante token inválido; scopes por canal | Probar remotamente |
+| OAuth2 / JWT | 401 ante token inválido; scopes por canal | Realm y scopes verificados; tres tokens Bearer emitidos (3/3) por Keycloak S9 |
 | Pagos | 200/APLICADO, UUID repetida sin doble cargo, 409, concurrencia | Laboratorio QA aprobado; no operativa bancaria externa |
 | Persistencia Pagos | 4 solicitudes, 7 movimientos únicos, reinicio sin pérdida | Validar si se despliega en Cloud |
 | Kafka | 3 brokers, 3 particiones, RF3, min ISR2; eventos y listener | PLAINTEXT y host único local |
 | BFF HTTPS | TLS 1.3 cifrado | Certificado público de Keycloak pendiente |
-| Docker Compose | Validación estructural aprobada | Despliegue en EC2 pendiente de evidencia actual |
+| Docker Compose | Validación estructural aprobada | S9 independiente: `postgres` healthy y `keycloak` accesible; resto del stack pendiente |
 
 **Evidencia puntual última prueba Batch:**
 
@@ -321,7 +336,7 @@ Estos elementos **no se declaran implementados** por el simple hecho de figurar 
 
 ## 11. Resultado técnico
 
-**BancoXYZ Semana 9** cumple el núcleo funcional observado del laboratorio: tres procesos Batch que leen sus CSV oficiales sin alterarlos, microservicios de dominio, tres BFF, autenticación distribuida, Kafka replicado en un host y operaciones monetarias de prueba con idempotencia y persistencia real.
+**BancoXYZ Semana 9** cumple el núcleo funcional observado del laboratorio: tres procesos Batch que leen sus CSV oficiales sin alterarlos, microservicios de dominio, tres BFF, autenticación distribuida, Kafka replicado en un host y operaciones monetarias de prueba con idempotencia y persistencia real. En AWS EC2 ya se comprobó de forma **parcial e independiente** la capa PostgreSQL/Keycloak de S9, con realm, scopes y emisión de JWT de los tres clientes; el resto del despliegue Cloud continúa pendiente.
 
 ---
 

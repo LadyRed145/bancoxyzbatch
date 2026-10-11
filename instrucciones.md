@@ -58,7 +58,8 @@ docker compose ps
 | Cuentas Service | API gestión y estado | `docker compose ps cuentas-service` |
 | Clientes Service | API perfiles y estado | `docker compose ps clientes-service` |
 | Pagos Service | JWT, liquidación y persistencia | ver §5 |
-| Caddy EC2 | certificado Keycloak público | ver `despliegue.md` |
+| Keycloak EC2 S9 | realm, scopes, tres tokens Bearer emitidos por túnel SSH | ver §8 y `despliegue.md` |
+| Caddy EC2 | certificado Keycloak público (no configurado) | ver `despliegue.md` |
 
 Las comprobaciones de rutas protegidas requieren JWT. No se deben imprimir tokens o client secrets en documentación pública.
 
@@ -152,14 +153,24 @@ Los brokers actuales utilizan `PLAINTEXT` y están en un único host Docker. No 
 
 ## 8. TLS público y despliegue Cloud
 
-Los BFF tienen TLS 1.3 local mediante PKCS12 de laboratorio. Caddy del perfil `ec2` está preparado para Keycloak, pero una prueba pública requiere un DNS real, puertos 80/443 y certificados verificables sin `-k`.
+Los BFF tienen TLS 1.3 local mediante PKCS12 de laboratorio. En EC2 S9 se verificaron **solo PostgreSQL y Keycloak** con `docker-compose.s9.ec2.yml`, puertos restringidos a loopback, y acceso mediante túnel SSH. El realm `bancoxyz`, los tres scopes **Default** y la emisión de tokens Bearer **3/3** quedaron comprobados el 11-10-2026. **No es un despliegue HTTPS público**.
 
-```fish
-# Solo en EC2, después de publicar el commit y configurar DNS + .env:
-bash "Semana 9/scripts/desplegar_ec2_final.sh"
+```bash
+# En la consola SSH Ubuntu (Bash), dentro del checkout independiente S9:
+cd "$HOME/bancoxyzbatch-s9"
+docker compose -f docker-compose.s9.ec2.yml ps postgres keycloak
+curl -fsS http://127.0.0.1:18084/realms/bancoxyz/.well-known/openid-configuration
 ```
 
-Consultar los pasos seguros y la validación del issuer en [`despliegue.md`](despliegue.md).
+```fish
+# En el PC local con Fish (otra terminal, mantener el túnel abierto):
+ssh -N -L 18084:127.0.0.1:18084 -i /ruta/privada/clave.pem ubuntu@IP_PUBLICA
+# Abrir después http://localhost:18084/admin/ en el navegador.
+```
+
+Los cinco secretos nuevos están en el `.env` privado de EC2 S9 con permisos `600` (no regenerarlos ni mostrarlos). En Ubuntu se validaron los tres clientes con flujo `client_credentials` sin imprimir los tokens. **La validación de los JWT por los BFF desplegados en EC2 permanece pendiente**, al igual que Batch, Kafka y Pagos de S9 en ese host.
+
+Para TLS público se requiere DNS real, puertos 80/443 y certificado verificable. El script `Semana 9/scripts/desplegar_ec2_final.sh` corresponde a ese escenario futuro y **no se utilizó** en esta prueba privada. Consultar [`despliegue.md`](despliegue.md).
 
 ---
 
@@ -189,7 +200,7 @@ No utilizar como auditoría final el viejo `verificar_entrega_completa.fish`, qu
 | `readme.md` | Link GitHub con Semana 9 publicada |
 | PDF técnico | Plantilla oficial AVA y diagrama(s) |
 | `instrucciones.md` | Comandos reproducibles |
-| `despliegue.md` | Configuración cloud/seguridad/escalado |
+| `despliegue.md` | Estado real EC2 S9, acceso SSH privado y alternativa DNS/TLS futuro |
 | MP4 5–7 min | Webcam, resumen, resultados, desafíos y mejoras |
 
 **Nunca incluir:** `.env` con credenciales, `.git`, carpetas Maven `target/` ni copias de datos privadas en el ZIP del AVA.
